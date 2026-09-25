@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "@apidevtools/json-schema-ref-parser": "^11.7.2",
+    "ajv": "^8.17.1",
     "json-schema-to-typescript": "^16.0.0",
     "prettier": "^3.3.3"
   },

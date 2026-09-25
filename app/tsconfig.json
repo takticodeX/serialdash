@@ -4,7 +4,7 @@
     "outDir": "dist",
     "noEmit": true,
     "jsx": "react-jsx",
-    "types": ["vite/client", "w3c-web-serial"]
+    "types": ["vite/client", "w3c-web-serial", "node"]
   },
   "include": ["src"]
 }

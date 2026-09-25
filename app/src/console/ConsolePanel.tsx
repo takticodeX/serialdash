@@ -16,6 +16,8 @@ export function ConsolePanel(): JSX.Element {
   const setPaused = useConsoleStore((s) => s.setPaused);
   const eol = useConsoleStore((s) => s.eol);
   const addLine = useConsoleStore((s) => s.addLine);
+  const showProtocolLines = useConsoleStore((s) => s.showProtocolLines);
+  const errorsOnly = useConsoleStore((s) => s.errorsOnly);
 
   const transport = useConnectionStore((s) => s.transport);
   const connectionState = useConnectionStore((s) => s.state);
@@ -26,7 +28,7 @@ export function ConsolePanel(): JSX.Element {
       const withEol = text + encodeEol(eol);
       const raw = new TextEncoder().encode(withEol);
       void transport.write(raw);
-      addLine('tx', { text, raw: new TextEncoder().encode(text), truncated: false });
+      addLine('tx', { kind: 'text', text, raw: new TextEncoder().encode(text), truncated: false });
     },
     [transport, eol, addLine],
   );
@@ -46,6 +48,8 @@ export function ConsolePanel(): JSX.Element {
         paused={paused}
         pendingWhilePaused={pendingWhilePaused}
         onPausedChange={setPaused}
+        showProtocolLines={showProtocolLines}
+        errorsOnly={errorsOnly}
       />
       <ConsoleSendBar disabled={connectionState !== 'connected'} onSend={handleSend} />
     </div>

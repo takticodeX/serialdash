@@ -33,6 +33,19 @@ export default defineConfig({
           ],
         },
       ],
+      '/widgets/': [
+        {
+          text: 'Widget catalog',
+          items: [
+            { text: 'Overview', link: '/widgets/' },
+            { text: 'Line chart', link: '/widgets/line' },
+            { text: 'Value', link: '/widgets/value' },
+            { text: 'Gauge', link: '/widgets/gauge' },
+            { text: 'Indicator (led)', link: '/widgets/led' },
+            { text: 'Event log', link: '/widgets/log' },
+          ],
+        },
+      ],
       '/library/': [
         {
           text: 'Arduino / ESP32 library',

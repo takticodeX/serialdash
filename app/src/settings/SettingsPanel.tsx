@@ -8,15 +8,17 @@ interface Props {
   onClose: () => void;
 }
 
-/** §5.8 (base, M1 slice): language, theme, auto-reconnect, console line limit, clear local data,
- * about. Auto-discovery / Plotter compatibility / ack timeout / buffer capacity toggles are
- * deferred — they configure subsystems (Parser, DeviceSession, ChannelStore) that arrive in M2. */
+/** §5.8: language, theme, auto-reconnect, auto-discovery, console line limit, clear local data,
+ * about. Plotter compatibility / ack timeout / buffer capacity toggles are deferred — they
+ * configure subsystems (Plotter parser, DeviceSession timeouts) that arrive in M4/M6. */
 export function SettingsPanel({ onClose }: Props): JSX.Element {
   const { t, i18n } = useTranslation();
   const theme = useSettingsStore((s) => s.theme);
   const setTheme = useSettingsStore((s) => s.setTheme);
   const autoReconnect = useSettingsStore((s) => s.autoReconnect);
   const setAutoReconnect = useSettingsStore((s) => s.setAutoReconnect);
+  const autoDiscovery = useSettingsStore((s) => s.autoDiscovery);
+  const setAutoDiscovery = useSettingsStore((s) => s.setAutoDiscovery);
   const consoleLineLimit = useSettingsStore((s) => s.consoleLineLimit);
   const setConsoleLineLimit = useSettingsStore((s) => s.setConsoleLineLimit);
   const clearAllLocalData = useSettingsStore((s) => s.clearAllLocalData);
@@ -87,6 +89,15 @@ export function SettingsPanel({ onClose }: Props): JSX.Element {
           onChange={(e) => setAutoReconnect(e.target.checked)}
         />{' '}
         {t('settings.autoReconnect')}
+      </label>
+
+      <label style={{ display: 'block', marginTop: 16 }}>
+        <input
+          type="checkbox"
+          checked={autoDiscovery}
+          onChange={(e) => setAutoDiscovery(e.target.checked)}
+        />{' '}
+        {t('settings.autoDiscovery')}
       </label>
 
       <label style={{ display: 'block', marginTop: 16 }}>

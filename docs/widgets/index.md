@@ -1,15 +1,17 @@
 # Widget catalog
 
-::: info
-Individual widget pages are generated from each widget's descriptor (`tools/gen-docs`, DOC-01), which needs the app-side widget registry from **M2**. That doesn't exist yet, so this index just lists what `/protocol/schema/widgets/` already defines.
-:::
+## P0 — implemented (M2)
 
-## Display widgets (SPEC.md §4.1)
+<!-- generated:start -->
 
-`line`, `value`, `gauge`, `led`, `log`, `xy`, `bar`, `pie`, `level`, `table`, `heat`, `hist`, `polar`, `compass`, `attitude`
+- [Line chart](./line) (`line`) — Real-time line chart for one or more numeric channels.
+- [Value](./value) (`value`) — A numeric or text KPI card.
+- [Gauge](./gauge) (`gauge`) — A needle gauge with configurable color zones.
+- [Indicator](./led) (`led`) — A status LED for a boolean, numeric, or text value.
+- [Event log](./log) (`log`) — A scrolling log of device events.
 
-## Controls (SPEC.md §4.3)
+<!-- generated:end -->
 
-`button`, `switch`, `slider`, `number`, `select`, `text`, `color`
+## Not yet implemented
 
-Each has a JSON Schema file at `/protocol/schema/widgets/<kind>.schema.json` and at least one worked example in `/protocol/test-vectors/widgets.jsonl`. See [adding a widget](../contributing/adding-a-widget) for how these get built.
+The rest of the catalog (SPEC.md §4) — P1 (`xy`, `bar`, `pie`, `level`, `table`, `heat`, plus the control widgets `button`, `switch`, `slider`, `number`, `select`, `text`) and P2 (`hist`, `polar`, `compass`, `attitude`, `color`) — has a JSON Schema at `/protocol/schema/widgets/<kind>.schema.json` and worked examples in `/protocol/test-vectors/widgets.jsonl`, but no app-side widget yet. Pages for these arrive as each one is implemented (P1 in M5, P2 in M8+). See [adding a widget](../contributing/adding-a-widget) for how they get built.

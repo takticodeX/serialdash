@@ -5,3 +5,4 @@
 
 export * from './widgets.js';
 export * from './messages.js';
+export * from './validators.js';

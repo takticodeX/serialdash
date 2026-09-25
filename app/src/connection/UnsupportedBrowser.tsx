@@ -1,13 +1,16 @@
 import type { JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 
+interface Props {
+  onTryDemo: () => void;
+}
+
 /**
  * APP-GEN-02: when navigator.serial doesn't exist, explain why and list supported browsers, but
- * still offer a path forward. The simulator (M2) and replay (M6) don't exist yet, so those links
- * are shown as disabled/"coming soon" for now rather than broken — they'll become real links once
- * those milestones land.
+ * still offer a path forward. The simulator (M2) is real now; replay (M6) still isn't, so that
+ * link stays disabled/"coming soon" until that milestone lands.
  */
-export function UnsupportedBrowser(): JSX.Element {
+export function UnsupportedBrowser({ onTryDemo }: Props): JSX.Element {
   const { t } = useTranslation();
 
   return (
@@ -19,8 +22,8 @@ export function UnsupportedBrowser(): JSX.Element {
       <h2>{t('unsupported.stillUseful')}</h2>
       <ul>
         <li>
-          <button type="button" disabled title={t('unsupported.simulatorComingSoon')}>
-            {t('unsupported.simulatorComingSoon')}
+          <button type="button" onClick={onTryDemo}>
+            {t('connect.tryDemo')}
           </button>
         </li>
         <li>

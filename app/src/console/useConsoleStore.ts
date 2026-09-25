@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { kvGet, kvSet } from '../storage/db';
 import { useSettingsStore } from '../settings/useSettingsStore';
-import type { SplitLine } from './byteLineSplitter';
+import type { ParsedLine } from '../protocol/Parser';
 
 export type ConsoleDirection = 'rx' | 'tx';
 export type EndOfLine = 'none' | 'lf' | 'cr' | 'crlf';
@@ -13,6 +13,9 @@ export interface ConsoleLine {
   raw: Uint8Array;
   text: string;
   truncated: boolean;
+  kind: ParsedLine['kind'];
+  /** Present only when kind === 'protocolError' (PRT-04). */
+  reason: string | undefined;
 }
 
 const MAX_SEND_HISTORY = 50;
@@ -27,8 +30,12 @@ interface ConsoleState {
   search: string;
   eol: EndOfLine;
   sendHistory: string[];
+  /** APP-CSL-04: show `@{...}` lines (dimmed) instead of hiding them. */
+  showProtocolLines: boolean;
+  /** APP-CSL-04: show only protocol errors — also toggled from the status bar's error count. */
+  errorsOnly: boolean;
 
-  addLine: (dir: ConsoleDirection, split: SplitLine) => void;
+  addLine: (dir: ConsoleDirection, parsed: ParsedLine) => void;
   clear: () => void;
   setPaused: (paused: boolean) => void;
   toggleTimestamps: () => void;
@@ -36,6 +43,8 @@ interface ConsoleState {
   toggleHexView: () => void;
   setSearch: (query: string) => void;
   setEol: (eol: EndOfLine) => void;
+  toggleShowProtocolLines: () => void;
+  setErrorsOnly: (value: boolean) => void;
   pushSendHistory: (line: string) => void;
   loadSendHistory: () => Promise<void>;
 }
@@ -52,15 +61,19 @@ export const useConsoleStore = create<ConsoleState>((set, get) => ({
   search: '',
   eol: 'lf',
   sendHistory: [],
+  showProtocolLines: false,
+  errorsOnly: false,
 
-  addLine: (dir, split) => {
+  addLine: (dir, parsed) => {
     const line: ConsoleLine = {
       id: nextId++,
       ts: Date.now(),
       dir,
-      raw: split.raw,
-      text: split.text,
-      truncated: split.truncated,
+      raw: parsed.raw,
+      text: parsed.text,
+      truncated: parsed.truncated,
+      kind: parsed.kind,
+      reason: parsed.kind === 'protocolError' ? parsed.reason : undefined,
     };
     const limit = useSettingsStore.getState().consoleLineLimit;
     set((state) => {
@@ -82,6 +95,8 @@ export const useConsoleStore = create<ConsoleState>((set, get) => ({
   toggleHexView: () => set((s) => ({ hexView: !s.hexView })),
   setSearch: (search) => set({ search }),
   setEol: (eol) => set({ eol }),
+  toggleShowProtocolLines: () => set((s) => ({ showProtocolLines: !s.showProtocolLines })),
+  setErrorsOnly: (errorsOnly) => set({ errorsOnly }),
 
   pushSendHistory: (line) => {
     if (!line) return;

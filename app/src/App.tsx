@@ -7,11 +7,16 @@ import { ConnectScreen } from './connection/ConnectScreen';
 import { UnsupportedBrowser } from './connection/UnsupportedBrowser';
 import { ResizableConsole } from './console/ResizableConsole';
 import { SettingsPanel } from './settings/SettingsPanel';
+import { Dashboard } from './dashboard/Dashboard';
 import { useConnectionStore } from './serial/useConnectionStore';
 import { useSettingsStore } from './settings/useSettingsStore';
 import { useConsoleStore } from './console/useConsoleStore';
 import { usePanelLayoutStore } from './console/usePanelLayoutStore';
+import { useDashboardLayoutStore } from './dashboard/useDashboardLayoutStore';
 import { isWebSerialSupported } from './serial/webSerialTransport';
+import { registerBuiltinWidgets } from './widgets/index';
+
+registerBuiltinWidgets();
 
 export function App(): JSX.Element {
   const { t } = useTranslation();
@@ -19,32 +24,46 @@ export function App(): JSX.Element {
 
   const hydrateSettings = useSettingsStore((s) => s.hydrate);
   const loadSendHistory = useConsoleStore((s) => s.loadSendHistory);
-  const hydrateLayout = usePanelLayoutStore((s) => s.hydrate);
+  const hydrateConsoleLayout = usePanelLayoutStore((s) => s.hydrate);
+  const hydrateDashboardLayout = useDashboardLayoutStore((s) => s.hydrate);
   const connectionState = useConnectionStore((s) => s.state);
+  const session = useConnectionStore((s) => s.session);
+  const port = useConnectionStore((s) => s.port);
+  const connectToSimulator = useConnectionStore((s) => s.connectToSimulator);
+  const supported = isWebSerialSupported();
 
   const [settingsOpen, setSettingsOpen] = useState(false);
+  // SPEC.md §3.5 rule 6: widgets stay visible (dimmed) after a disconnect rather than the app
+  // reverting to the connect screen — so that screen is shown only before any session exists, or
+  // when the user explicitly asks to switch devices (StatusBar's "change device" action).
+  const [showConnectScreen, setShowConnectScreen] = useState(true);
 
   useEffect(() => {
     void hydrateSettings();
     void loadSendHistory();
-    void hydrateLayout();
-  }, [hydrateSettings, loadSendHistory, hydrateLayout]);
+    void hydrateConsoleLayout();
+    void hydrateDashboardLayout();
+  }, [hydrateSettings, loadSendHistory, hydrateConsoleLayout, hydrateDashboardLayout]);
 
-  if (!isWebSerialSupported()) {
+  useEffect(() => {
+    if (connectionState === 'connected') setShowConnectScreen(false);
+  }, [connectionState]);
+
+  if (!supported && !session) {
     return (
       <div className="app-shell">
         <UpdateBanner />
-        <UnsupportedBrowser />
+        <UnsupportedBrowser onTryDemo={() => void connectToSimulator()} />
       </div>
     );
   }
 
-  const connected = connectionState === 'connected' || connectionState === 'disconnecting';
+  const displayConnectScreen = showConnectScreen || !session;
 
   return (
     <div className="app-shell">
       <UpdateBanner />
-      <StatusBar />
+      <StatusBar onChangeDevice={session ? () => setShowConnectScreen(true) : undefined} />
       <button
         type="button"
         onClick={() => setSettingsOpen(true)}
@@ -55,12 +74,17 @@ export function App(): JSX.Element {
       </button>
       {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
 
-      {connected ? (
+      {displayConnectScreen ? (
+        supported ? (
+          <ConnectScreen />
+        ) : (
+          <UnsupportedBrowser onTryDemo={() => void connectToSimulator()} />
+        )
+      ) : (
         <div className="app-main" style={{ flexDirection: 'column' }}>
+          <Dashboard session={session} port={port} />
           <ResizableConsole />
         </div>
-      ) : (
-        <ConnectScreen />
       )}
     </div>
   );

@@ -1,0 +1,19 @@
+{
+  "name": "@serialdash/gen-docs",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Generates docs/widgets/<kind>.md from the widget schema + i18n strings (DOC-01).",
+  "type": "module",
+  "scripts": {
+    "gen": "tsx src/index.ts"
+  },
+  "dependencies": {
+    "@apidevtools/json-schema-ref-parser": "^11.7.2",
+    "prettier": "^3.3.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}

@@ -25,6 +25,10 @@ export function ConsoleToolbar(): JSX.Element {
   const setSearch = useConsoleStore((s) => s.setSearch);
   const clear = useConsoleStore((s) => s.clear);
   const lines = useConsoleStore((s) => s.lines);
+  const showProtocolLines = useConsoleStore((s) => s.showProtocolLines);
+  const toggleShowProtocolLines = useConsoleStore((s) => s.toggleShowProtocolLines);
+  const errorsOnly = useConsoleStore((s) => s.errorsOnly);
+  const setErrorsOnly = useConsoleStore((s) => s.setErrorsOnly);
 
   const allText = (): string => lines.map((l) => l.text).join('\n');
 
@@ -65,6 +69,18 @@ export function ConsoleToolbar(): JSX.Element {
       </label>
       <label>
         <input type="checkbox" checked={hexView} onChange={toggleHexView} /> {t('console.hexView')}
+      </label>
+      <label>
+        <input type="checkbox" checked={showProtocolLines} onChange={toggleShowProtocolLines} />{' '}
+        {t('console.showProtocolLines')}
+      </label>
+      <label>
+        <input
+          type="checkbox"
+          checked={errorsOnly}
+          onChange={(e) => setErrorsOnly(e.target.checked)}
+        />{' '}
+        {t('console.errorsOnly')}
       </label>
 
       <button type="button" onClick={clear}>

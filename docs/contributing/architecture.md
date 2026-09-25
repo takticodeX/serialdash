@@ -50,6 +50,6 @@ Transport ──bytes──▶ LineSplitter ──lines──▶ Parser ─┬�
 
 `Transport` is an abstract interface with three implementations: `WebSerialTransport` (real hardware), `SimulatorTransport` (an in-browser virtual device), and `ReplayTransport` (replays a recording). Nothing above the transport layer knows which one is active — that's what makes the app fully testable without hardware.
 
-## Where things stand (M0)
+## Where things stand (through M2)
 
-Only the `protocol/` layer exists so far: the JSON Schema, test vectors, and the generated TypeScript types in `app/src/protocol/generated/`. The module tree above is the target for later milestones (see SPEC.md §11) — `app/` currently has no runtime code beyond the generated protocol types.
+The module tree above is fully wired end to end: `WebSerialTransport` and `SimulatorTransport` both feed the same `LineSplitter → Parser → DeviceSession → ChannelStore → Widgets` pipeline, and the dashboard renders the P0 display widgets (`line`, `value`, `gauge`, `led`, `log`) in a persisted, per-device grid. `recording/` and the control widgets' interactive half (`session`'s ack/timeout handling, the library) are the main pieces still to come — see SPEC.md §11 for what each milestone adds.

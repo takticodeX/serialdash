@@ -9,12 +9,15 @@ interface PersistedSettings {
   theme: Theme;
   autoReconnect: boolean;
   consoleLineLimit: number;
+  /** APP-DAT-03: whether an undeclared channel auto-creates a widget. */
+  autoDiscovery: boolean;
 }
 
 const DEFAULTS: PersistedSettings = {
   theme: 'auto',
   autoReconnect: true,
   consoleLineLimit: DEFAULT_CONSOLE_LINE_LIMIT,
+  autoDiscovery: true,
 };
 
 interface SettingsStore extends PersistedSettings {
@@ -23,11 +26,13 @@ interface SettingsStore extends PersistedSettings {
   setTheme: (theme: Theme) => void;
   setAutoReconnect: (value: boolean) => void;
   setConsoleLineLimit: (value: number) => void;
+  setAutoDiscovery: (value: boolean) => void;
   clearAllLocalData: () => Promise<void>;
 }
 
-async function persist(state: PersistedSettings): Promise<void> {
-  await kvSet('settings', state);
+function persisted(state: SettingsStore): PersistedSettings {
+  const { theme, autoReconnect, consoleLineLimit, autoDiscovery } = state;
+  return { theme, autoReconnect, consoleLineLimit, autoDiscovery };
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -41,21 +46,22 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   setTheme: (theme) => {
     set({ theme });
-    void persist({
-      theme,
-      autoReconnect: get().autoReconnect,
-      consoleLineLimit: get().consoleLineLimit,
-    });
+    void kvSet('settings', persisted(get()));
   },
 
   setAutoReconnect: (autoReconnect) => {
     set({ autoReconnect });
-    void persist({ theme: get().theme, autoReconnect, consoleLineLimit: get().consoleLineLimit });
+    void kvSet('settings', persisted(get()));
   },
 
   setConsoleLineLimit: (consoleLineLimit) => {
     set({ consoleLineLimit });
-    void persist({ theme: get().theme, autoReconnect: get().autoReconnect, consoleLineLimit });
+    void kvSet('settings', persisted(get()));
+  },
+
+  setAutoDiscovery: (autoDiscovery) => {
+    set({ autoDiscovery });
+    void kvSet('settings', persisted(get()));
   },
 
   clearAllLocalData: async () => {

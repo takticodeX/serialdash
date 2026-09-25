@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import type { ConnectionState, TransportInfo } from '../transport/transport';
+import type { ConnectionState, Transport, TransportInfo } from '../transport/transport';
 import {
   DEFAULT_CONNECTION_OPTIONS,
   PortBusyError,
@@ -10,50 +10,102 @@ import {
   requestNewPort,
   type SerialConnectionOptions,
 } from './webSerialTransport';
+import { SimulatorTransport } from '../transport/simulatorTransport';
 import { onSerialPortConnected } from './hotplug';
-import { ByteLineSplitter } from '../console/byteLineSplitter';
+import { LineSplitter } from '../protocol/LineSplitter';
+import { parseLine } from '../protocol/Parser';
+import { DeviceSession } from '../session/DeviceSession';
 import { useConsoleStore } from '../console/useConsoleStore';
 import { useSettingsStore } from '../settings/useSettingsStore';
 
+export interface ThroughputStats {
+  bytesPerSecond: number;
+  linesPerSecond: number;
+  /** Running total since connecting, not per-second — APP-CON-06's clickable error count. */
+  protocolErrorCount: number;
+}
+
+const ZERO_THROUGHPUT: ThroughputStats = {
+  bytesPerSecond: 0,
+  linesPerSecond: 0,
+  protocolErrorCount: 0,
+};
+
 interface ConnectionStore {
-  transport: WebSerialTransport | null;
+  transport: Transport | null;
+  session: DeviceSession | null;
+  /** Only set for a real Web Serial connection — null for the simulator. */
   port: SerialPort | null;
   state: ConnectionState;
   info: TransportInfo | null;
   options: SerialConnectionOptions;
   error: string | null;
   knownPorts: SerialPort[];
+  throughput: ThroughputStats;
 
   setOptions: (partial: Partial<SerialConnectionOptions>) => void;
   refreshKnownPorts: () => Promise<void>;
   connectToNewPort: () => Promise<void>;
   connectToPort: (port: SerialPort) => Promise<void>;
+  /** APP-SIM-03: "try without hardware", reachable from the connect screen and from the
+   * unsupported-browser page (neither needs a real serial port). */
+  connectToSimulator: () => Promise<void>;
   disconnect: () => Promise<void>;
 }
 
-let rxSplitter = new ByteLineSplitter();
 let hotplugUnsubscribe: (() => void) | undefined;
 
+/** Wires one connected session's data pipeline (SPEC.md §2.3 data flow):
+ * Transport → LineSplitter → Parser →┬→ Console
+ *                                     └→ DeviceSession → ChannelStore → Widgets
+ * plus the byte/line/error throughput counters for the status bar (APP-CON-06). Works the same
+ * for WebSerialTransport and SimulatorTransport — that's the point of the Transport interface
+ * (ADR-001). */
 function wireTransport(
-  transport: WebSerialTransport,
+  transport: Transport,
+  session: DeviceSession,
   set: (partial: Partial<ConnectionStore>) => void,
 ): void {
-  rxSplitter = new ByteLineSplitter();
+  const splitter = new LineSplitter();
+  let bytesThisSecond = 0;
+  let linesThisSecond = 0;
+  let protocolErrorCount = 0;
 
   transport.onData((chunk) => {
-    for (const line of rxSplitter.push(chunk)) {
-      useConsoleStore.getState().addLine('rx', line);
+    bytesThisSecond += chunk.length;
+    for (const split of splitter.push(chunk)) {
+      linesThisSecond++;
+      const parsed = parseLine(split);
+      useConsoleStore.getState().addLine('rx', parsed);
+      if (parsed.kind === 'message') {
+        session.feed(parsed.message);
+      } else if (parsed.kind === 'protocolError') {
+        protocolErrorCount++;
+      }
     }
   });
+
+  const throughputInterval = setInterval(() => {
+    set({
+      throughput: {
+        bytesPerSecond: bytesThisSecond,
+        linesPerSecond: linesThisSecond,
+        protocolErrorCount,
+      },
+    });
+    bytesThisSecond = 0;
+    linesThisSecond = 0;
+  }, 1000);
 
   transport.onStateChange((state) => set({ state }));
 
-  transport.onDisconnect((reason) => {
-    set({ state: 'disconnected' });
-    if (reason === 'device' && useSettingsStore.getState().autoReconnect) {
-      // The 'connect' hotplug listener (below) picks it back up once the OS re-enumerates it.
-    }
+  transport.onDisconnect(() => {
+    clearInterval(throughputInterval);
+    session.dispose();
+    set({ state: 'disconnected', throughput: { ...ZERO_THROUGHPUT, protocolErrorCount } });
   });
+
+  session.start();
 }
 
 export const useConnectionStore = create<ConnectionStore>((set, get) => {
@@ -69,12 +121,14 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => {
 
   return {
     transport: null,
+    session: null,
     port: null,
     state: 'disconnected',
     info: null,
     options: DEFAULT_CONNECTION_OPTIONS,
     error: null,
     knownPorts: [],
+    throughput: ZERO_THROUGHPUT,
 
     setOptions: (partial) => set((s) => ({ options: { ...s.options, ...partial } })),
 
@@ -89,15 +143,20 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => {
     },
 
     connectToPort: async (port) => {
-      set({ error: null, port, info: describePort(port) });
+      set({ error: null, port, info: describePort(port), throughput: ZERO_THROUGHPUT });
       const transport = new WebSerialTransport(port, get().options);
-      wireTransport(transport, set);
-      set({ transport });
+      const session = new DeviceSession((line) => {
+        void transport.write(new TextEncoder().encode(line + '\n'));
+      });
+      wireTransport(transport, session, set);
+      set({ transport, session });
       try {
         await transport.connect();
       } catch (err) {
+        session.dispose();
         set({
           state: 'disconnected',
+          session: null,
           error:
             err instanceof PortBusyError
               ? 'portBusy'
@@ -107,6 +166,17 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => {
         });
         throw err;
       }
+    },
+
+    connectToSimulator: async () => {
+      set({ error: null, port: null, info: { label: 'Simulator' }, throughput: ZERO_THROUGHPUT });
+      const transport = new SimulatorTransport();
+      const session = new DeviceSession((line) => {
+        void transport.write(new TextEncoder().encode(line + '\n'));
+      });
+      wireTransport(transport, session, set);
+      set({ transport, session });
+      await transport.connect();
     },
 
     disconnect: async () => {

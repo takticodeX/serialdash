@@ -13,6 +13,7 @@ export type AttitudeWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -48,6 +49,7 @@ export type BarWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -87,6 +89,7 @@ export type ButtonWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -141,6 +144,7 @@ export type ColorWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -190,6 +194,7 @@ export type CompassWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -229,6 +234,7 @@ export type GaugeWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -267,6 +273,7 @@ export type HeatWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -308,6 +315,7 @@ export type HistWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -356,6 +364,7 @@ export type LedWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -406,6 +415,7 @@ export type LevelWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -445,6 +455,7 @@ export type LineWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -491,6 +502,7 @@ export type LogWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -532,6 +544,7 @@ export type NumberWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -580,6 +593,7 @@ export type PieWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -617,6 +631,7 @@ export type PolarWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -662,6 +677,7 @@ export type SelectWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -708,6 +724,7 @@ export type SliderWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -763,6 +780,7 @@ export type SwitchWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -810,6 +828,7 @@ export type TableWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -846,6 +865,7 @@ export type TextWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -896,6 +916,7 @@ export type ValueWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
@@ -943,6 +964,7 @@ export type XyWidget = {
    */
   id: string;
   k: string;
+  title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */

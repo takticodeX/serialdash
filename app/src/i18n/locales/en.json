@@ -40,7 +40,13 @@
     "disconnecting": "Disconnecting…",
     "port": "Port",
     "baud": "baud",
-    "disconnect": "Disconnect"
+    "disconnect": "Disconnect",
+    "linesPerSecond": "lines/s",
+    "protocolErrors_one": "{{count}} protocol error",
+    "protocolErrors_other": "{{count}} protocol errors",
+    "protocolErrorsHint": "Filter the console to protocol errors only",
+    "reconnect": "Reconnect",
+    "changeDevice": "Change device"
   },
   "console": {
     "title": "Console",
@@ -56,12 +62,14 @@
     "timestamps": "Timestamps",
     "wrap": "Wrap long lines",
     "hexView": "Hex view",
+    "showProtocolLines": "Show protocol lines",
     "clear": "Clear",
     "copyAll": "Copy all",
     "saveAsTxt": "Save as .txt",
     "search": "Search…",
     "errorsOnly": "Errors only",
-    "empty": "Nothing received yet."
+    "empty": "Nothing received yet.",
+    "protocolError": "protocol error"
   },
   "settings": {
     "title": "Settings",
@@ -71,6 +79,7 @@
     "theme_dark": "Dark",
     "theme_auto": "Automatic (follow system)",
     "autoReconnect": "Reconnect automatically when a known device reappears",
+    "autoDiscovery": "Auto-create a widget for undeclared channels",
     "consoleLineLimit": "Console line limit",
     "clearLocalData": "Clear all local data",
     "clearLocalDataConfirm": "This removes all locally stored settings, port permissions memory, and history from this browser. This cannot be undone. Continue?",
@@ -83,11 +92,28 @@
     "body": "SerialDash needs the Web Serial API to connect to real hardware, and your current browser doesn't support it.",
     "browserList": "Supported browsers: Chrome, Edge, Opera, and Brave, on Windows, macOS, Linux, or ChromeOS.",
     "stillUseful": "You can still explore SerialDash without a serial connection:",
-    "simulatorComingSoon": "Try the simulator (coming in a later milestone)",
     "replayComingSoon": "Replay a recording (coming in a later milestone)"
   },
   "pwa": {
     "updateAvailable": "New version available",
     "reload": "Reload"
+  },
+  "dashboard": {
+    "empty": "No widgets in this group yet.",
+    "unsupportedWidget": "Unsupported widget type \"{{kind}}\""
+  },
+  "widgets": {
+    "stale": "No recent data",
+    "line": {
+      "name": "Line chart",
+      "description": "Real-time line chart for one or more numeric channels."
+    },
+    "value": { "name": "Value", "description": "A numeric or text KPI card." },
+    "gauge": { "name": "Gauge", "description": "A needle gauge with configurable color zones." },
+    "led": {
+      "name": "Indicator",
+      "description": "A status LED for a boolean, numeric, or text value."
+    },
+    "log": { "name": "Event log", "description": "A scrolling log of device events." }
   }
 }

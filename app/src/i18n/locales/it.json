@@ -40,7 +40,13 @@
     "disconnecting": "Disconnessione in corso…",
     "port": "Porta",
     "baud": "baud",
-    "disconnect": "Disconnetti"
+    "disconnect": "Disconnetti",
+    "linesPerSecond": "righe/s",
+    "protocolErrors_one": "{{count}} errore di protocollo",
+    "protocolErrors_other": "{{count}} errori di protocollo",
+    "protocolErrorsHint": "Filtra la console sui soli errori di protocollo",
+    "reconnect": "Riconnetti",
+    "changeDevice": "Cambia dispositivo"
   },
   "console": {
     "title": "Console",
@@ -56,12 +62,14 @@
     "timestamps": "Orario",
     "wrap": "A capo automatico",
     "hexView": "Vista esadecimale",
+    "showProtocolLines": "Mostra righe di protocollo",
     "clear": "Pulisci",
     "copyAll": "Copia tutto",
     "saveAsTxt": "Salva come .txt",
     "search": "Cerca…",
     "errorsOnly": "Solo errori",
-    "empty": "Nessun dato ricevuto."
+    "empty": "Nessun dato ricevuto.",
+    "protocolError": "errore di protocollo"
   },
   "settings": {
     "title": "Impostazioni",
@@ -71,6 +79,7 @@
     "theme_dark": "Scuro",
     "theme_auto": "Automatico (segue il sistema)",
     "autoReconnect": "Riconnetti automaticamente quando un dispositivo noto riappare",
+    "autoDiscovery": "Crea automaticamente un widget per i canali non dichiarati",
     "consoleLineLimit": "Limite righe console",
     "clearLocalData": "Cancella tutti i dati locali",
     "clearLocalDataConfirm": "Questo rimuove tutte le impostazioni, i permessi porta memorizzati e la cronologia salvati in questo browser. L'operazione non è reversibile. Continuare?",
@@ -83,11 +92,34 @@
     "body": "SerialDash richiede la Web Serial API per collegarsi a un dispositivo reale, e il tuo browser attuale non la supporta.",
     "browserList": "Browser supportati: Chrome, Edge, Opera e Brave, su Windows, macOS, Linux o ChromeOS.",
     "stillUseful": "Puoi comunque esplorare SerialDash senza una connessione seriale:",
-    "simulatorComingSoon": "Prova il simulatore (disponibile in una milestone futura)",
     "replayComingSoon": "Riproduci una registrazione (disponibile in una milestone futura)"
   },
   "pwa": {
     "updateAvailable": "Nuova versione disponibile",
     "reload": "Ricarica"
+  },
+  "dashboard": {
+    "empty": "Ancora nessun widget in questo gruppo.",
+    "unsupportedWidget": "Tipo di widget non supportato \"{{kind}}\""
+  },
+  "widgets": {
+    "stale": "Nessun dato recente",
+    "line": {
+      "name": "Grafico a linea",
+      "description": "Grafico a linea in tempo reale per uno o più canali numerici."
+    },
+    "value": { "name": "Valore", "description": "Una card numerica o testuale (KPI)." },
+    "gauge": {
+      "name": "Lancetta",
+      "description": "Un indicatore a lancetta con zone colorate configurabili."
+    },
+    "led": {
+      "name": "Indicatore",
+      "description": "Un LED di stato per un valore booleano, numerico o testuale."
+    },
+    "log": {
+      "name": "Registro eventi",
+      "description": "Un registro scorrevole degli eventi del dispositivo."
+    }
   }
 }

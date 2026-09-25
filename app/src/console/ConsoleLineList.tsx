@@ -23,6 +23,11 @@ interface Props {
   paused: boolean;
   pendingWhilePaused: number;
   onPausedChange: (paused: boolean) => void;
+  /** APP-CSL-04: show `@{...}` protocol lines (dimmed) instead of hiding them. Protocol errors
+   * are always shown regardless of this (PRT-04). */
+  showProtocolLines: boolean;
+  /** APP-CSL-04: show only protocol errors. */
+  errorsOnly: boolean;
 }
 
 /**
@@ -40,6 +45,8 @@ export function ConsoleLineList({
   paused,
   pendingWhilePaused,
   onPausedChange,
+  showProtocolLines,
+  errorsOnly,
 }: Props): JSX.Element {
   const { t } = useTranslation();
   const containerRef = useRef<HTMLDivElement>(null);
@@ -47,10 +54,19 @@ export function ConsoleLineList({
   const [viewportHeight, setViewportHeight] = useState(0);
 
   const filtered = useMemo(() => {
-    if (!search) return lines;
-    const q = search.toLowerCase();
-    return lines.filter((l) => l.text.toLowerCase().includes(q));
-  }, [lines, search]);
+    let result = lines;
+    // PRT-04: protocol errors are never hidden, regardless of showProtocolLines/errorsOnly.
+    if (errorsOnly) {
+      result = result.filter((l) => l.kind === 'protocolError');
+    } else if (!showProtocolLines) {
+      result = result.filter((l) => l.kind !== 'message');
+    }
+    if (search) {
+      const q = search.toLowerCase();
+      result = result.filter((l) => l.text.toLowerCase().includes(q));
+    }
+    return result;
+  }, [lines, search, showProtocolLines, errorsOnly]);
 
   useEffect(() => {
     const el = containerRef.current;
@@ -109,7 +125,13 @@ export function ConsoleLineList({
                 key={line.id}
                 className="console-line"
                 data-wrap={wrap}
-                style={{ position: 'absolute', top: (startIndex + i) * ROW_HEIGHT, width: '100%' }}
+                style={{
+                  position: 'absolute',
+                  top: (startIndex + i) * ROW_HEIGHT,
+                  width: '100%',
+                  opacity: line.kind === 'message' ? 0.6 : 1,
+                  color: line.kind === 'protocolError' ? 'var(--ansi-red)' : undefined,
+                }}
               >
                 {showTimestamps && <span className="console-line-ts">{formatTs(line.ts)}</span>}
                 <span className="console-line-dir" aria-hidden="true">
@@ -117,6 +139,12 @@ export function ConsoleLineList({
                 </span>
                 <span>
                   {hexView ? toHexDump(line.raw) : <AnsiText text={line.text} highlight={search} />}
+                  {line.kind === 'protocolError' && (
+                    <span>
+                      {' '}
+                      [{t('console.protocolError')}: {line.reason}]
+                    </span>
+                  )}
                   {line.truncated && (
                     <span style={{ color: 'var(--ansi-red)' }}>
                       {' '}

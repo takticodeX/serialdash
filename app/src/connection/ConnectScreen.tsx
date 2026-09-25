@@ -9,6 +9,7 @@ export function ConnectScreen(): JSX.Element {
   const refreshKnownPorts = useConnectionStore((s) => s.refreshKnownPorts);
   const connectToNewPort = useConnectionStore((s) => s.connectToNewPort);
   const connectToPort = useConnectionStore((s) => s.connectToPort);
+  const connectToSimulator = useConnectionStore((s) => s.connectToSimulator);
   const options = useConnectionStore((s) => s.options);
   const setOptions = useConnectionStore((s) => s.setOptions);
   const state = useConnectionStore((s) => s.state);
@@ -168,6 +169,12 @@ export function ConnectScreen(): JSX.Element {
           }}
         >
           {connecting ? t('connect.connecting') : t('connect.connectButton')}
+        </button>
+      </div>
+
+      <div style={{ marginTop: 12, textAlign: 'center' }}>
+        <button type="button" disabled={connecting} onClick={() => void connectToSimulator()}>
+          {t('connect.tryDemo')}
         </button>
       </div>
     </div>

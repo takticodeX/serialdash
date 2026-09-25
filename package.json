@@ -15,13 +15,13 @@
   },
   "scripts": {
     "install:all": "npm install",
-    "gen": "npm run gen -w tools/gen-types",
-    "gen:check": "npm run gen && git diff --exit-code -- app/src/protocol/generated docs/protocol/messages.md",
+    "gen": "npm run gen -w tools/gen-types && npm run gen -w tools/gen-docs",
+    "gen:check": "npm run gen && git diff --exit-code -- app/src/protocol/generated docs/protocol/messages.md docs/widgets",
     "lint": "eslint . && prettier --check .",
     "format": "prettier --write .",
     "test": "npm run test -w tools/validate-vectors && npm run test -w app",
     "dev": "npm run dev -w app",
-    "e2e": "npm run e2e -w app --if-present || echo 'e2e arrives in M2 (see SPEC.md §11)'",
+    "e2e": "npm run e2e -w app --if-present || echo 'e2e (QA-03) arrives incrementally as scenarios become testable, starting M4'",
     "docs:dev": "npm run docs:dev -w docs",
     "docs:build": "npm run docs:build -w docs",
     "docs:screenshots": "npm run docs:screenshots -w docs --if-present || echo 'docs:screenshots arrives in M7 (see SPEC.md §11)'",
@@ -30,6 +30,7 @@
   "devDependencies": {
     "eslint": "^9.13.0",
     "@eslint/js": "^9.13.0",
+    "eslint-plugin-react-hooks": "^7.1.1",
     "typescript-eslint": "^8.15.0",
     "prettier": "^3.3.3",
     "typescript": "^5.6.3"

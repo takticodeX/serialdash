@@ -1,9 +1,14 @@
 import { mkdir, readdir, readFile, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import $RefParser from '@apidevtools/json-schema-ref-parser';
+import Ajv2020 from 'ajv/dist/2020.js';
+import standaloneCode from 'ajv/dist/standalone/index.js';
 import { compile, type JSONSchema } from 'json-schema-to-typescript';
 import * as prettier from 'prettier';
+
+const require = createRequire(import.meta.url);
 
 type SchemaWithDefs = JSONSchema & { $defs: Record<string, JSONSchema> };
 
@@ -62,9 +67,11 @@ function stripFlatGuard(schema: JSONSchema): JSONSchema {
 /**
  * json-schema-to-typescript (still draft-07-oriented) does not understand draft 2020-12 tuples
  * (`prefixItems` + `items: false`) — it silently produces `never[]` — and it prefers a schema's own
- * `title` over the `name` argument passed to `compile()`, which fights our naming scheme. Both schema
- * files must stay valid 2020-12 for Ajv (§3, PRO-01), so this rewrites an in-memory copy for the TS
- * generator only: draft-07-style `items`/`additionalItems` tuples, and no `title`.
+ * `title` keyword over the `name` argument passed to `compile()`, which fights our naming scheme.
+ * Both schema files must stay valid 2020-12 for Ajv (§3, PRO-01), so this rewrites an in-memory
+ * copy for the TS generator only: draft-07-style `items`/`additionalItems` tuples, and no `title`
+ * *keyword* — a `properties.title` field (the widget's actual title string) is a data field, not
+ * this keyword, and must survive.
  */
 function prepareForTsCompile(node: unknown): unknown {
   if (Array.isArray(node)) return node.map(prepareForTsCompile);
@@ -87,7 +94,18 @@ function prepareForTsCompile(node: unknown): unknown {
 
   const out: Record<string, unknown> = {};
   for (const [k, v] of Object.entries(obj)) {
-    if (k === 'title' || k === '$id') continue;
+    if (k === 'title' || k === '$id') continue; // schema-metadata title/$id — safe to drop here
+    if (k === 'properties' && v && typeof v === 'object') {
+      // Keys of a `properties` map are DATA FIELD NAMES, not schema keywords — a field
+      // legitimately named "title" (the widget's display title, common.schema.json) must not be
+      // stripped just because the string matches. Recurse into each field's own schema instead.
+      const properties: Record<string, unknown> = {};
+      for (const [fieldName, fieldSchema] of Object.entries(v as Record<string, unknown>)) {
+        properties[fieldName] = prepareForTsCompile(fieldSchema);
+      }
+      out[k] = properties;
+      continue;
+    }
     out[k] = prepareForTsCompile(v);
   }
   return out;
@@ -179,6 +197,80 @@ async function genAppToDevice(): Promise<string> {
   return [hi.trim(), c.trim(), ping.trim(), union].join('\n\n');
 }
 
+const SCHEMA_IDS = {
+  deviceToApp: 'https://schema.serialdash.dev/v1/device-to-app.schema.json',
+  appToDevice: 'https://schema.serialdash.dev/v1/app-to-device.schema.json',
+} as const;
+
+/**
+ * Pre-compiles the Ajv validators at build time (PRO-01: "Ajv, schemi compilati in build") rather
+ * than shipping the schema + Ajv's compiler to run `new Function()`-based codegen in the browser
+ * — that needs `unsafe-eval`, which the app's CSP (APP-NFR-05) deliberately does not grant.
+ *
+ * Ajv's ESM standalone output still emits a `require(...)` call for a couple of small runtime
+ * helpers (e.g. `ucs2length`, used by `maxLength`/`minLength`) even with `code.esm: true` — a
+ * known Ajv limitation. Turning those into `import` statements looks like the obvious fix, but
+ * isn't a safe one: these helper modules use the Babel/TypeScript `exports.default = fn` +
+ * `__esModule` convention, and reasonable-looking `import fn from '...'` fails at runtime with
+ * "fn is not a function" under both Node's native CJS interop and Vite's dependency
+ * pre-bundler — both wrap the whole CJS `exports` object as the default rather than unwrapping
+ * it, differently from each other, so no single import form is safe across environments (found by
+ * actually connecting to the simulator in a real browser, not just by `tsc`/`vitest` passing).
+ *
+ * The robust fix: since these helpers are tiny, pure, dependency-free functions, use Node's own
+ * `require()` here — which, unlike a browser/bundler import, always interops correctly — to load
+ * the real function, then inline its source directly into the generated file. No import, no
+ * interop ambiguity, and it stays in sync with whatever `ajv` version generated the code.
+ */
+async function genValidators(): Promise<string> {
+  const ajv = new Ajv2020({
+    code: { source: true, esm: true },
+    allErrors: true,
+    allowUnionTypes: true,
+  });
+
+  for (const kind of await widgetKinds()) {
+    ajv.addSchema(
+      JSON.parse(await readFile(path.join(WIDGETS_DIR, `${kind}.schema.json`), 'utf8')),
+    );
+  }
+  ajv.addSchema(JSON.parse(await readFile(path.join(WIDGETS_DIR, 'common.schema.json'), 'utf8')));
+  ajv.addSchema(
+    JSON.parse(await readFile(path.join(SCHEMA_DIR, 'device-to-app.schema.json'), 'utf8')),
+  );
+  ajv.addSchema(
+    JSON.parse(await readFile(path.join(SCHEMA_DIR, 'app-to-device.schema.json'), 'utf8')),
+  );
+
+  let code = standaloneCode(ajv, {
+    validateDeviceToApp: SCHEMA_IDS.deviceToApp,
+    validateAppToDevice: SCHEMA_IDS.appToDevice,
+  });
+
+  const requirePattern = /const (\w+) = require\("([^"]+)"\)\.default;/g;
+  code = code.replace(requirePattern, (_match, varName: string, importPath: string) => {
+    const mod = require(importPath) as { default?: unknown };
+    const fn = mod.default;
+    if (typeof fn !== 'function') {
+      throw new Error(`expected ${importPath}'s default export to be a function, got ${typeof fn}`);
+    }
+    return `const ${varName} = ${fn.toString()};`;
+  });
+
+  return code;
+}
+
+function genValidatorsTypes(): string {
+  return [
+    `import type { ValidateFunction } from 'ajv';`,
+    `import type { DeviceToAppMessage, AppToDeviceMessage } from './messages.js';`,
+    '',
+    'export declare const validateDeviceToApp: ValidateFunction<DeviceToAppMessage>;',
+    'export declare const validateAppToDevice: ValidateFunction<AppToDeviceMessage>;',
+    '',
+  ].join('\n');
+}
+
 /** Regenerates the DOC-02 generated block of docs/protocol/messages.md from the schema. */
 async function genMessagesDoc(): Promise<void> {
   const d2a = (await $RefParser.dereference(
@@ -245,6 +337,7 @@ async function main(): Promise<void> {
   const widgetsTs = await genWidgets();
   const deviceToAppTs = await genDeviceToApp();
   const appToDeviceTs = await genAppToDevice();
+  const validatorsJs = await genValidators();
 
   await writeFormatted(
     path.join(OUT_DIR, 'widgets.ts'),
@@ -257,16 +350,22 @@ async function main(): Promise<void> {
       '\n' +
       appToDeviceTs,
   );
+  await writeFormatted(path.join(OUT_DIR, 'validators.js'), validatorsJs);
+  await writeFormatted(
+    path.join(OUT_DIR, 'validators.d.ts'),
+    header('protocol/schema/** (Ajv standalone, PRO-01)') + genValidatorsTypes(),
+  );
+
   await writeFormatted(
     path.join(OUT_DIR, 'index.ts'),
     header('protocol/schema/**') +
-      `export * from './widgets.js';\nexport * from './messages.js';\n`,
+      `export * from './widgets.js';\nexport * from './messages.js';\nexport * from './validators.js';\n`,
   );
 
   await genMessagesDoc();
 
   console.log(
-    'gen-types: wrote app/src/protocol/generated/{widgets,messages,index}.ts and docs/protocol/messages.md',
+    'gen-types: wrote app/src/protocol/generated/{widgets,messages,validators,index}.* and docs/protocol/messages.md',
   );
 }
 

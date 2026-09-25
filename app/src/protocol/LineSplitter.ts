@@ -1,6 +1,6 @@
 // PRT-07 floor: the app must accept device→app lines of at least 16384 bytes; longer lines are
-// truncated and flagged. This splitter also applies that limit to plain console text, since a
-// runaway line would hurt UI performance regardless of whether it's a protocol message.
+// truncated and flagged. This limit applies uniformly to every line, protocol or plain text,
+// since a runaway line would hurt UI performance either way.
 const MAX_LINE_BYTES = 16 * 1024;
 
 export interface SplitLine {
@@ -24,14 +24,13 @@ function concatBytes(parts: Uint8Array[], total: number): Uint8Array {
  * byte `\n` (0x0A) *before* any UTF-8 decoding — continuation/lead bytes of a multi-byte
  * character are always ≥ 0x80 and can never be confused with it, so this can't split a character
  * in half even if a chunk boundary lands mid-sequence. A trailing `\r` is stripped at the byte
- * level (accepts `\r\n`). Keeping the raw bytes per line is also what makes the hex view
- * (APP-CSL-08) byte-accurate rather than a re-encoding of the decoded text.
+ * level (accepts `\r\n`). Keeping the raw bytes per line is also what makes the console's hex
+ * view (APP-CSL-08) byte-accurate rather than a re-encoding of the decoded text.
  *
- * This is deliberately not the protocol-aware `LineSplitter` (that module, and its QA-01 test
- * suite, arrive in M2 under `protocol/`) — it only implements the framing rules that already
- * apply to plain console text before any protocol parsing exists.
+ * Sits directly below `Parser` (QA-01): every line, whether it turns out to be a protocol message
+ * or plain text, passes through here first (SPEC.md §2.3 data-flow diagram).
  */
-export class ByteLineSplitter {
+export class LineSplitter {
   private readonly decoder = new TextDecoder('utf-8');
   private chunks: Uint8Array[] = [];
   private byteLength = 0;
