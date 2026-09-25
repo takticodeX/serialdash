@@ -1,0 +1,142 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/device-to-app.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SerialDash protocol v1 — device to app",
+  "description": "Validates the JSON payload of a device→app protocol line, i.e. everything after the leading `@` (SPEC.md §3.3). A line whose `t` is not one of these is a message type unknown to v1: PRT-05 requires the app to ignore it rather than reject it, so it is intentionally outside this schema's `oneOf`.",
+  "$defs": {
+    "channelValue": {
+      "description": "Forms a channel value may take (§3.3 `d`). anyOf, not oneOf: e.g. a 2-number array is a valid 'xy pair' and a valid 'array of numbers' at once — which one it means depends on the consuming widget, not on the JSON shape.",
+      "anyOf": [
+        { "type": "number" },
+        { "type": "boolean" },
+        { "type": "string" },
+        { "type": "null" },
+        {
+          "type": "array",
+          "prefixItems": [{ "type": "number" }, { "type": "number" }],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2,
+          "description": "[x, y] pair (xy, polar)."
+        },
+        {
+          "type": "array",
+          "items": { "type": "number" },
+          "description": "Array of numbers (heat, bar spectrum)."
+        },
+        {
+          "type": "object",
+          "additionalProperties": { "oneOf": [{ "type": "number" }, { "type": "string" }] },
+          "description": "label → number|string map (pie, bar, table)."
+        }
+      ]
+    },
+    "hi": {
+      "type": "object",
+      "properties": {
+        "t": { "const": "hi" },
+        "v": { "type": "integer", "minimum": 1 },
+        "name": { "type": "string", "maxLength": 32 },
+        "fw": { "type": "string", "maxLength": 16 },
+        "board": { "type": "string", "maxLength": 16 },
+        "rx": { "type": "integer", "exclusiveMinimum": 0 }
+      },
+      "required": ["t", "v", "name"]
+    },
+    "w": {
+      "description": "Widget declaration. The exact shape depends on `k` (SPEC.md §4); see /protocol/schema/widgets/*.schema.json.",
+      "oneOf": [
+        { "$ref": "widgets/line.schema.json" },
+        { "$ref": "widgets/value.schema.json" },
+        { "$ref": "widgets/gauge.schema.json" },
+        { "$ref": "widgets/led.schema.json" },
+        { "$ref": "widgets/log.schema.json" },
+        { "$ref": "widgets/xy.schema.json" },
+        { "$ref": "widgets/bar.schema.json" },
+        { "$ref": "widgets/pie.schema.json" },
+        { "$ref": "widgets/level.schema.json" },
+        { "$ref": "widgets/table.schema.json" },
+        { "$ref": "widgets/heat.schema.json" },
+        { "$ref": "widgets/hist.schema.json" },
+        { "$ref": "widgets/polar.schema.json" },
+        { "$ref": "widgets/compass.schema.json" },
+        { "$ref": "widgets/attitude.schema.json" },
+        { "$ref": "widgets/button.schema.json" },
+        { "$ref": "widgets/switch.schema.json" },
+        { "$ref": "widgets/slider.schema.json" },
+        { "$ref": "widgets/number.schema.json" },
+        { "$ref": "widgets/select.schema.json" },
+        { "$ref": "widgets/text.schema.json" },
+        { "$ref": "widgets/color.schema.json" }
+      ]
+    },
+    "u": {
+      "description": "Partial update: shallow-merges the given fields into the existing widget. `id` and `k` are not modifiable.",
+      "type": "object",
+      "properties": {
+        "t": { "const": "u" },
+        "id": { "$ref": "widgets/common.schema.json#/$defs/identifier" }
+      },
+      "not": { "properties": { "k": {} }, "required": ["k"] },
+      "required": ["t", "id"]
+    },
+    "x": {
+      "type": "object",
+      "properties": {
+        "t": { "const": "x" },
+        "id": { "$ref": "widgets/common.schema.json#/$defs/identifier" }
+      },
+      "required": ["t"]
+    },
+    "d": {
+      "type": "object",
+      "properties": {
+        "t": { "const": "d" },
+        "d": {
+          "type": "object",
+          "additionalProperties": { "$ref": "#/$defs/channelValue" }
+        },
+        "ts": { "type": "integer", "minimum": 0 }
+      },
+      "required": ["t", "d"]
+    },
+    "e": {
+      "type": "object",
+      "properties": {
+        "t": { "const": "e" },
+        "lvl": { "enum": ["debug", "info", "warn", "err"] },
+        "msg": { "type": "string" },
+        "src": { "type": "string", "maxLength": 16 }
+      },
+      "required": ["t", "msg"]
+    },
+    "ack": {
+      "type": "object",
+      "properties": {
+        "t": { "const": "ack" },
+        "r": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "ok": { "type": "boolean" },
+        "err": { "type": "string", "maxLength": 48 }
+      },
+      "required": ["t", "r", "ok"]
+    },
+    "pong": {
+      "type": "object",
+      "properties": {
+        "t": { "const": "pong" },
+        "r": { "type": "integer", "minimum": 1, "maximum": 65535 }
+      },
+      "required": ["t", "r"]
+    }
+  },
+  "oneOf": [
+    { "$ref": "#/$defs/hi" },
+    { "$ref": "#/$defs/w" },
+    { "$ref": "#/$defs/u" },
+    { "$ref": "#/$defs/x" },
+    { "$ref": "#/$defs/d" },
+    { "$ref": "#/$defs/e" },
+    { "$ref": "#/$defs/ack" },
+    { "$ref": "#/$defs/pong" }
+  ]
+}

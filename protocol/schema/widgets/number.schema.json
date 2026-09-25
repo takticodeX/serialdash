@@ -1,0 +1,30 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/number.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: number (control)",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    },
+    {
+      "$ref": "common.schema.json#/$defs/controlExtras"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "number"
+    },
+    "min": {
+      "type": "number"
+    },
+    "max": {
+      "type": "number"
+    },
+    "step": {
+      "type": "number",
+      "exclusiveMinimum": 0
+    }
+  },
+  "required": ["k"]
+}

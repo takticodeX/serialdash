@@ -1,0 +1,44 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/select.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: select (control)",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    },
+    {
+      "$ref": "common.schema.json#/$defs/controlExtras"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "select"
+    },
+    "opts": {
+      "type": "array",
+      "items": {
+        "oneOf": [
+          {
+            "type": "string"
+          },
+          {
+            "type": "array",
+            "prefixItems": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ],
+            "items": false,
+            "minItems": 2,
+            "maxItems": 2
+          }
+        ]
+      }
+    }
+  },
+  "required": ["k"]
+}

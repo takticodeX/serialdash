@@ -1,0 +1,77 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/common.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SerialDash widget — shared definitions",
+  "description": "Shared definitions reused by every widget schema (SPEC.md §3.2, §4). Not a message on its own.",
+  "$defs": {
+    "identifier": {
+      "type": "string",
+      "pattern": "^[A-Za-z_][A-Za-z0-9_.-]{0,15}$",
+      "description": "Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12)."
+    },
+    "color": {
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "description": "Color as #RRGGBB."
+    },
+    "zone": {
+      "type": "array",
+      "description": "[from, to, color] range used by gauge/level zones.",
+      "prefixItems": [{ "type": "number" }, { "type": "number" }, { "$ref": "#/$defs/color" }],
+      "items": false,
+      "minItems": 3,
+      "maxItems": 3
+    },
+    "channels": {
+      "description": "Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.",
+      "oneOf": [
+        { "$ref": "#/$defs/identifier" },
+        { "type": "array", "items": { "$ref": "#/$defs/identifier" }, "minItems": 1 }
+      ]
+    },
+    "widgetBase": {
+      "description": "Properties common to every widget declared with a `w` message (SPEC.md §3.3).",
+      "type": "object",
+      "properties": {
+        "t": { "const": "w" },
+        "id": { "$ref": "#/$defs/identifier" },
+        "k": { "type": "string" },
+        "title": { "type": "string", "maxLength": 48 },
+        "ch": { "$ref": "#/$defs/channels" },
+        "grp": { "type": "string", "maxLength": 24 },
+        "ord": { "type": "integer" },
+        "size": {
+          "type": "array",
+          "prefixItems": [
+            { "type": "integer", "minimum": 1, "maximum": 12 },
+            { "type": "integer", "minimum": 1 }
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "unit": { "type": "string", "maxLength": 8 },
+        "dec": { "type": "integer", "minimum": 0, "maximum": 6 },
+        "labels": { "type": "array", "items": { "type": "string" } },
+        "colors": { "type": "array", "items": { "$ref": "#/$defs/color" } },
+        "stale": {
+          "type": "number",
+          "exclusiveMinimum": 0,
+          "description": "Seconds before the widget is shown as stale (default 5, §4.1)."
+        }
+      },
+      "required": ["t", "id", "k"]
+    },
+    "controlExtras": {
+      "description": "Properties added to controls on top of widgetBase (§4.3). `id` doubles as the state channel id (PRT-13), so `ch` is not used.",
+      "type": "object",
+      "properties": {
+        "val": {
+          "description": "Optional initial/confirmed value; type depends on the control (§3.6.1)."
+        },
+        "dis": { "type": "boolean" },
+        "confirm": { "type": "string" }
+      }
+    }
+  }
+}

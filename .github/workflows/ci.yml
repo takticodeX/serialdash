@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  # M0 scope only (SPEC.md §11, §9.4): lint, schema/type generation alignment, protocol test
+  # vectors, and the docs site build. Unit/e2e tests for the app, native library tests, example
+  # compilation, and the size report are wired in as the corresponding code lands (M2, M3, M6).
+  base:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Lint (ESLint + Prettier)
+        run: npm run lint
+
+      - name: Typecheck generated protocol types
+        run: npx tsc -p app/tsconfig.json
+
+      - name: Typecheck tools
+        run: |
+          npx tsc -p tools/gen-types/tsconfig.json
+          npx tsc -p tools/validate-vectors/tsconfig.json
+
+      - name: Protocol test vectors validate against the schema (PRO-03)
+        run: npm test
+
+      - name: Generated types/docs stay aligned with the schema (PRO-02, DOC-03)
+        run: npm run gen:check
+
+      - name: Build documentation site
+        run: npm run docs:build

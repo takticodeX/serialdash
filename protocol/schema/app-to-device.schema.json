@@ -1,0 +1,45 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/app-to-device.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "SerialDash protocol v1 — app to device",
+  "description": "Validates the JSON payload of an app→device protocol line (SPEC.md §3.4). Messages MUST be flat objects (no nested object/array values) so a microcontroller can use a minimal streaming parser. PRT-40 additionally requires field order t, r, id, v on the wire; JSON Schema validates structure, not key order, so that rule is enforced by the encoder (app/src/protocol), not by this schema.",
+  "$defs": {
+    "flatExtra": {
+      "description": "Unknown fields in a known message MUST be ignored (PRT-06), so they remain allowed here — but every app→device message MUST be a flat object (§3.4), so an unknown field may not itself be an object or array.",
+      "not": { "type": ["object", "array"] }
+    },
+    "hi": {
+      "type": "object",
+      "properties": {
+        "t": { "const": "hi" },
+        "v": { "type": "integer", "const": 1 }
+      },
+      "required": ["t", "v"],
+      "additionalProperties": { "$ref": "#/$defs/flatExtra" }
+    },
+    "c": {
+      "type": "object",
+      "properties": {
+        "t": { "const": "c" },
+        "r": { "type": "integer", "minimum": 1, "maximum": 65535 },
+        "id": { "$ref": "widgets/common.schema.json#/$defs/identifier" },
+        "v": {
+          "description": "Type depends on the control (§4.3): number, boolean or string.",
+          "oneOf": [{ "type": "number" }, { "type": "boolean" }, { "type": "string" }]
+        }
+      },
+      "required": ["t", "r", "id", "v"],
+      "additionalProperties": { "$ref": "#/$defs/flatExtra" }
+    },
+    "ping": {
+      "type": "object",
+      "properties": {
+        "t": { "const": "ping" },
+        "r": { "type": "integer", "minimum": 1, "maximum": 65535 }
+      },
+      "required": ["t", "r"],
+      "additionalProperties": { "$ref": "#/$defs/flatExtra" }
+    }
+  },
+  "oneOf": [{ "$ref": "#/$defs/hi" }, { "$ref": "#/$defs/c" }, { "$ref": "#/$defs/ping" }]
+}

@@ -1,0 +1,37 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/heat.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: heat",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "heat"
+    },
+    "rows": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "cols": {
+      "type": "integer",
+      "exclusiveMinimum": 0
+    },
+    "min": {
+      "type": "number"
+    },
+    "max": {
+      "type": "number"
+    },
+    "palette": {
+      "enum": ["thermal", "viridis", "gray"]
+    },
+    "interp": {
+      "type": "boolean"
+    }
+  },
+  "required": ["k", "rows", "cols"]
+}

@@ -1,0 +1,41 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/led.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: led",
+  "type": "object",
+  "description": "Either `on`/`off` colors (boolean values), or `states` mapping a raw value to [label, color].",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "led"
+    },
+    "on": {
+      "$ref": "common.schema.json#/$defs/color"
+    },
+    "off": {
+      "$ref": "common.schema.json#/$defs/color"
+    },
+    "states": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "prefixItems": [
+          {
+            "type": "string"
+          },
+          {
+            "$ref": "common.schema.json#/$defs/color"
+          }
+        ],
+        "items": false,
+        "minItems": 2,
+        "maxItems": 2
+      }
+    }
+  },
+  "required": ["k"]
+}

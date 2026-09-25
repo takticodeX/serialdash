@@ -1,0 +1,26 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/color.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: color (control)",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    },
+    {
+      "$ref": "common.schema.json#/$defs/controlExtras"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "color"
+    },
+    "swatches": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/color"
+      }
+    }
+  },
+  "required": ["k"]
+}

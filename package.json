@@ -1,0 +1,37 @@
+{
+  "name": "serialdash",
+  "private": true,
+  "version": "0.0.0",
+  "description": "SerialDash monorepo: PWA serial monitor/dashboard, protocol, Arduino library, docs",
+  "license": "MIT",
+  "type": "module",
+  "workspaces": [
+    "tools/*",
+    "app",
+    "docs"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "install:all": "npm install",
+    "gen": "npm run gen -w tools/gen-types",
+    "gen:check": "npm run gen && git diff --exit-code -- app/src/protocol/generated docs/protocol/messages.md",
+    "lint": "eslint . && prettier --check .",
+    "format": "prettier --write .",
+    "test": "npm run test -w tools/validate-vectors",
+    "dev": "npm run dev -w app --if-present || echo 'app scaffold arrives in M1 (see SPEC.md §11)'",
+    "e2e": "npm run e2e -w app --if-present || echo 'e2e arrives in M2 (see SPEC.md §11)'",
+    "docs:dev": "npm run docs:dev -w docs",
+    "docs:build": "npm run docs:build -w docs",
+    "docs:screenshots": "npm run docs:screenshots -w docs --if-present || echo 'docs:screenshots arrives in M7 (see SPEC.md §11)'",
+    "lib:compile": "echo 'lib:compile (arduino-cli) arrives in M3 (see SPEC.md §11)'"
+  },
+  "devDependencies": {
+    "eslint": "^9.13.0",
+    "@eslint/js": "^9.13.0",
+    "typescript-eslint": "^8.15.0",
+    "prettier": "^3.3.3",
+    "typescript": "^5.6.3"
+  }
+}

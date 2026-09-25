@@ -1,0 +1,10 @@
+{"name":"hi-request","dir":"a2d","line":"@{\"t\":\"hi\",\"v\":1}","valid":true,"expect":{"t":"hi","v":1}}
+{"name":"c-set-control","dir":"a2d","line":"@{\"t\":\"c\",\"r\":1,\"id\":\"fan\",\"v\":true}","valid":true,"expect":{"t":"c","r":1,"id":"fan","v":true}}
+{"name":"c-numeric-value","dir":"a2d","line":"@{\"t\":\"c\",\"r\":17,\"id\":\"pwm\",\"v\":128}","valid":true,"expect":{"t":"c","r":17,"id":"pwm","v":128}}
+{"name":"c-string-value","dir":"a2d","line":"@{\"t\":\"c\",\"r\":2,\"id\":\"mode\",\"v\":\"auto\"}","valid":true,"expect":{"t":"c","r":2,"id":"mode","v":"auto"}}
+{"name":"c-nested-value-not-flat","dir":"a2d","line":"@{\"t\":\"c\",\"r\":3,\"id\":\"pos\",\"v\":{\"x\":1,\"y\":2}}","valid":false,"expect":null,"error":"§3.4: app→device messages must be flat objects; v may not be a nested object"}
+{"name":"c-r-out-of-range","dir":"a2d","line":"@{\"t\":\"c\",\"r\":0,\"id\":\"fan\",\"v\":true}","valid":false,"expect":null,"error":"PRT-41: r is an integer in 1..65535"}
+{"name":"ping","dir":"a2d","line":"@{\"t\":\"ping\",\"r\":5}","valid":true,"expect":{"t":"ping","r":5}}
+{"name":"unknown-scalar-field-ignored","dir":"a2d","line":"@{\"t\":\"ping\",\"r\":5,\"debug\":1}","valid":true,"expect":{"t":"ping","r":5,"debug":1},"note":"PRT-06: unknown scalar fields are ignored by the minimal streaming parser, not an error"}
+{"name":"invalid-id-bad-character","dir":"a2d","line":"@{\"t\":\"c\",\"r\":4,\"id\":\"pw m\",\"v\":1}","valid":false,"expect":null,"error":"PRT-11: id contains a space, which is outside the allowed character set"}
+{"name":"malformed-json-unterminated-string","dir":"a2d","line":"@{\"t\":\"c\",\"r\":1,\"id\":\"fan\",\"v\":\"auto}","valid":false,"expect":null,"error":"malformed JSON: unterminated string"}

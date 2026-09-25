@@ -1,0 +1,23 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/table.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: table",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "table"
+    },
+    "cols": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "required": ["k"]
+}

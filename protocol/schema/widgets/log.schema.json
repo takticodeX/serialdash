@@ -1,0 +1,33 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/log.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: log",
+  "type": "object",
+  "description": "Displays `e` events. Does not use `ch`.",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "log"
+    },
+    "lvl": {
+      "enum": ["debug", "info", "warn", "err"]
+    },
+    "src": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 16
+      }
+    },
+    "max": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Max rows kept. Default 500."
+    }
+  },
+  "required": ["k"]
+}

@@ -1,0 +1,27 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/switch.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: switch (control)",
+  "type": "object",
+  "description": "Library builder method is `toggle()` because `switch` is a reserved C++ keyword (LIB-TX-01); the wire `k` stays \"switch\".",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    },
+    {
+      "$ref": "common.schema.json#/$defs/controlExtras"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "switch"
+    },
+    "on": {
+      "type": "string"
+    },
+    "off": {
+      "type": "string"
+    }
+  },
+  "required": ["k"]
+}

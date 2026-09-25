@@ -1,0 +1,32 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/level.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: level",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "level"
+    },
+    "min": {
+      "type": "number"
+    },
+    "max": {
+      "type": "number"
+    },
+    "vert": {
+      "type": "boolean"
+    },
+    "zones": {
+      "type": "array",
+      "items": {
+        "$ref": "common.schema.json#/$defs/zone"
+      }
+    }
+  },
+  "required": ["k"]
+}

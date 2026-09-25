@@ -1,0 +1,31 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/polar.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: polar",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "polar"
+    },
+    "rmax": {
+      "type": "number"
+    },
+    "amin": {
+      "type": "number",
+      "description": "Sector start in degrees. Default 0."
+    },
+    "amax": {
+      "type": "number",
+      "description": "Sector end in degrees. Default 360."
+    },
+    "sweep": {
+      "type": "boolean"
+    }
+  },
+  "required": ["k"]
+}

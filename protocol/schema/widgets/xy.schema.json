@@ -1,0 +1,43 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/xy.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: xy",
+  "type": "object",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "xy"
+    },
+    "xmin": {
+      "type": "number"
+    },
+    "xmax": {
+      "type": "number"
+    },
+    "ymin": {
+      "type": "number"
+    },
+    "ymax": {
+      "type": "number"
+    },
+    "trail": {
+      "type": "integer",
+      "exclusiveMinimum": 0,
+      "description": "Points kept. Default 500."
+    },
+    "mode": {
+      "enum": ["points", "lines"]
+    },
+    "xlabel": {
+      "type": "string"
+    },
+    "ylabel": {
+      "type": "string"
+    }
+  },
+  "required": ["k"]
+}

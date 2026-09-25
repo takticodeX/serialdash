@@ -1,0 +1,18 @@
+{
+  "$id": "https://schema.serialdash.dev/v1/widgets/attitude.schema.json",
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Widget: attitude",
+  "type": "object",
+  "description": "Artificial horizon. Value is a [pitch, roll] pair in degrees. No specific properties.",
+  "allOf": [
+    {
+      "$ref": "common.schema.json#/$defs/widgetBase"
+    }
+  ],
+  "properties": {
+    "k": {
+      "const": "attitude"
+    }
+  },
+  "required": ["k"]
+}
