@@ -133,10 +133,14 @@ export class WebSerialTransport implements Transport {
     this.readLoopAbort = false;
     if (!this.port.readable) return;
     this.reader = this.port.readable.getReader();
+    let closedCleanly = false;
     try {
       for (;;) {
         const { value, done } = await this.reader.read();
-        if (done) break;
+        if (done) {
+          closedCleanly = true;
+          break;
+        }
         if (value) for (const listener of this.dataListeners) listener(value);
       }
     } catch (err) {
@@ -148,6 +152,14 @@ export class WebSerialTransport implements Transport {
     } finally {
       this.reader?.releaseLock();
       this.reader = undefined;
+    }
+    // The readable stream can end without throwing — e.g. the OS/driver briefly re-enumerating
+    // the port (common with CP2102/native-USB boards) closes it "cleanly" from the Streams API's
+    // point of view. Without this, the transport silently stops delivering data while still
+    // reporting 'connected', which looks like the app hung rather than lost the device.
+    if (closedCleanly && !this.readLoopAbort) {
+      this.setState('disconnected');
+      for (const listener of this.disconnectListeners) listener('device');
     }
   }
 
