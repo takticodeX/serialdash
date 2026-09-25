@@ -13,21 +13,21 @@ Node ≥ 20 is required (see `engines` in `package.json`). The Arduino library (
 
 ## Commands
 
-| Command                                | Effect                                                                                      |
-| -------------------------------------- | ------------------------------------------------------------------------------------------- |
-| `npm install`                          | Installs monorepo dependencies                                                              |
-| `npm run gen`                          | Generates TS types and documentation from `/protocol/schema`                                |
-| `npm run gen:check`                    | Regenerates and fails if the output differs from what's committed (CI alignment check)      |
-| `npm run dev`                          | Starts the webapp in dev mode (from M1)                                                     |
-| `npm run lint`                         | Lints app, tools, and docs (ESLint + Prettier)                                              |
-| `npm run format`                       | Applies Prettier formatting                                                                 |
-| `npm test`                             | Validates `/protocol/test-vectors` against the schema (unit tests for the app land from M2) |
-| `npm run e2e`                          | End-to-end tests against the simulator (from M2)                                            |
-| `npm run docs:dev`                     | Documentation site in dev mode                                                              |
-| `npm run docs:build`                   | Builds the documentation site                                                               |
-| `npm run docs:screenshots`             | Regenerates docs screenshots/GIFs (from M7)                                                 |
-| `pio test -e native -d lib/SerialDash` | Native tests for the Arduino library (from M3)                                              |
-| `npm run lib:compile`                  | Compiles every library example for every supported board (from M3)                          |
+| Command                                | Effect                                                                                 |
+| -------------------------------------- | -------------------------------------------------------------------------------------- |
+| `npm install`                          | Installs monorepo dependencies                                                         |
+| `npm run gen`                          | Generates TS types and documentation from `/protocol/schema`                           |
+| `npm run gen:check`                    | Regenerates and fails if the output differs from what's committed (CI alignment check) |
+| `npm run dev`                          | Starts the webapp in dev mode                                                          |
+| `npm run lint`                         | Lints app, tools, and docs (ESLint + Prettier)                                         |
+| `npm run format`                       | Applies Prettier formatting                                                            |
+| `npm test`                             | Validates `/protocol/test-vectors` against the schema, and runs the app's unit tests   |
+| `npm run e2e`                          | End-to-end tests against the simulator (from M2)                                       |
+| `npm run docs:dev`                     | Documentation site in dev mode                                                         |
+| `npm run docs:build`                   | Builds the documentation site                                                          |
+| `npm run docs:screenshots`             | Regenerates docs screenshots/GIFs (from M7)                                            |
+| `pio test -e native -d lib/SerialDash` | Native tests for the Arduino library (from M3)                                         |
+| `npm run lib:compile`                  | Compiles every library example for every supported board (from M3)                     |
 
 This table is kept in sync with the one in `CLAUDE.md`.
 

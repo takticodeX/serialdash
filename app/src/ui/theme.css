@@ -1,0 +1,210 @@
+/* APP-GEN-05 (theme), APP-GEN-06 (responsive down to 1024px), APP-GEN-07 (contrast, focus). */
+
+:root {
+  --color-bg: #f7f8fa;
+  --color-bg-elevated: #ffffff;
+  --color-text: #14161a;
+  --color-text-muted: #565b66;
+  --color-border: #d6dae1;
+  --color-accent: #2f6fed;
+  --color-accent-contrast: #ffffff;
+  --color-danger: #c22b2b;
+  --color-warning: #9a6400;
+  --color-success: #1a7f4b;
+  --focus-ring: #2f6fed;
+  --font-mono:
+    ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  --font-sans: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --color-bg: #14161a;
+    --color-bg-elevated: #1c1f26;
+    --color-text: #eef0f4;
+    --color-text-muted: #9aa1ad;
+    --color-border: #333844;
+    --color-accent: #6fa0ff;
+    --color-accent-contrast: #0b1020;
+    --color-danger: #ff6b6b;
+    --color-warning: #f0b429;
+    --color-success: #4ade80;
+    --focus-ring: #6fa0ff;
+  }
+}
+
+:root[data-theme='dark'] {
+  --color-bg: #14161a;
+  --color-bg-elevated: #1c1f26;
+  --color-text: #eef0f4;
+  --color-text-muted: #9aa1ad;
+  --color-border: #333844;
+  --color-accent: #6fa0ff;
+  --color-accent-contrast: #0b1020;
+  --color-danger: #ff6b6b;
+  --color-warning: #f0b429;
+  --color-success: #4ade80;
+  --focus-ring: #6fa0ff;
+}
+
+:root[data-theme='light'] {
+  --color-bg: #f7f8fa;
+  --color-bg-elevated: #ffffff;
+  --color-text: #14161a;
+  --color-text-muted: #565b66;
+  --color-border: #d6dae1;
+  --color-accent: #2f6fed;
+  --color-accent-contrast: #ffffff;
+  --color-danger: #c22b2b;
+  --color-warning: #9a6400;
+  --color-success: #1a7f4b;
+  --focus-ring: #2f6fed;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+}
+
+button,
+input,
+select {
+  font: inherit;
+  color: var(--color-text);
+  background-color: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 6px;
+  padding: 5px 8px;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+  opacity: 0.6;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}
+
+.app-shell {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.app-main {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  gap: 0;
+}
+
+@media (max-width: 1024px) {
+  .app-main {
+    flex-direction: column;
+  }
+}
+
+.panel {
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/*
+ * Console: a fixed dark terminal palette regardless of the app theme (APP-CSL-01, APP-CSL-06).
+ * Real terminal emulators do the same (e.g. VS Code's integrated terminal) — it guarantees the
+ * 16-color ANSI palette stays legible without per-theme tuning, and matches what device output
+ * looks like on every other serial monitor.
+ */
+.console {
+  --console-bg: #0d1117;
+  --console-fg: #d7dce2;
+  --console-muted: #7d8590;
+  --console-accent: #58a6ff;
+  --ansi-black: #484f58;
+  --ansi-red: #ff7b72;
+  --ansi-green: #3fb950;
+  --ansi-yellow: #d29922;
+  --ansi-blue: #58a6ff;
+  --ansi-magenta: #bc8cff;
+  --ansi-cyan: #39c5cf;
+  --ansi-white: #b1bac4;
+  --ansi-brightBlack: #6e7681;
+  --ansi-brightRed: #ffa198;
+  --ansi-brightGreen: #56d364;
+  --ansi-brightYellow: #e3b341;
+  --ansi-brightBlue: #79c0ff;
+  --ansi-brightMagenta: #d2a8ff;
+  --ansi-brightCyan: #56d4dd;
+  --ansi-brightWhite: #f0f6fc;
+
+  background: var(--console-bg);
+  color: var(--console-fg);
+  font-family: var(--font-mono);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.console-line {
+  display: flex;
+  gap: 0.75em;
+  padding: 0 0.75em;
+  white-space: pre;
+}
+
+.console-line[data-wrap='true'] {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.console-line:hover {
+  background: rgb(255 255 255 / 6%);
+}
+
+.console-line-ts {
+  color: var(--console-muted);
+  flex: none;
+  user-select: none;
+}
+
+.console-line-dir {
+  flex: none;
+  color: var(--console-accent);
+  user-select: none;
+}
+
+.console-mark {
+  background: var(--console-accent);
+  color: var(--console-bg);
+  border-radius: 2px;
+}

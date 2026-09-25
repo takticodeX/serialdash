@@ -6,9 +6,10 @@ on:
     branches: [main]
 
 jobs:
-  # M0 scope only (SPEC.md §11, §9.4): lint, schema/type generation alignment, protocol test
-  # vectors, and the docs site build. Unit/e2e tests for the app, native library tests, example
-  # compilation, and the size report are wired in as the corresponding code lands (M2, M3, M6).
+  # M0+M1 scope (SPEC.md §11, §9.4): lint, schema/type generation alignment, protocol test
+  # vectors, app unit tests + build, and the docs site build. E2e against the simulator, native
+  # library tests, example compilation, and the size report are wired in as that code lands
+  # (M2, M3, M6).
   base:
     runs-on: ubuntu-latest
     steps:
@@ -24,7 +25,7 @@ jobs:
       - name: Lint (ESLint + Prettier)
         run: npm run lint
 
-      - name: Typecheck generated protocol types
+      - name: Typecheck app
         run: npx tsc -p app/tsconfig.json
 
       - name: Typecheck tools
@@ -32,11 +33,14 @@ jobs:
           npx tsc -p tools/gen-types/tsconfig.json
           npx tsc -p tools/validate-vectors/tsconfig.json
 
-      - name: Protocol test vectors validate against the schema (PRO-03)
+      - name: Unit tests (protocol test vectors + app)
         run: npm test
 
       - name: Generated types/docs stay aligned with the schema (PRO-02, DOC-03)
         run: npm run gen:check
+
+      - name: Build app
+        run: npm run build -w app
 
       - name: Build documentation site
         run: npm run docs:build

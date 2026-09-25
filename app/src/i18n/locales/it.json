@@ -1,0 +1,93 @@
+{
+  "common": {
+    "appName": "SerialDash",
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "close": "Chiudi"
+  },
+  "connect": {
+    "title": "Connetti un dispositivo",
+    "connectButton": "Connetti",
+    "newPort": "Seleziona una nuova porta…",
+    "knownPorts": "Porte usate in precedenza",
+    "noKnownPorts": "Nessuna porta usata in precedenza.",
+    "baudRate": "Baud rate",
+    "baudRateCustom": "Personalizzato…",
+    "advanced": "Impostazioni avanzate",
+    "dataBits": "Data bits",
+    "parity": "Parità",
+    "parity_none": "Nessuna",
+    "parity_even": "Pari",
+    "parity_odd": "Dispari",
+    "stopBits": "Stop bits",
+    "flowControl": "Controllo di flusso",
+    "flowControl_none": "Nessuno",
+    "flowControl_hardware": "Hardware",
+    "resetOnConnect": "Reset della scheda alla connessione",
+    "resetOnConnectHint": "Stesso comportamento dell'Arduino IDE. Disattiva se la scheda si resetta in un modo che ti fa perdere le prime righe importanti.",
+    "connecting": "Connessione in corso…",
+    "portBusy": "La porta è usata da un altro programma. Chiudi il Monitor Seriale dell'Arduino IDE (o qualsiasi altro programma che la usa) e riprova.",
+    "connectionFailed": "Connessione fallita: {{message}}",
+    "disconnectToFlash": "Disconnetti per caricare lo sketch",
+    "disconnectToFlashHint": "Libera la porta così l'Arduino IDE (o un altro strumento di caricamento) può usarla. Si riconnette da sola quando la scheda riappare, se la riconnessione automatica è attiva.",
+    "autoReconnect": "Riconnetti automaticamente",
+    "tryDemo": "Prova senza hardware"
+  },
+  "statusBar": {
+    "disconnected": "Disconnesso",
+    "connecting": "Connessione in corso…",
+    "connected": "Connesso",
+    "disconnecting": "Disconnessione in corso…",
+    "port": "Porta",
+    "baud": "baud",
+    "disconnect": "Disconnetti"
+  },
+  "console": {
+    "title": "Console",
+    "sendPlaceholder": "Invia una riga al dispositivo…",
+    "send": "Invia",
+    "eol": "Fine riga",
+    "eol_none": "Nessuno",
+    "eol_lf": "LF",
+    "eol_cr": "CR",
+    "eol_crlf": "CRLF",
+    "autoscrollPaused": "Scorrimento automatico sospeso",
+    "newLines": "↓ Nuove righe",
+    "timestamps": "Orario",
+    "wrap": "A capo automatico",
+    "hexView": "Vista esadecimale",
+    "clear": "Pulisci",
+    "copyAll": "Copia tutto",
+    "saveAsTxt": "Salva come .txt",
+    "search": "Cerca…",
+    "errorsOnly": "Solo errori",
+    "empty": "Nessun dato ricevuto."
+  },
+  "settings": {
+    "title": "Impostazioni",
+    "language": "Lingua",
+    "theme": "Tema",
+    "theme_light": "Chiaro",
+    "theme_dark": "Scuro",
+    "theme_auto": "Automatico (segue il sistema)",
+    "autoReconnect": "Riconnetti automaticamente quando un dispositivo noto riappare",
+    "consoleLineLimit": "Limite righe console",
+    "clearLocalData": "Cancella tutti i dati locali",
+    "clearLocalDataConfirm": "Questo rimuove tutte le impostazioni, i permessi porta memorizzati e la cronologia salvati in questo browser. L'operazione non è reversibile. Continuare?",
+    "about": "Informazioni",
+    "aboutAppVersion": "Versione app",
+    "aboutProtocolVersion": "Versione protocollo"
+  },
+  "unsupported": {
+    "title": "Questo browser non può parlare con una porta seriale",
+    "body": "SerialDash richiede la Web Serial API per collegarsi a un dispositivo reale, e il tuo browser attuale non la supporta.",
+    "browserList": "Browser supportati: Chrome, Edge, Opera e Brave, su Windows, macOS, Linux o ChromeOS.",
+    "stillUseful": "Puoi comunque esplorare SerialDash senza una connessione seriale:",
+    "simulatorComingSoon": "Prova il simulatore (disponibile in una milestone futura)",
+    "replayComingSoon": "Riproduci una registrazione (disponibile in una milestone futura)"
+  },
+  "pwa": {
+    "updateAvailable": "Nuova versione disponibile",
+    "reload": "Ricarica"
+  }
+}

@@ -1,0 +1,93 @@
+{
+  "common": {
+    "appName": "SerialDash",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "close": "Close"
+  },
+  "connect": {
+    "title": "Connect to a device",
+    "connectButton": "Connect",
+    "newPort": "Select a new port…",
+    "knownPorts": "Previously used ports",
+    "noKnownPorts": "No previously used ports yet.",
+    "baudRate": "Baud rate",
+    "baudRateCustom": "Custom…",
+    "advanced": "Advanced settings",
+    "dataBits": "Data bits",
+    "parity": "Parity",
+    "parity_none": "None",
+    "parity_even": "Even",
+    "parity_odd": "Odd",
+    "stopBits": "Stop bits",
+    "flowControl": "Flow control",
+    "flowControl_none": "None",
+    "flowControl_hardware": "Hardware",
+    "resetOnConnect": "Reset the board on connect",
+    "resetOnConnectHint": "Same behavior as the Arduino IDE. Turn off if your board resets in a way that loses the first lines you care about.",
+    "connecting": "Connecting…",
+    "portBusy": "The port is in use by another program. Close the Arduino IDE Serial Monitor (or any other program using it) and try again.",
+    "connectionFailed": "Couldn't connect: {{message}}",
+    "disconnectToFlash": "Disconnect to upload a sketch",
+    "disconnectToFlashHint": "Frees the port so the Arduino IDE (or another uploader) can use it. Reconnects automatically once the board reappears, if auto-reconnect is on.",
+    "autoReconnect": "Reconnect automatically",
+    "tryDemo": "Try without hardware"
+  },
+  "statusBar": {
+    "disconnected": "Disconnected",
+    "connecting": "Connecting…",
+    "connected": "Connected",
+    "disconnecting": "Disconnecting…",
+    "port": "Port",
+    "baud": "baud",
+    "disconnect": "Disconnect"
+  },
+  "console": {
+    "title": "Console",
+    "sendPlaceholder": "Send a line to the device…",
+    "send": "Send",
+    "eol": "Line ending",
+    "eol_none": "None",
+    "eol_lf": "LF",
+    "eol_cr": "CR",
+    "eol_crlf": "CRLF",
+    "autoscrollPaused": "Autoscroll paused",
+    "newLines": "↓ New lines",
+    "timestamps": "Timestamps",
+    "wrap": "Wrap long lines",
+    "hexView": "Hex view",
+    "clear": "Clear",
+    "copyAll": "Copy all",
+    "saveAsTxt": "Save as .txt",
+    "search": "Search…",
+    "errorsOnly": "Errors only",
+    "empty": "Nothing received yet."
+  },
+  "settings": {
+    "title": "Settings",
+    "language": "Language",
+    "theme": "Theme",
+    "theme_light": "Light",
+    "theme_dark": "Dark",
+    "theme_auto": "Automatic (follow system)",
+    "autoReconnect": "Reconnect automatically when a known device reappears",
+    "consoleLineLimit": "Console line limit",
+    "clearLocalData": "Clear all local data",
+    "clearLocalDataConfirm": "This removes all locally stored settings, port permissions memory, and history from this browser. This cannot be undone. Continue?",
+    "about": "About",
+    "aboutAppVersion": "App version",
+    "aboutProtocolVersion": "Protocol version"
+  },
+  "unsupported": {
+    "title": "This browser can't talk to a serial port",
+    "body": "SerialDash needs the Web Serial API to connect to real hardware, and your current browser doesn't support it.",
+    "browserList": "Supported browsers: Chrome, Edge, Opera, and Brave, on Windows, macOS, Linux, or ChromeOS.",
+    "stillUseful": "You can still explore SerialDash without a serial connection:",
+    "simulatorComingSoon": "Try the simulator (coming in a later milestone)",
+    "replayComingSoon": "Replay a recording (coming in a later milestone)"
+  },
+  "pwa": {
+    "updateAvailable": "New version available",
+    "reload": "Reload"
+  }
+}
