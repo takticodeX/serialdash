@@ -67,7 +67,8 @@
       "type": "object",
       "properties": {
         "val": {
-          "description": "Optional initial/confirmed value; type depends on the control (§3.6.1)."
+          "description": "Optional initial/confirmed value; type depends on the control (§3.6.1).",
+          "type": ["number", "boolean", "string"]
         },
         "dis": { "type": "boolean" },
         "confirm": { "type": "string" }

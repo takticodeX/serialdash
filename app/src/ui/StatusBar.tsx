@@ -5,9 +5,10 @@ import { useDeviceSession } from '../session/useDeviceSession';
 import { useConsoleStore } from '../console/useConsoleStore';
 
 /**
- * APP-CON-06: connection state, port, baud rate, device name (from `hi`), byte/s, lines/s, and a
- * clickable protocol-error count that filters the console to errors only. Ack latency stays
- * deferred to M4 (needs ping/pong, which SPEC.md assigns there, not here).
+ * APP-CON-06: connection state, port, baud rate, device name (from `hi`), byte/s, lines/s, a
+ * clickable protocol-error count that filters the console to errors only, and (since M4) the
+ * average `ack`/`pong` latency plus a "device not responding" indicator after 3 missed pings
+ * (SPEC.md §3.5 rule 5).
  *
  * The single disconnect action here also serves as APP-CON-08 ("disconnect to upload a sketch"):
  * there is no other disconnect path, and both are the same operation (free the port; it
@@ -33,6 +34,7 @@ export function StatusBar({ onChangeDevice }: Props): JSX.Element {
   const setErrorsOnly = useConsoleStore((s) => s.setErrorsOnly);
 
   const deviceInfo = session?.getDeviceInfo();
+  const liveness = session?.getStatus() === 'handshaked' ? session.getLiveness() : undefined;
 
   return (
     <div
@@ -86,6 +88,12 @@ export function StatusBar({ onChangeDevice }: Props): JSX.Element {
             {throughput.linesPerSecond} {t('statusBar.linesPerSecond')}
           </span>
         </>
+      )}
+      {liveness?.notResponding && (
+        <span style={{ color: 'var(--color-danger)' }}>{t('statusBar.notResponding')}</span>
+      )}
+      {liveness && !liveness.notResponding && liveness.latencyMs !== undefined && (
+        <span>{t('statusBar.latency', { ms: liveness.latencyMs })}</span>
       )}
       {throughput.protocolErrorCount > 0 && (
         <button

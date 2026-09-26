@@ -6,3 +6,6 @@ docs/.vitepress/cache/
 docs/.vitepress/dist/
 .pio/
 .pioenvs/
+app/test-results/
+app/playwright-report/
+app/dist-e2e/

@@ -2,11 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { DeviceSession } from './DeviceSession';
 import { useSettingsStore } from '../settings/useSettingsStore';
 import type {
+  AckMessage,
   DataMessage,
   DeviceHiMessage,
   EventMessage,
   LineWidget,
+  PongMessage,
   RemoveMessage,
+  SliderWidget,
   SwitchWidget,
   UpdateMessage,
 } from '../protocol/generated/index.js';
@@ -65,7 +68,10 @@ describe('DeviceSession handshake (SPEC.md §3.5)', () => {
     });
 
     vi.advanceTimersByTime(10_000);
-    expect(sent).toHaveLength(1); // no further retries after handshaking
+    // No further `hi` retries after handshaking — but `ping` now flows every 2s once handshaked
+    // (§3.5 rule 5), so `sent` itself grows; that's covered by the ping-loop tests below.
+    const hiRequests = sent.filter((line) => line.includes('"t":"hi"'));
+    expect(hiRequests).toHaveLength(1);
   });
 
   it('never enters text mode once handshaked', () => {
@@ -220,5 +226,150 @@ describe('subscribe', () => {
     session.feed(hi());
     session.feed({ t: 'w', id: 'x', k: 'led' } as never);
     expect(calls).toBeGreaterThanOrEqual(2);
+  });
+});
+
+describe('ping/pong liveness (SPEC.md §3.5 rule 5)', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  it('sends a ping every 2s once handshaked, not before', () => {
+    const sent: string[] = [];
+    const session = new DeviceSession((line) => sent.push(line));
+    session.start();
+    vi.advanceTimersByTime(5000);
+    expect(sent.filter((l) => l.includes('"t":"ping"'))).toHaveLength(0);
+
+    session.feed(hi());
+    vi.advanceTimersByTime(1999);
+    expect(sent.filter((l) => l.includes('"t":"ping"'))).toHaveLength(0);
+    vi.advanceTimersByTime(1);
+    expect(sent.filter((l) => l.includes('"t":"ping"'))).toHaveLength(1);
+    vi.advanceTimersByTime(4000);
+    expect(sent.filter((l) => l.includes('"t":"ping"'))).toHaveLength(3);
+  });
+
+  it('computes latency from the ping/pong round trip', () => {
+    const requestIds: number[] = [];
+    const session = new DeviceSession((line) => {
+      const match = /"t":"ping","r":(\d+)/.exec(line);
+      if (match?.[1]) requestIds.push(Number(match[1]));
+    });
+    session.start();
+    session.feed(hi());
+    expect(session.getLiveness()).toEqual({ latencyMs: undefined, notResponding: false });
+
+    vi.advanceTimersByTime(2000);
+    vi.advanceTimersByTime(37);
+    session.feed({ t: 'pong', r: requestIds[0] } as PongMessage);
+    expect(session.getLiveness().latencyMs).toBe(37);
+    expect(session.getLiveness().notResponding).toBe(false);
+  });
+
+  it('reports notResponding after 3 consecutive missed pongs, and clears it on the next pong', () => {
+    const requestIds: number[] = [];
+    const session = new DeviceSession((line) => {
+      const match = /"t":"ping","r":(\d+)/.exec(line);
+      if (match?.[1]) requestIds.push(Number(match[1]));
+    });
+    session.start();
+    session.feed(hi());
+
+    // 4 ping intervals with no pong at all: the 1st ping's non-answer is only detected when the
+    // 2nd fires, so 3 *misses* need the 4th tick.
+    vi.advanceTimersByTime(2000 * 4);
+    expect(session.getLiveness().notResponding).toBe(true);
+
+    session.feed({ t: 'pong', r: requestIds[requestIds.length - 1] } as PongMessage);
+    expect(session.getLiveness().notResponding).toBe(false);
+  });
+
+  it('ignores a pong whose r does not match the in-flight ping', () => {
+    const session = new DeviceSession(() => {});
+    session.start();
+    session.feed(hi());
+    vi.advanceTimersByTime(2000);
+    session.feed({ t: 'pong', r: 999_999 } as PongMessage);
+    expect(session.getLiveness().latencyMs).toBeUndefined();
+  });
+});
+
+describe('controls (SPEC.md §3.6)', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  function requestIdOf(line: string): number {
+    const match = /"t":"c","r":(\d+)/.exec(line);
+    if (!match?.[1]) throw new Error(`not a control line: ${line}`);
+    return Number(match[1]);
+  }
+
+  it('sends c immediately when idle and reports the optimistic value as pending', () => {
+    const sent: string[] = [];
+    const session = new DeviceSession((line) => sent.push(line));
+    session.sendControl('fan', true);
+    expect(sent).toEqual(['@{"t":"c","r":1,"id":"fan","v":true}']);
+    expect(session.getControlState('fan')).toEqual({ status: 'pending', value: true });
+  });
+
+  it('ack ok:true clears pending back to idle', () => {
+    const sent: string[] = [];
+    const session = new DeviceSession((line) => sent.push(line));
+    session.sendControl('fan', true);
+    const r = requestIdOf(sent[0] as string);
+    session.feed({ t: 'ack', r, ok: true } as AckMessage);
+    expect(session.getControlState('fan')).toEqual({ status: 'idle' });
+  });
+
+  it('ack ok:false shows the error for 3s then reverts to idle', () => {
+    const sent: string[] = [];
+    const session = new DeviceSession((line) => sent.push(line));
+    session.sendControl('pwm', 255);
+    const r = requestIdOf(sent[0] as string);
+    session.feed({ t: 'ack', r, ok: false, err: 'Valore fuori range' } as AckMessage);
+    expect(session.getControlState('pwm')).toEqual({
+      status: 'error',
+      message: 'Valore fuori range',
+    });
+
+    vi.advanceTimersByTime(2999);
+    expect(session.getControlState('pwm').status).toBe('error');
+    vi.advanceTimersByTime(1);
+    expect(session.getControlState('pwm')).toEqual({ status: 'idle' });
+  });
+
+  it('behaves like a rejection when no ack arrives within the configured timeout', () => {
+    const session = new DeviceSession(() => {});
+    session.sendControl('fan', true);
+    vi.advanceTimersByTime(useSettingsStore.getState().ackTimeoutMs);
+    expect(session.getControlState('fan').status).toBe('error');
+  });
+
+  it('merges a second sendControl while one is pending instead of sending a new c immediately', () => {
+    const sent: string[] = [];
+    const session = new DeviceSession((line) => sent.push(line));
+    session.sendControl('pwm', 100);
+    session.sendControl('pwm', 150); // dragged further before the first ack came back
+    expect(sent).toHaveLength(1); // still just the first request on the wire
+    expect(session.getControlState('pwm')).toEqual({ status: 'pending', value: 150 });
+
+    const r = requestIdOf(sent[0] as string);
+    session.feed({ t: 'ack', r, ok: true } as AckMessage);
+    expect(sent).toHaveLength(2); // the merged value is sent once the first resolves
+    expect(sent[1]).toBe(`@{"t":"c","r":${requestIdOf(sent[1] as string)},"id":"pwm","v":150}`);
+  });
+
+  it('ignores an ack whose r does not match anything pending', () => {
+    const session = new DeviceSession(() => {});
+    session.sendControl('fan', true);
+    session.feed({ t: 'ack', r: 999_999, ok: true } as AckMessage);
+    expect(session.getControlState('fan').status).toBe('pending'); // untouched
+  });
+
+  it("seeds a control's confirmed value from the widget declaration's val (rule 1)", () => {
+    const session = new DeviceSession(() => {});
+    const decl: SliderWidget = { t: 'w', id: 'pwm', k: 'slider', min: 0, max: 255, val: 128 };
+    session.feed(decl);
+    expect(session.channelStore.series('pwm')).toEqual([{ t: expect.any(Number), v: 128 }]);
   });
 });

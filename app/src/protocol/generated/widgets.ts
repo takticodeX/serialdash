@@ -117,9 +117,7 @@ export type ButtonWidget = {
   /**
    * Optional initial/confirmed value; type depends on the control (§3.6.1).
    */
-  val?: {
-    [k: string]: unknown;
-  };
+  val?: number | boolean | string;
   dis?: boolean;
   confirm?: string;
   [k: string]: unknown;
@@ -172,9 +170,7 @@ export type ColorWidget = {
   /**
    * Optional initial/confirmed value; type depends on the control (§3.6.1).
    */
-  val?: {
-    [k: string]: unknown;
-  };
+  val?: number | boolean | string;
   dis?: boolean;
   confirm?: string;
   [k: string]: unknown;
@@ -572,9 +568,7 @@ export type NumberWidget = {
   /**
    * Optional initial/confirmed value; type depends on the control (§3.6.1).
    */
-  val?: {
-    [k: string]: unknown;
-  };
+  val?: number | boolean | string;
   dis?: boolean;
   confirm?: string;
   [k: string]: unknown;
@@ -705,9 +699,7 @@ export type SelectWidget = {
   /**
    * Optional initial/confirmed value; type depends on the control (§3.6.1).
    */
-  val?: {
-    [k: string]: unknown;
-  };
+  val?: number | boolean | string;
   dis?: boolean;
   confirm?: string;
   [k: string]: unknown;
@@ -752,9 +744,7 @@ export type SliderWidget = {
   /**
    * Optional initial/confirmed value; type depends on the control (§3.6.1).
    */
-  val?: {
-    [k: string]: unknown;
-  };
+  val?: number | boolean | string;
   dis?: boolean;
   confirm?: string;
   [k: string]: unknown;
@@ -808,9 +798,7 @@ export type SwitchWidget = {
   /**
    * Optional initial/confirmed value; type depends on the control (§3.6.1).
    */
-  val?: {
-    [k: string]: unknown;
-  };
+  val?: number | boolean | string;
   dis?: boolean;
   confirm?: string;
   [k: string]: unknown;
@@ -893,9 +881,7 @@ export type TextWidget = {
   /**
    * Optional initial/confirmed value; type depends on the control (§3.6.1).
    */
-  val?: {
-    [k: string]: unknown;
-  };
+  val?: number | boolean | string;
   dis?: boolean;
   confirm?: string;
   [k: string]: unknown;

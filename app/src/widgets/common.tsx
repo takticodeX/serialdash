@@ -1,6 +1,7 @@
 import { useEffect, useState, type JSX, type ReactNode } from 'react';
 import type { WidgetDeclaration } from '../protocol/generated/index.js';
 import type { DeviceSession } from '../session/DeviceSession';
+import { useConnectionStore } from '../serial/useConnectionStore';
 
 const DEFAULT_STALE_SECONDS = 5;
 
@@ -34,6 +35,12 @@ export function useStale(
   return stale;
 }
 
+/** SPEC.md §3.6: controls are disabled while the device is disconnected, in addition to their own
+ * `dis` property (checked separately by each control widget). */
+export function useConnected(): boolean {
+  return useConnectionStore((s) => s.state === 'connected');
+}
+
 export function widgetTitle(declaration: WidgetDeclaration): string {
   return declaration.title ?? declaration.id;
 }
@@ -43,21 +50,36 @@ interface WidgetCardProps {
   stale: boolean;
   staleLabel: string;
   children: ReactNode;
+  /** SPEC.md §3.6: only set by control widgets (button/switch/slider) — 'idle' renders no extra
+   * border, 'pending'/'error' draw the animated dashed / solid danger border from theme.css. */
+  controlStatus?: 'idle' | 'pending' | 'error';
+  /** `dis` on the declaration, or the connection being down (§3.6's fourth control state). */
+  disabled?: boolean;
 }
 
-/** Common chrome shared by every widget: title, stale dimming. */
-export function WidgetCard({ title, stale, staleLabel, children }: WidgetCardProps): JSX.Element {
+/** Common chrome shared by every widget: title, stale dimming, and (for controls) the
+ * pending/error/disabled visual states of SPEC.md §3.6. */
+export function WidgetCard({
+  title,
+  stale,
+  staleLabel,
+  children,
+  controlStatus,
+  disabled,
+}: WidgetCardProps): JSX.Element {
   return (
     <div
-      className="panel"
+      className={controlStatus ? 'panel control-card' : 'panel'}
       data-stale={stale}
+      data-control-status={controlStatus}
+      data-control-disabled={disabled}
       title={stale ? staleLabel : undefined}
       style={{
         display: 'flex',
         flexDirection: 'column',
         height: '100%',
         padding: 8,
-        opacity: stale ? 0.5 : 1,
+        opacity: stale ? 0.5 : disabled ? 0.5 : 1,
         transition: 'opacity 200ms',
       }}
     >

@@ -5,6 +5,21 @@ import { ValueWidgetComponent, ValueWidgetConfigPanel, valueWidgetDemo } from '.
 import { gaugeWidgetDemo } from './gauge/gaugeDemo';
 import { LedWidgetComponent, LedWidgetConfigPanel, ledWidgetDemo } from './led/LedWidget';
 import { LogWidgetComponent, LogWidgetConfigPanel, logWidgetDemo } from './log/LogWidget';
+import {
+  ButtonWidgetComponent,
+  ButtonWidgetConfigPanel,
+  buttonWidgetDemo,
+} from './button/ButtonWidget';
+import {
+  SwitchWidgetComponent,
+  SwitchWidgetConfigPanel,
+  switchWidgetDemo,
+} from './switch/SwitchWidget';
+import {
+  SliderWidgetComponent,
+  SliderWidgetConfigPanel,
+  sliderWidgetDemo,
+} from './slider/SliderWidget';
 
 // SPEC.md §2.2: "ECharts e i widget pesanti caricati in lazy loading" — the gauge widget is the
 // only P0 widget using ECharts, so its Component/ConfigPanel (and everything they import) load
@@ -77,6 +92,39 @@ export function registerBuiltinWidgets(): void {
     Component: LogWidgetComponent,
     ConfigPanel: LogWidgetConfigPanel,
     demo: logWidgetDemo,
+  });
+
+  registerWidget({
+    kind: 'button',
+    nameKey: 'widgets.button.name',
+    descriptionKey: 'widgets.button.description',
+    icon: '🔘',
+    defaultSize: [3, 2],
+    Component: ButtonWidgetComponent,
+    ConfigPanel: ButtonWidgetConfigPanel,
+    demo: buttonWidgetDemo,
+  });
+
+  registerWidget({
+    kind: 'switch',
+    nameKey: 'widgets.switch.name',
+    descriptionKey: 'widgets.switch.description',
+    icon: '🎚️',
+    defaultSize: [3, 2],
+    Component: SwitchWidgetComponent,
+    ConfigPanel: SwitchWidgetConfigPanel,
+    demo: switchWidgetDemo,
+  });
+
+  registerWidget({
+    kind: 'slider',
+    nameKey: 'widgets.slider.name',
+    descriptionKey: 'widgets.slider.description',
+    icon: '🎛️',
+    defaultSize: [4, 2],
+    Component: SliderWidgetComponent,
+    ConfigPanel: SliderWidgetConfigPanel,
+    demo: sliderWidgetDemo,
   });
 }
 

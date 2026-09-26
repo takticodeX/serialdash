@@ -13313,7 +13313,10 @@ const schema109 = {
     'Properties added to controls on top of widgetBase (§4.3). `id` doubles as the state channel id (PRT-13), so `ch` is not used.',
   type: 'object',
   properties: {
-    val: { description: 'Optional initial/confirmed value; type depends on the control (§3.6.1).' },
+    val: {
+      description: 'Optional initial/confirmed value; type depends on the control (§3.6.1).',
+      type: ['number', 'boolean', 'string'],
+    },
     dis: { type: 'boolean' },
     confirm: { type: 'string' },
   },
@@ -13962,14 +13965,19 @@ function validate103(
     errors = vErrors.length;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
-    if (data.dis !== undefined) {
-      if (typeof data.dis !== 'boolean') {
+    if (data.val !== undefined) {
+      let data0 = data.val;
+      if (
+        !(typeof data0 == 'number' && isFinite(data0)) &&
+        typeof data0 !== 'boolean' &&
+        typeof data0 !== 'string'
+      ) {
         const err0 = {
-          instancePath: instancePath + '/dis',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
+          instancePath: instancePath + '/val',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: 'boolean' },
-          message: 'must be boolean',
+          params: { type: schema109.properties.val.type },
+          message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
           vErrors = [err0];
@@ -13979,14 +13987,14 @@ function validate103(
         errors++;
       }
     }
-    if (data.confirm !== undefined) {
-      if (typeof data.confirm !== 'string') {
+    if (data.dis !== undefined) {
+      if (typeof data.dis !== 'boolean') {
         const err1 = {
-          instancePath: instancePath + '/confirm',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          instancePath: instancePath + '/dis',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
           keyword: 'type',
-          params: { type: 'string' },
-          message: 'must be string',
+          params: { type: 'boolean' },
+          message: 'must be boolean',
         };
         if (vErrors === null) {
           vErrors = [err1];
@@ -13996,8 +14004,25 @@ function validate103(
         errors++;
       }
     }
+    if (data.confirm !== undefined) {
+      if (typeof data.confirm !== 'string') {
+        const err2 = {
+          instancePath: instancePath + '/confirm',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          keyword: 'type',
+          params: { type: 'string' },
+          message: 'must be string',
+        };
+        if (vErrors === null) {
+          vErrors = [err2];
+        } else {
+          vErrors.push(err2);
+        }
+        errors++;
+      }
+    }
   } else {
-    const err2 = {
+    const err3 = {
       instancePath,
       schemaPath: 'common.schema.json#/$defs/controlExtras/type',
       keyword: 'type',
@@ -14005,15 +14030,15 @@ function validate103(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err2];
+      vErrors = [err3];
     } else {
-      vErrors.push(err2);
+      vErrors.push(err3);
     }
     errors++;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
     if (data.k === undefined) {
-      const err3 = {
+      const err4 = {
         instancePath,
         schemaPath: '#/required',
         keyword: 'required',
@@ -14021,37 +14046,20 @@ function validate103(
         message: "must have required property '" + 'k' + "'",
       };
       if (vErrors === null) {
-        vErrors = [err3];
+        vErrors = [err4];
       } else {
-        vErrors.push(err3);
+        vErrors.push(err4);
       }
       errors++;
     }
     if (data.k !== undefined) {
       if ('button' !== data.k) {
-        const err4 = {
+        const err5 = {
           instancePath: instancePath + '/k',
           schemaPath: '#/properties/k/const',
           keyword: 'const',
           params: { allowedValue: 'button' },
           message: 'must be equal to constant',
-        };
-        if (vErrors === null) {
-          vErrors = [err4];
-        } else {
-          vErrors.push(err4);
-        }
-        errors++;
-      }
-    }
-    if (data.hold !== undefined) {
-      if (typeof data.hold !== 'boolean') {
-        const err5 = {
-          instancePath: instancePath + '/hold',
-          schemaPath: '#/properties/hold/type',
-          keyword: 'type',
-          params: { type: 'boolean' },
-          message: 'must be boolean',
         };
         if (vErrors === null) {
           vErrors = [err5];
@@ -14061,14 +14069,14 @@ function validate103(
         errors++;
       }
     }
-    if (data.label !== undefined) {
-      if (typeof data.label !== 'string') {
+    if (data.hold !== undefined) {
+      if (typeof data.hold !== 'boolean') {
         const err6 = {
-          instancePath: instancePath + '/label',
-          schemaPath: '#/properties/label/type',
+          instancePath: instancePath + '/hold',
+          schemaPath: '#/properties/hold/type',
           keyword: 'type',
-          params: { type: 'string' },
-          message: 'must be string',
+          params: { type: 'boolean' },
+          message: 'must be boolean',
         };
         if (vErrors === null) {
           vErrors = [err6];
@@ -14078,11 +14086,28 @@ function validate103(
         errors++;
       }
     }
+    if (data.label !== undefined) {
+      if (typeof data.label !== 'string') {
+        const err7 = {
+          instancePath: instancePath + '/label',
+          schemaPath: '#/properties/label/type',
+          keyword: 'type',
+          params: { type: 'string' },
+          message: 'must be string',
+        };
+        if (vErrors === null) {
+          vErrors = [err7];
+        } else {
+          vErrors.push(err7);
+        }
+        errors++;
+      }
+    }
     if (data.color !== undefined) {
-      let data5 = data.color;
-      if (typeof data5 === 'string') {
-        if (!pattern7.test(data5)) {
-          const err7 = {
+      let data6 = data.color;
+      if (typeof data6 === 'string') {
+        if (!pattern7.test(data6)) {
+          const err8 = {
             instancePath: instancePath + '/color',
             schemaPath: 'common.schema.json#/$defs/color/pattern',
             keyword: 'pattern',
@@ -14090,14 +14115,14 @@ function validate103(
             message: 'must match pattern "' + '^#[0-9A-Fa-f]{6}$' + '"',
           };
           if (vErrors === null) {
-            vErrors = [err7];
+            vErrors = [err8];
           } else {
-            vErrors.push(err7);
+            vErrors.push(err8);
           }
           errors++;
         }
       } else {
-        const err8 = {
+        const err9 = {
           instancePath: instancePath + '/color',
           schemaPath: 'common.schema.json#/$defs/color/type',
           keyword: 'type',
@@ -14105,15 +14130,15 @@ function validate103(
           message: 'must be string',
         };
         if (vErrors === null) {
-          vErrors = [err8];
+          vErrors = [err9];
         } else {
-          vErrors.push(err8);
+          vErrors.push(err9);
         }
         errors++;
       }
     }
   } else {
-    const err9 = {
+    const err10 = {
       instancePath,
       schemaPath: '#/type',
       keyword: 'type',
@@ -14121,9 +14146,9 @@ function validate103(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err9];
+      vErrors = [err10];
     } else {
-      vErrors.push(err9);
+      vErrors.push(err10);
     }
     errors++;
   }
@@ -14813,14 +14838,19 @@ function validate108(
     errors = vErrors.length;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
-    if (data.dis !== undefined) {
-      if (typeof data.dis !== 'boolean') {
+    if (data.val !== undefined) {
+      let data0 = data.val;
+      if (
+        !(typeof data0 == 'number' && isFinite(data0)) &&
+        typeof data0 !== 'boolean' &&
+        typeof data0 !== 'string'
+      ) {
         const err0 = {
-          instancePath: instancePath + '/dis',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
+          instancePath: instancePath + '/val',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: 'boolean' },
-          message: 'must be boolean',
+          params: { type: schema109.properties.val.type },
+          message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
           vErrors = [err0];
@@ -14830,14 +14860,14 @@ function validate108(
         errors++;
       }
     }
-    if (data.confirm !== undefined) {
-      if (typeof data.confirm !== 'string') {
+    if (data.dis !== undefined) {
+      if (typeof data.dis !== 'boolean') {
         const err1 = {
-          instancePath: instancePath + '/confirm',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          instancePath: instancePath + '/dis',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
           keyword: 'type',
-          params: { type: 'string' },
-          message: 'must be string',
+          params: { type: 'boolean' },
+          message: 'must be boolean',
         };
         if (vErrors === null) {
           vErrors = [err1];
@@ -14847,8 +14877,25 @@ function validate108(
         errors++;
       }
     }
+    if (data.confirm !== undefined) {
+      if (typeof data.confirm !== 'string') {
+        const err2 = {
+          instancePath: instancePath + '/confirm',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          keyword: 'type',
+          params: { type: 'string' },
+          message: 'must be string',
+        };
+        if (vErrors === null) {
+          vErrors = [err2];
+        } else {
+          vErrors.push(err2);
+        }
+        errors++;
+      }
+    }
   } else {
-    const err2 = {
+    const err3 = {
       instancePath,
       schemaPath: 'common.schema.json#/$defs/controlExtras/type',
       keyword: 'type',
@@ -14856,15 +14903,15 @@ function validate108(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err2];
+      vErrors = [err3];
     } else {
-      vErrors.push(err2);
+      vErrors.push(err3);
     }
     errors++;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
     if (data.k === undefined) {
-      const err3 = {
+      const err4 = {
         instancePath,
         schemaPath: '#/required',
         keyword: 'required',
@@ -14872,37 +14919,20 @@ function validate108(
         message: "must have required property '" + 'k' + "'",
       };
       if (vErrors === null) {
-        vErrors = [err3];
+        vErrors = [err4];
       } else {
-        vErrors.push(err3);
+        vErrors.push(err4);
       }
       errors++;
     }
     if (data.k !== undefined) {
       if ('switch' !== data.k) {
-        const err4 = {
+        const err5 = {
           instancePath: instancePath + '/k',
           schemaPath: '#/properties/k/const',
           keyword: 'const',
           params: { allowedValue: 'switch' },
           message: 'must be equal to constant',
-        };
-        if (vErrors === null) {
-          vErrors = [err4];
-        } else {
-          vErrors.push(err4);
-        }
-        errors++;
-      }
-    }
-    if (data.on !== undefined) {
-      if (typeof data.on !== 'string') {
-        const err5 = {
-          instancePath: instancePath + '/on',
-          schemaPath: '#/properties/on/type',
-          keyword: 'type',
-          params: { type: 'string' },
-          message: 'must be string',
         };
         if (vErrors === null) {
           vErrors = [err5];
@@ -14912,11 +14942,11 @@ function validate108(
         errors++;
       }
     }
-    if (data.off !== undefined) {
-      if (typeof data.off !== 'string') {
+    if (data.on !== undefined) {
+      if (typeof data.on !== 'string') {
         const err6 = {
-          instancePath: instancePath + '/off',
-          schemaPath: '#/properties/off/type',
+          instancePath: instancePath + '/on',
+          schemaPath: '#/properties/on/type',
           keyword: 'type',
           params: { type: 'string' },
           message: 'must be string',
@@ -14929,8 +14959,25 @@ function validate108(
         errors++;
       }
     }
+    if (data.off !== undefined) {
+      if (typeof data.off !== 'string') {
+        const err7 = {
+          instancePath: instancePath + '/off',
+          schemaPath: '#/properties/off/type',
+          keyword: 'type',
+          params: { type: 'string' },
+          message: 'must be string',
+        };
+        if (vErrors === null) {
+          vErrors = [err7];
+        } else {
+          vErrors.push(err7);
+        }
+        errors++;
+      }
+    }
   } else {
-    const err7 = {
+    const err8 = {
       instancePath,
       schemaPath: '#/type',
       keyword: 'type',
@@ -14938,9 +14985,9 @@ function validate108(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err7];
+      vErrors = [err8];
     } else {
-      vErrors.push(err7);
+      vErrors.push(err8);
     }
     errors++;
   }
@@ -15633,14 +15680,19 @@ function validate113(
     errors = vErrors.length;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
-    if (data.dis !== undefined) {
-      if (typeof data.dis !== 'boolean') {
+    if (data.val !== undefined) {
+      let data0 = data.val;
+      if (
+        !(typeof data0 == 'number' && isFinite(data0)) &&
+        typeof data0 !== 'boolean' &&
+        typeof data0 !== 'string'
+      ) {
         const err0 = {
-          instancePath: instancePath + '/dis',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
+          instancePath: instancePath + '/val',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: 'boolean' },
-          message: 'must be boolean',
+          params: { type: schema109.properties.val.type },
+          message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
           vErrors = [err0];
@@ -15650,14 +15702,14 @@ function validate113(
         errors++;
       }
     }
-    if (data.confirm !== undefined) {
-      if (typeof data.confirm !== 'string') {
+    if (data.dis !== undefined) {
+      if (typeof data.dis !== 'boolean') {
         const err1 = {
-          instancePath: instancePath + '/confirm',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          instancePath: instancePath + '/dis',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
           keyword: 'type',
-          params: { type: 'string' },
-          message: 'must be string',
+          params: { type: 'boolean' },
+          message: 'must be boolean',
         };
         if (vErrors === null) {
           vErrors = [err1];
@@ -15667,8 +15719,25 @@ function validate113(
         errors++;
       }
     }
+    if (data.confirm !== undefined) {
+      if (typeof data.confirm !== 'string') {
+        const err2 = {
+          instancePath: instancePath + '/confirm',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          keyword: 'type',
+          params: { type: 'string' },
+          message: 'must be string',
+        };
+        if (vErrors === null) {
+          vErrors = [err2];
+        } else {
+          vErrors.push(err2);
+        }
+        errors++;
+      }
+    }
   } else {
-    const err2 = {
+    const err3 = {
       instancePath,
       schemaPath: 'common.schema.json#/$defs/controlExtras/type',
       keyword: 'type',
@@ -15676,35 +15745,20 @@ function validate113(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err2];
+      vErrors = [err3];
     } else {
-      vErrors.push(err2);
+      vErrors.push(err3);
     }
     errors++;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
     if (data.k === undefined) {
-      const err3 = {
+      const err4 = {
         instancePath,
         schemaPath: '#/required',
         keyword: 'required',
         params: { missingProperty: 'k' },
         message: "must have required property '" + 'k' + "'",
-      };
-      if (vErrors === null) {
-        vErrors = [err3];
-      } else {
-        vErrors.push(err3);
-      }
-      errors++;
-    }
-    if (data.min === undefined) {
-      const err4 = {
-        instancePath,
-        schemaPath: '#/required',
-        keyword: 'required',
-        params: { missingProperty: 'min' },
-        message: "must have required property '" + 'min' + "'",
       };
       if (vErrors === null) {
         vErrors = [err4];
@@ -15713,13 +15767,13 @@ function validate113(
       }
       errors++;
     }
-    if (data.max === undefined) {
+    if (data.min === undefined) {
       const err5 = {
         instancePath,
         schemaPath: '#/required',
         keyword: 'required',
-        params: { missingProperty: 'max' },
-        message: "must have required property '" + 'max' + "'",
+        params: { missingProperty: 'min' },
+        message: "must have required property '" + 'min' + "'",
       };
       if (vErrors === null) {
         vErrors = [err5];
@@ -15728,32 +15782,29 @@ function validate113(
       }
       errors++;
     }
+    if (data.max === undefined) {
+      const err6 = {
+        instancePath,
+        schemaPath: '#/required',
+        keyword: 'required',
+        params: { missingProperty: 'max' },
+        message: "must have required property '" + 'max' + "'",
+      };
+      if (vErrors === null) {
+        vErrors = [err6];
+      } else {
+        vErrors.push(err6);
+      }
+      errors++;
+    }
     if (data.k !== undefined) {
       if ('slider' !== data.k) {
-        const err6 = {
+        const err7 = {
           instancePath: instancePath + '/k',
           schemaPath: '#/properties/k/const',
           keyword: 'const',
           params: { allowedValue: 'slider' },
           message: 'must be equal to constant',
-        };
-        if (vErrors === null) {
-          vErrors = [err6];
-        } else {
-          vErrors.push(err6);
-        }
-        errors++;
-      }
-    }
-    if (data.min !== undefined) {
-      let data3 = data.min;
-      if (!(typeof data3 == 'number' && isFinite(data3))) {
-        const err7 = {
-          instancePath: instancePath + '/min',
-          schemaPath: '#/properties/min/type',
-          keyword: 'type',
-          params: { type: 'number' },
-          message: 'must be number',
         };
         if (vErrors === null) {
           vErrors = [err7];
@@ -15763,12 +15814,12 @@ function validate113(
         errors++;
       }
     }
-    if (data.max !== undefined) {
-      let data4 = data.max;
+    if (data.min !== undefined) {
+      let data4 = data.min;
       if (!(typeof data4 == 'number' && isFinite(data4))) {
         const err8 = {
-          instancePath: instancePath + '/max',
-          schemaPath: '#/properties/max/type',
+          instancePath: instancePath + '/min',
+          schemaPath: '#/properties/min/type',
           keyword: 'type',
           params: { type: 'number' },
           message: 'must be number',
@@ -15781,11 +15832,29 @@ function validate113(
         errors++;
       }
     }
+    if (data.max !== undefined) {
+      let data5 = data.max;
+      if (!(typeof data5 == 'number' && isFinite(data5))) {
+        const err9 = {
+          instancePath: instancePath + '/max',
+          schemaPath: '#/properties/max/type',
+          keyword: 'type',
+          params: { type: 'number' },
+          message: 'must be number',
+        };
+        if (vErrors === null) {
+          vErrors = [err9];
+        } else {
+          vErrors.push(err9);
+        }
+        errors++;
+      }
+    }
     if (data.step !== undefined) {
-      let data5 = data.step;
-      if (typeof data5 == 'number' && isFinite(data5)) {
-        if (data5 <= 0 || isNaN(data5)) {
-          const err9 = {
+      let data6 = data.step;
+      if (typeof data6 == 'number' && isFinite(data6)) {
+        if (data6 <= 0 || isNaN(data6)) {
+          const err10 = {
             instancePath: instancePath + '/step',
             schemaPath: '#/properties/step/exclusiveMinimum',
             keyword: 'exclusiveMinimum',
@@ -15793,36 +15862,19 @@ function validate113(
             message: 'must be > 0',
           };
           if (vErrors === null) {
-            vErrors = [err9];
+            vErrors = [err10];
           } else {
-            vErrors.push(err9);
+            vErrors.push(err10);
           }
           errors++;
         }
       } else {
-        const err10 = {
+        const err11 = {
           instancePath: instancePath + '/step',
           schemaPath: '#/properties/step/type',
           keyword: 'type',
           params: { type: 'number' },
           message: 'must be number',
-        };
-        if (vErrors === null) {
-          vErrors = [err10];
-        } else {
-          vErrors.push(err10);
-        }
-        errors++;
-      }
-    }
-    if (data.vert !== undefined) {
-      if (typeof data.vert !== 'boolean') {
-        const err11 = {
-          instancePath: instancePath + '/vert',
-          schemaPath: '#/properties/vert/type',
-          keyword: 'type',
-          params: { type: 'boolean' },
-          message: 'must be boolean',
         };
         if (vErrors === null) {
           vErrors = [err11];
@@ -15832,8 +15884,25 @@ function validate113(
         errors++;
       }
     }
+    if (data.vert !== undefined) {
+      if (typeof data.vert !== 'boolean') {
+        const err12 = {
+          instancePath: instancePath + '/vert',
+          schemaPath: '#/properties/vert/type',
+          keyword: 'type',
+          params: { type: 'boolean' },
+          message: 'must be boolean',
+        };
+        if (vErrors === null) {
+          vErrors = [err12];
+        } else {
+          vErrors.push(err12);
+        }
+        errors++;
+      }
+    }
   } else {
-    const err12 = {
+    const err13 = {
       instancePath,
       schemaPath: '#/type',
       keyword: 'type',
@@ -15841,9 +15910,9 @@ function validate113(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err12];
+      vErrors = [err13];
     } else {
-      vErrors.push(err12);
+      vErrors.push(err13);
     }
     errors++;
   }
@@ -16537,14 +16606,19 @@ function validate118(
     errors = vErrors.length;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
-    if (data.dis !== undefined) {
-      if (typeof data.dis !== 'boolean') {
+    if (data.val !== undefined) {
+      let data0 = data.val;
+      if (
+        !(typeof data0 == 'number' && isFinite(data0)) &&
+        typeof data0 !== 'boolean' &&
+        typeof data0 !== 'string'
+      ) {
         const err0 = {
-          instancePath: instancePath + '/dis',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
+          instancePath: instancePath + '/val',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: 'boolean' },
-          message: 'must be boolean',
+          params: { type: schema109.properties.val.type },
+          message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
           vErrors = [err0];
@@ -16554,14 +16628,14 @@ function validate118(
         errors++;
       }
     }
-    if (data.confirm !== undefined) {
-      if (typeof data.confirm !== 'string') {
+    if (data.dis !== undefined) {
+      if (typeof data.dis !== 'boolean') {
         const err1 = {
-          instancePath: instancePath + '/confirm',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          instancePath: instancePath + '/dis',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
           keyword: 'type',
-          params: { type: 'string' },
-          message: 'must be string',
+          params: { type: 'boolean' },
+          message: 'must be boolean',
         };
         if (vErrors === null) {
           vErrors = [err1];
@@ -16571,8 +16645,25 @@ function validate118(
         errors++;
       }
     }
+    if (data.confirm !== undefined) {
+      if (typeof data.confirm !== 'string') {
+        const err2 = {
+          instancePath: instancePath + '/confirm',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          keyword: 'type',
+          params: { type: 'string' },
+          message: 'must be string',
+        };
+        if (vErrors === null) {
+          vErrors = [err2];
+        } else {
+          vErrors.push(err2);
+        }
+        errors++;
+      }
+    }
   } else {
-    const err2 = {
+    const err3 = {
       instancePath,
       schemaPath: 'common.schema.json#/$defs/controlExtras/type',
       keyword: 'type',
@@ -16580,15 +16671,15 @@ function validate118(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err2];
+      vErrors = [err3];
     } else {
-      vErrors.push(err2);
+      vErrors.push(err3);
     }
     errors++;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
     if (data.k === undefined) {
-      const err3 = {
+      const err4 = {
         instancePath,
         schemaPath: '#/required',
         keyword: 'required',
@@ -16596,38 +16687,20 @@ function validate118(
         message: "must have required property '" + 'k' + "'",
       };
       if (vErrors === null) {
-        vErrors = [err3];
+        vErrors = [err4];
       } else {
-        vErrors.push(err3);
+        vErrors.push(err4);
       }
       errors++;
     }
     if (data.k !== undefined) {
       if ('number' !== data.k) {
-        const err4 = {
+        const err5 = {
           instancePath: instancePath + '/k',
           schemaPath: '#/properties/k/const',
           keyword: 'const',
           params: { allowedValue: 'number' },
           message: 'must be equal to constant',
-        };
-        if (vErrors === null) {
-          vErrors = [err4];
-        } else {
-          vErrors.push(err4);
-        }
-        errors++;
-      }
-    }
-    if (data.min !== undefined) {
-      let data3 = data.min;
-      if (!(typeof data3 == 'number' && isFinite(data3))) {
-        const err5 = {
-          instancePath: instancePath + '/min',
-          schemaPath: '#/properties/min/type',
-          keyword: 'type',
-          params: { type: 'number' },
-          message: 'must be number',
         };
         if (vErrors === null) {
           vErrors = [err5];
@@ -16637,12 +16710,12 @@ function validate118(
         errors++;
       }
     }
-    if (data.max !== undefined) {
-      let data4 = data.max;
+    if (data.min !== undefined) {
+      let data4 = data.min;
       if (!(typeof data4 == 'number' && isFinite(data4))) {
         const err6 = {
-          instancePath: instancePath + '/max',
-          schemaPath: '#/properties/max/type',
+          instancePath: instancePath + '/min',
+          schemaPath: '#/properties/min/type',
           keyword: 'type',
           params: { type: 'number' },
           message: 'must be number',
@@ -16655,11 +16728,29 @@ function validate118(
         errors++;
       }
     }
+    if (data.max !== undefined) {
+      let data5 = data.max;
+      if (!(typeof data5 == 'number' && isFinite(data5))) {
+        const err7 = {
+          instancePath: instancePath + '/max',
+          schemaPath: '#/properties/max/type',
+          keyword: 'type',
+          params: { type: 'number' },
+          message: 'must be number',
+        };
+        if (vErrors === null) {
+          vErrors = [err7];
+        } else {
+          vErrors.push(err7);
+        }
+        errors++;
+      }
+    }
     if (data.step !== undefined) {
-      let data5 = data.step;
-      if (typeof data5 == 'number' && isFinite(data5)) {
-        if (data5 <= 0 || isNaN(data5)) {
-          const err7 = {
+      let data6 = data.step;
+      if (typeof data6 == 'number' && isFinite(data6)) {
+        if (data6 <= 0 || isNaN(data6)) {
+          const err8 = {
             instancePath: instancePath + '/step',
             schemaPath: '#/properties/step/exclusiveMinimum',
             keyword: 'exclusiveMinimum',
@@ -16667,14 +16758,14 @@ function validate118(
             message: 'must be > 0',
           };
           if (vErrors === null) {
-            vErrors = [err7];
+            vErrors = [err8];
           } else {
-            vErrors.push(err7);
+            vErrors.push(err8);
           }
           errors++;
         }
       } else {
-        const err8 = {
+        const err9 = {
           instancePath: instancePath + '/step',
           schemaPath: '#/properties/step/type',
           keyword: 'type',
@@ -16682,15 +16773,15 @@ function validate118(
           message: 'must be number',
         };
         if (vErrors === null) {
-          vErrors = [err8];
+          vErrors = [err9];
         } else {
-          vErrors.push(err8);
+          vErrors.push(err9);
         }
         errors++;
       }
     }
   } else {
-    const err9 = {
+    const err10 = {
       instancePath,
       schemaPath: '#/type',
       keyword: 'type',
@@ -16698,9 +16789,9 @@ function validate118(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err9];
+      vErrors = [err10];
     } else {
-      vErrors.push(err9);
+      vErrors.push(err10);
     }
     errors++;
   }
@@ -17405,14 +17496,19 @@ function validate123(
     errors = vErrors.length;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
-    if (data.dis !== undefined) {
-      if (typeof data.dis !== 'boolean') {
+    if (data.val !== undefined) {
+      let data0 = data.val;
+      if (
+        !(typeof data0 == 'number' && isFinite(data0)) &&
+        typeof data0 !== 'boolean' &&
+        typeof data0 !== 'string'
+      ) {
         const err0 = {
-          instancePath: instancePath + '/dis',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
+          instancePath: instancePath + '/val',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: 'boolean' },
-          message: 'must be boolean',
+          params: { type: schema109.properties.val.type },
+          message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
           vErrors = [err0];
@@ -17422,14 +17518,14 @@ function validate123(
         errors++;
       }
     }
-    if (data.confirm !== undefined) {
-      if (typeof data.confirm !== 'string') {
+    if (data.dis !== undefined) {
+      if (typeof data.dis !== 'boolean') {
         const err1 = {
-          instancePath: instancePath + '/confirm',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          instancePath: instancePath + '/dis',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
           keyword: 'type',
-          params: { type: 'string' },
-          message: 'must be string',
+          params: { type: 'boolean' },
+          message: 'must be boolean',
         };
         if (vErrors === null) {
           vErrors = [err1];
@@ -17439,8 +17535,25 @@ function validate123(
         errors++;
       }
     }
+    if (data.confirm !== undefined) {
+      if (typeof data.confirm !== 'string') {
+        const err2 = {
+          instancePath: instancePath + '/confirm',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          keyword: 'type',
+          params: { type: 'string' },
+          message: 'must be string',
+        };
+        if (vErrors === null) {
+          vErrors = [err2];
+        } else {
+          vErrors.push(err2);
+        }
+        errors++;
+      }
+    }
   } else {
-    const err2 = {
+    const err3 = {
       instancePath,
       schemaPath: 'common.schema.json#/$defs/controlExtras/type',
       keyword: 'type',
@@ -17448,15 +17561,15 @@ function validate123(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err2];
+      vErrors = [err3];
     } else {
-      vErrors.push(err2);
+      vErrors.push(err3);
     }
     errors++;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
     if (data.k === undefined) {
-      const err3 = {
+      const err4 = {
         instancePath,
         schemaPath: '#/required',
         keyword: 'required',
@@ -17464,15 +17577,15 @@ function validate123(
         message: "must have required property '" + 'k' + "'",
       };
       if (vErrors === null) {
-        vErrors = [err3];
+        vErrors = [err4];
       } else {
-        vErrors.push(err3);
+        vErrors.push(err4);
       }
       errors++;
     }
     if (data.k !== undefined) {
       if ('select' !== data.k) {
-        const err4 = {
+        const err5 = {
           instancePath: instancePath + '/k',
           schemaPath: '#/properties/k/const',
           keyword: 'const',
@@ -17480,25 +17593,25 @@ function validate123(
           message: 'must be equal to constant',
         };
         if (vErrors === null) {
-          vErrors = [err4];
+          vErrors = [err5];
         } else {
-          vErrors.push(err4);
+          vErrors.push(err5);
         }
         errors++;
       }
     }
     if (data.opts !== undefined) {
-      let data3 = data.opts;
-      if (Array.isArray(data3)) {
-        const len0 = data3.length;
+      let data4 = data.opts;
+      if (Array.isArray(data4)) {
+        const len0 = data4.length;
         for (let i0 = 0; i0 < len0; i0++) {
-          let data4 = data3[i0];
-          const _errs13 = errors;
+          let data5 = data4[i0];
+          const _errs15 = errors;
           let valid6 = false;
           let passing0 = null;
-          const _errs14 = errors;
-          if (typeof data4 !== 'string') {
-            const err5 = {
+          const _errs16 = errors;
+          if (typeof data5 !== 'string') {
+            const err6 = {
               instancePath: instancePath + '/opts/' + i0,
               schemaPath: '#/properties/opts/items/oneOf/0/type',
               keyword: 'type',
@@ -17506,41 +17619,26 @@ function validate123(
               message: 'must be string',
             };
             if (vErrors === null) {
-              vErrors = [err5];
+              vErrors = [err6];
             } else {
-              vErrors.push(err5);
+              vErrors.push(err6);
             }
             errors++;
           }
-          var _valid0 = _errs14 === errors;
+          var _valid0 = _errs16 === errors;
           if (_valid0) {
             valid6 = true;
             passing0 = 0;
           }
-          const _errs16 = errors;
-          if (Array.isArray(data4)) {
-            if (data4.length > 2) {
-              const err6 = {
+          const _errs18 = errors;
+          if (Array.isArray(data5)) {
+            if (data5.length > 2) {
+              const err7 = {
                 instancePath: instancePath + '/opts/' + i0,
                 schemaPath: '#/properties/opts/items/oneOf/1/maxItems',
                 keyword: 'maxItems',
                 params: { limit: 2 },
                 message: 'must NOT have more than 2 items',
-              };
-              if (vErrors === null) {
-                vErrors = [err6];
-              } else {
-                vErrors.push(err6);
-              }
-              errors++;
-            }
-            if (data4.length < 2) {
-              const err7 = {
-                instancePath: instancePath + '/opts/' + i0,
-                schemaPath: '#/properties/opts/items/oneOf/1/minItems',
-                keyword: 'minItems',
-                params: { limit: 2 },
-                message: 'must NOT have fewer than 2 items',
               };
               if (vErrors === null) {
                 vErrors = [err7];
@@ -17549,29 +17647,27 @@ function validate123(
               }
               errors++;
             }
-            const len1 = data4.length;
+            if (data5.length < 2) {
+              const err8 = {
+                instancePath: instancePath + '/opts/' + i0,
+                schemaPath: '#/properties/opts/items/oneOf/1/minItems',
+                keyword: 'minItems',
+                params: { limit: 2 },
+                message: 'must NOT have fewer than 2 items',
+              };
+              if (vErrors === null) {
+                vErrors = [err8];
+              } else {
+                vErrors.push(err8);
+              }
+              errors++;
+            }
+            const len1 = data5.length;
             if (len1 > 0) {
-              if (typeof data4[0] !== 'string') {
-                const err8 = {
+              if (typeof data5[0] !== 'string') {
+                const err9 = {
                   instancePath: instancePath + '/opts/' + i0 + '/0',
                   schemaPath: '#/properties/opts/items/oneOf/1/prefixItems/0/type',
-                  keyword: 'type',
-                  params: { type: 'string' },
-                  message: 'must be string',
-                };
-                if (vErrors === null) {
-                  vErrors = [err8];
-                } else {
-                  vErrors.push(err8);
-                }
-                errors++;
-              }
-            }
-            if (len1 > 1) {
-              if (typeof data4[1] !== 'string') {
-                const err9 = {
-                  instancePath: instancePath + '/opts/' + i0 + '/1',
-                  schemaPath: '#/properties/opts/items/oneOf/1/prefixItems/1/type',
                   keyword: 'type',
                   params: { type: 'string' },
                   message: 'must be string',
@@ -17584,9 +17680,26 @@ function validate123(
                 errors++;
               }
             }
-            const len2 = data4.length;
+            if (len1 > 1) {
+              if (typeof data5[1] !== 'string') {
+                const err10 = {
+                  instancePath: instancePath + '/opts/' + i0 + '/1',
+                  schemaPath: '#/properties/opts/items/oneOf/1/prefixItems/1/type',
+                  keyword: 'type',
+                  params: { type: 'string' },
+                  message: 'must be string',
+                };
+                if (vErrors === null) {
+                  vErrors = [err10];
+                } else {
+                  vErrors.push(err10);
+                }
+                errors++;
+              }
+            }
+            const len2 = data5.length;
             if (!(len2 <= 2)) {
-              const err10 = {
+              const err11 = {
                 instancePath: instancePath + '/opts/' + i0,
                 schemaPath: '#/properties/opts/items/oneOf/1/items',
                 keyword: 'items',
@@ -17594,14 +17707,14 @@ function validate123(
                 message: 'must NOT have more than 2 items',
               };
               if (vErrors === null) {
-                vErrors = [err10];
+                vErrors = [err11];
               } else {
-                vErrors.push(err10);
+                vErrors.push(err11);
               }
               errors++;
             }
           } else {
-            const err11 = {
+            const err12 = {
               instancePath: instancePath + '/opts/' + i0,
               schemaPath: '#/properties/opts/items/oneOf/1/type',
               keyword: 'type',
@@ -17609,13 +17722,13 @@ function validate123(
               message: 'must be array',
             };
             if (vErrors === null) {
-              vErrors = [err11];
+              vErrors = [err12];
             } else {
-              vErrors.push(err11);
+              vErrors.push(err12);
             }
             errors++;
           }
-          var _valid0 = _errs16 === errors;
+          var _valid0 = _errs18 === errors;
           if (_valid0 && valid6) {
             valid6 = false;
             passing0 = [passing0, 1];
@@ -17626,7 +17739,7 @@ function validate123(
             }
           }
           if (!valid6) {
-            const err12 = {
+            const err13 = {
               instancePath: instancePath + '/opts/' + i0,
               schemaPath: '#/properties/opts/items/oneOf',
               keyword: 'oneOf',
@@ -17634,16 +17747,16 @@ function validate123(
               message: 'must match exactly one schema in oneOf',
             };
             if (vErrors === null) {
-              vErrors = [err12];
+              vErrors = [err13];
             } else {
-              vErrors.push(err12);
+              vErrors.push(err13);
             }
             errors++;
           } else {
-            errors = _errs13;
+            errors = _errs15;
             if (vErrors !== null) {
-              if (_errs13) {
-                vErrors.length = _errs13;
+              if (_errs15) {
+                vErrors.length = _errs15;
               } else {
                 vErrors = null;
               }
@@ -17651,7 +17764,7 @@ function validate123(
           }
         }
       } else {
-        const err13 = {
+        const err14 = {
           instancePath: instancePath + '/opts',
           schemaPath: '#/properties/opts/type',
           keyword: 'type',
@@ -17659,15 +17772,15 @@ function validate123(
           message: 'must be array',
         };
         if (vErrors === null) {
-          vErrors = [err13];
+          vErrors = [err14];
         } else {
-          vErrors.push(err13);
+          vErrors.push(err14);
         }
         errors++;
       }
     }
   } else {
-    const err14 = {
+    const err15 = {
       instancePath,
       schemaPath: '#/type',
       keyword: 'type',
@@ -17675,9 +17788,9 @@ function validate123(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err14];
+      vErrors = [err15];
     } else {
-      vErrors.push(err14);
+      vErrors.push(err15);
     }
     errors++;
   }
@@ -18371,14 +18484,19 @@ function validate128(
     errors = vErrors.length;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
-    if (data.dis !== undefined) {
-      if (typeof data.dis !== 'boolean') {
+    if (data.val !== undefined) {
+      let data0 = data.val;
+      if (
+        !(typeof data0 == 'number' && isFinite(data0)) &&
+        typeof data0 !== 'boolean' &&
+        typeof data0 !== 'string'
+      ) {
         const err0 = {
-          instancePath: instancePath + '/dis',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
+          instancePath: instancePath + '/val',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: 'boolean' },
-          message: 'must be boolean',
+          params: { type: schema109.properties.val.type },
+          message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
           vErrors = [err0];
@@ -18388,14 +18506,14 @@ function validate128(
         errors++;
       }
     }
-    if (data.confirm !== undefined) {
-      if (typeof data.confirm !== 'string') {
+    if (data.dis !== undefined) {
+      if (typeof data.dis !== 'boolean') {
         const err1 = {
-          instancePath: instancePath + '/confirm',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          instancePath: instancePath + '/dis',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
           keyword: 'type',
-          params: { type: 'string' },
-          message: 'must be string',
+          params: { type: 'boolean' },
+          message: 'must be boolean',
         };
         if (vErrors === null) {
           vErrors = [err1];
@@ -18405,8 +18523,25 @@ function validate128(
         errors++;
       }
     }
+    if (data.confirm !== undefined) {
+      if (typeof data.confirm !== 'string') {
+        const err2 = {
+          instancePath: instancePath + '/confirm',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          keyword: 'type',
+          params: { type: 'string' },
+          message: 'must be string',
+        };
+        if (vErrors === null) {
+          vErrors = [err2];
+        } else {
+          vErrors.push(err2);
+        }
+        errors++;
+      }
+    }
   } else {
-    const err2 = {
+    const err3 = {
       instancePath,
       schemaPath: 'common.schema.json#/$defs/controlExtras/type',
       keyword: 'type',
@@ -18414,15 +18549,15 @@ function validate128(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err2];
+      vErrors = [err3];
     } else {
-      vErrors.push(err2);
+      vErrors.push(err3);
     }
     errors++;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
     if (data.k === undefined) {
-      const err3 = {
+      const err4 = {
         instancePath,
         schemaPath: '#/required',
         keyword: 'required',
@@ -18430,38 +18565,20 @@ function validate128(
         message: "must have required property '" + 'k' + "'",
       };
       if (vErrors === null) {
-        vErrors = [err3];
+        vErrors = [err4];
       } else {
-        vErrors.push(err3);
+        vErrors.push(err4);
       }
       errors++;
     }
     if (data.k !== undefined) {
       if ('text' !== data.k) {
-        const err4 = {
+        const err5 = {
           instancePath: instancePath + '/k',
           schemaPath: '#/properties/k/const',
           keyword: 'const',
           params: { allowedValue: 'text' },
           message: 'must be equal to constant',
-        };
-        if (vErrors === null) {
-          vErrors = [err4];
-        } else {
-          vErrors.push(err4);
-        }
-        errors++;
-      }
-    }
-    if (data.max !== undefined) {
-      let data3 = data.max;
-      if (!(typeof data3 == 'number' && !(data3 % 1) && !isNaN(data3) && isFinite(data3))) {
-        const err5 = {
-          instancePath: instancePath + '/max',
-          schemaPath: '#/properties/max/type',
-          keyword: 'type',
-          params: { type: 'integer' },
-          message: 'must be integer',
         };
         if (vErrors === null) {
           vErrors = [err5];
@@ -18470,9 +18587,27 @@ function validate128(
         }
         errors++;
       }
-      if (typeof data3 == 'number' && isFinite(data3)) {
-        if (data3 <= 0 || isNaN(data3)) {
-          const err6 = {
+    }
+    if (data.max !== undefined) {
+      let data4 = data.max;
+      if (!(typeof data4 == 'number' && !(data4 % 1) && !isNaN(data4) && isFinite(data4))) {
+        const err6 = {
+          instancePath: instancePath + '/max',
+          schemaPath: '#/properties/max/type',
+          keyword: 'type',
+          params: { type: 'integer' },
+          message: 'must be integer',
+        };
+        if (vErrors === null) {
+          vErrors = [err6];
+        } else {
+          vErrors.push(err6);
+        }
+        errors++;
+      }
+      if (typeof data4 == 'number' && isFinite(data4)) {
+        if (data4 <= 0 || isNaN(data4)) {
+          const err7 = {
             instancePath: instancePath + '/max',
             schemaPath: '#/properties/max/exclusiveMinimum',
             keyword: 'exclusiveMinimum',
@@ -18480,9 +18615,9 @@ function validate128(
             message: 'must be > 0',
           };
           if (vErrors === null) {
-            vErrors = [err6];
+            vErrors = [err7];
           } else {
-            vErrors.push(err6);
+            vErrors.push(err7);
           }
           errors++;
         }
@@ -18490,7 +18625,7 @@ function validate128(
     }
     if (data.ph !== undefined) {
       if (typeof data.ph !== 'string') {
-        const err7 = {
+        const err8 = {
           instancePath: instancePath + '/ph',
           schemaPath: '#/properties/ph/type',
           keyword: 'type',
@@ -18498,15 +18633,15 @@ function validate128(
           message: 'must be string',
         };
         if (vErrors === null) {
-          vErrors = [err7];
+          vErrors = [err8];
         } else {
-          vErrors.push(err7);
+          vErrors.push(err8);
         }
         errors++;
       }
     }
   } else {
-    const err8 = {
+    const err9 = {
       instancePath,
       schemaPath: '#/type',
       keyword: 'type',
@@ -18514,9 +18649,9 @@ function validate128(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err8];
+      vErrors = [err9];
     } else {
-      vErrors.push(err8);
+      vErrors.push(err9);
     }
     errors++;
   }
@@ -19206,14 +19341,19 @@ function validate133(
     errors = vErrors.length;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
-    if (data.dis !== undefined) {
-      if (typeof data.dis !== 'boolean') {
+    if (data.val !== undefined) {
+      let data0 = data.val;
+      if (
+        !(typeof data0 == 'number' && isFinite(data0)) &&
+        typeof data0 !== 'boolean' &&
+        typeof data0 !== 'string'
+      ) {
         const err0 = {
-          instancePath: instancePath + '/dis',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
+          instancePath: instancePath + '/val',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: 'boolean' },
-          message: 'must be boolean',
+          params: { type: schema109.properties.val.type },
+          message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
           vErrors = [err0];
@@ -19223,14 +19363,14 @@ function validate133(
         errors++;
       }
     }
-    if (data.confirm !== undefined) {
-      if (typeof data.confirm !== 'string') {
+    if (data.dis !== undefined) {
+      if (typeof data.dis !== 'boolean') {
         const err1 = {
-          instancePath: instancePath + '/confirm',
-          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          instancePath: instancePath + '/dis',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/dis/type',
           keyword: 'type',
-          params: { type: 'string' },
-          message: 'must be string',
+          params: { type: 'boolean' },
+          message: 'must be boolean',
         };
         if (vErrors === null) {
           vErrors = [err1];
@@ -19240,8 +19380,25 @@ function validate133(
         errors++;
       }
     }
+    if (data.confirm !== undefined) {
+      if (typeof data.confirm !== 'string') {
+        const err2 = {
+          instancePath: instancePath + '/confirm',
+          schemaPath: 'common.schema.json#/$defs/controlExtras/properties/confirm/type',
+          keyword: 'type',
+          params: { type: 'string' },
+          message: 'must be string',
+        };
+        if (vErrors === null) {
+          vErrors = [err2];
+        } else {
+          vErrors.push(err2);
+        }
+        errors++;
+      }
+    }
   } else {
-    const err2 = {
+    const err3 = {
       instancePath,
       schemaPath: 'common.schema.json#/$defs/controlExtras/type',
       keyword: 'type',
@@ -19249,15 +19406,15 @@ function validate133(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err2];
+      vErrors = [err3];
     } else {
-      vErrors.push(err2);
+      vErrors.push(err3);
     }
     errors++;
   }
   if (data && typeof data == 'object' && !Array.isArray(data)) {
     if (data.k === undefined) {
-      const err3 = {
+      const err4 = {
         instancePath,
         schemaPath: '#/required',
         keyword: 'required',
@@ -19265,15 +19422,15 @@ function validate133(
         message: "must have required property '" + 'k' + "'",
       };
       if (vErrors === null) {
-        vErrors = [err3];
+        vErrors = [err4];
       } else {
-        vErrors.push(err3);
+        vErrors.push(err4);
       }
       errors++;
     }
     if (data.k !== undefined) {
       if ('color' !== data.k) {
-        const err4 = {
+        const err5 = {
           instancePath: instancePath + '/k',
           schemaPath: '#/properties/k/const',
           keyword: 'const',
@@ -19281,22 +19438,22 @@ function validate133(
           message: 'must be equal to constant',
         };
         if (vErrors === null) {
-          vErrors = [err4];
+          vErrors = [err5];
         } else {
-          vErrors.push(err4);
+          vErrors.push(err5);
         }
         errors++;
       }
     }
     if (data.swatches !== undefined) {
-      let data3 = data.swatches;
-      if (Array.isArray(data3)) {
-        const len0 = data3.length;
+      let data4 = data.swatches;
+      if (Array.isArray(data4)) {
+        const len0 = data4.length;
         for (let i0 = 0; i0 < len0; i0++) {
-          let data4 = data3[i0];
-          if (typeof data4 === 'string') {
-            if (!pattern7.test(data4)) {
-              const err5 = {
+          let data5 = data4[i0];
+          if (typeof data5 === 'string') {
+            if (!pattern7.test(data5)) {
+              const err6 = {
                 instancePath: instancePath + '/swatches/' + i0,
                 schemaPath: 'common.schema.json#/$defs/color/pattern',
                 keyword: 'pattern',
@@ -19304,14 +19461,14 @@ function validate133(
                 message: 'must match pattern "' + '^#[0-9A-Fa-f]{6}$' + '"',
               };
               if (vErrors === null) {
-                vErrors = [err5];
+                vErrors = [err6];
               } else {
-                vErrors.push(err5);
+                vErrors.push(err6);
               }
               errors++;
             }
           } else {
-            const err6 = {
+            const err7 = {
               instancePath: instancePath + '/swatches/' + i0,
               schemaPath: 'common.schema.json#/$defs/color/type',
               keyword: 'type',
@@ -19319,15 +19476,15 @@ function validate133(
               message: 'must be string',
             };
             if (vErrors === null) {
-              vErrors = [err6];
+              vErrors = [err7];
             } else {
-              vErrors.push(err6);
+              vErrors.push(err7);
             }
             errors++;
           }
         }
       } else {
-        const err7 = {
+        const err8 = {
           instancePath: instancePath + '/swatches',
           schemaPath: '#/properties/swatches/type',
           keyword: 'type',
@@ -19335,15 +19492,15 @@ function validate133(
           message: 'must be array',
         };
         if (vErrors === null) {
-          vErrors = [err7];
+          vErrors = [err8];
         } else {
-          vErrors.push(err7);
+          vErrors.push(err8);
         }
         errors++;
       }
     }
   } else {
-    const err8 = {
+    const err9 = {
       instancePath,
       schemaPath: '#/type',
       keyword: 'type',
@@ -19351,9 +19508,9 @@ function validate133(
       message: 'must be object',
     };
     if (vErrors === null) {
-      vErrors = [err8];
+      vErrors = [err9];
     } else {
-      vErrors.push(err8);
+      vErrors.push(err9);
     }
     errors++;
   }

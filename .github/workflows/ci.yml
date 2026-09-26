@@ -6,9 +6,9 @@ on:
     branches: [main]
 
 jobs:
-  # M0+M1+M2 scope (SPEC.md §11, §9.4): lint, schema/type generation alignment, protocol test
-  # vectors, app unit tests + build, and the docs site build. E2e against the simulator (M4+) and
-  # the load test (M6) are wired in as that code lands.
+  # M0-M4 scope (SPEC.md §11, §9.4): lint, schema/type generation alignment, protocol test
+  # vectors, app unit tests + build, docs site build, and the e2e suite against the simulator
+  # (QA-03). The load test (QA-04) is wired in once M6's stress-test scenario lands.
   base:
     runs-on: ubuntu-latest
     steps:
@@ -27,6 +27,9 @@ jobs:
       - name: Typecheck app
         run: npx tsc -p app/tsconfig.json
 
+      - name: Typecheck e2e
+        run: npx tsc -p app/tsconfig.e2e.json
+
       - name: Typecheck tools
         run: |
           npx tsc -p tools/gen-types/tsconfig.json
@@ -44,11 +47,17 @@ jobs:
       - name: Build documentation site
         run: npm run docs:build
 
-  # M3 scope (SPEC.md §9.2, §11): native tests for the library's transmit path (QA-10), every
-  # produced line re-validated against the schema (QA-11), formatting (QA-13's clang-format half),
-  # and the size report (§9.3, DOC-14, LIB-GEN-07). arduino-lint (QA-13's other half) and the
-  # multi-board compile matrix (QA-12) run separately below since they need the Arduino toolchain
-  # rather than PlatformIO/Node.
+      - name: Install Playwright's Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: E2e tests against the simulator (QA-03)
+        run: npm run e2e -w app
+
+  # M3+M4 scope (SPEC.md §9.2, §11): native tests for the library's transmit path (M3) and receive
+  # path/controls (M4, QA-10 — closing PRO-04's a2d half), every produced line re-validated against
+  # the schema (QA-11), formatting (QA-13's clang-format half), and the size report (§9.3, DOC-14,
+  # LIB-GEN-07). arduino-lint (QA-13's other half) and the multi-board compile matrix (QA-12) run
+  # separately below since they need the Arduino toolchain rather than PlatformIO/Node.
   library-native:
     runs-on: ubuntu-latest
     steps:
@@ -147,4 +156,5 @@ jobs:
             - lib/SerialDash/examples/01_TextOnly
             - lib/SerialDash/examples/02_FirstChart
             - lib/SerialDash/examples/03_WeatherStation
+            - lib/SerialDash/examples/04_Controls
             - lib/SerialDash/examples/07_TextCommands

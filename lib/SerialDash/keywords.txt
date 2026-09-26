@@ -11,6 +11,7 @@ WidgetBuilder	KEYWORD1
 UpdateBuilder	KEYWORD1
 PropertyWriter	KEYWORD1
 DataBuilder	KEYWORD1
+DashValue	KEYWORD1
 
 #######################################
 # Methods and Functions (KEYWORD2)
@@ -20,6 +21,10 @@ begin	KEYWORD2
 loop	KEYWORD2
 onDeclare	KEYWORD2
 appConnected	KEYWORD2
+onControl	KEYWORD2
+onAnyControl	KEYWORD2
+onText	KEYWORD2
+setAutoEcho	KEYWORD2
 
 widget	KEYWORD2
 line	KEYWORD2
@@ -124,6 +129,20 @@ debugf	KEYWORD2
 infof	KEYWORD2
 warnf	KEYWORD2
 errorf	KEYWORD2
+
+type	KEYWORD2
+isNumber	KEYWORD2
+isBool	KEYWORD2
+isString	KEYWORD2
+isNull	KEYWORD2
+toInt	KEYWORD2
+toLong	KEYWORD2
+toFloat	KEYWORD2
+toBool	KEYWORD2
+toString	KEYWORD2
+equals	KEYWORD2
+set	KEYWORD2
+reject	KEYWORD2
 
 #######################################
 # Constants (LITERAL1)

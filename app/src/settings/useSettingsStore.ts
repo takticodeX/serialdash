@@ -11,13 +11,18 @@ interface PersistedSettings {
   consoleLineLimit: number;
   /** APP-DAT-03: whether an undeclared channel auto-creates a widget. */
   autoDiscovery: boolean;
+  /** SPEC.md §3.6 rule 5 / §5.8: ms to wait for a control's `ack` before reverting it. */
+  ackTimeoutMs: number;
 }
+
+export const DEFAULT_ACK_TIMEOUT_MS = 1000;
 
 const DEFAULTS: PersistedSettings = {
   theme: 'auto',
   autoReconnect: true,
   consoleLineLimit: DEFAULT_CONSOLE_LINE_LIMIT,
   autoDiscovery: true,
+  ackTimeoutMs: DEFAULT_ACK_TIMEOUT_MS,
 };
 
 interface SettingsStore extends PersistedSettings {
@@ -27,12 +32,13 @@ interface SettingsStore extends PersistedSettings {
   setAutoReconnect: (value: boolean) => void;
   setConsoleLineLimit: (value: number) => void;
   setAutoDiscovery: (value: boolean) => void;
+  setAckTimeoutMs: (value: number) => void;
   clearAllLocalData: () => Promise<void>;
 }
 
 function persisted(state: SettingsStore): PersistedSettings {
-  const { theme, autoReconnect, consoleLineLimit, autoDiscovery } = state;
-  return { theme, autoReconnect, consoleLineLimit, autoDiscovery };
+  const { theme, autoReconnect, consoleLineLimit, autoDiscovery, ackTimeoutMs } = state;
+  return { theme, autoReconnect, consoleLineLimit, autoDiscovery, ackTimeoutMs };
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -61,6 +67,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   setAutoDiscovery: (autoDiscovery) => {
     set({ autoDiscovery });
+    void kvSet('settings', persisted(get()));
+  },
+
+  setAckTimeoutMs: (ackTimeoutMs) => {
+    set({ ackTimeoutMs });
     void kvSet('settings', persisted(get()));
   },
 

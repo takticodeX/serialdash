@@ -46,7 +46,9 @@
     "protocolErrors_other": "{{count}} errori di protocollo",
     "protocolErrorsHint": "Filtra la console sui soli errori di protocollo",
     "reconnect": "Riconnetti",
-    "changeDevice": "Cambia dispositivo"
+    "changeDevice": "Cambia dispositivo",
+    "latency": "{{ms}} ms",
+    "notResponding": "Dispositivo non risponde"
   },
   "console": {
     "title": "Console",
@@ -81,6 +83,7 @@
     "autoReconnect": "Riconnetti automaticamente quando un dispositivo noto riappare",
     "autoDiscovery": "Crea automaticamente un widget per i canali non dichiarati",
     "consoleLineLimit": "Limite righe console",
+    "ackTimeoutMs": "Timeout risposta controlli (ms)",
     "clearLocalData": "Cancella tutti i dati locali",
     "clearLocalDataConfirm": "Questo rimuove tutte le impostazioni, i permessi porta memorizzati e la cronologia salvati in questo browser. L'operazione non è reversibile. Continuare?",
     "about": "Informazioni",
@@ -120,6 +123,16 @@
     "log": {
       "name": "Registro eventi",
       "description": "Un registro scorrevole degli eventi del dispositivo."
-    }
+    },
+    "button": {
+      "name": "Pulsante",
+      "description": "Un pulsante che invia un comando al clic."
+    },
+    "switch": {
+      "name": "Interruttore",
+      "description": "Un interruttore on/off collegato a un controllo booleano."
+    },
+    "slider": { "name": "Cursore", "description": "Un controllo numerico trascinabile." },
+    "noResponse": "Nessuna risposta dal dispositivo"
   }
 }

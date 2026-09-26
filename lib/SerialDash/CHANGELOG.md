@@ -17,21 +17,35 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   escape hatch); `update()`/`remove()`/`removeAll()`; `data()`/`send()`/`sendXY()`/`sendArray()`
   for channel data (LIB-TX-01..12); `debug()`/`info()`/`warn()`/`error()` events, plus printf
   variants on non-AVR platforms.
-- Examples: `01_TextOnly`, `02_FirstChart`, `03_WeatherStation`, `07_TextCommands`.
+- Examples: `01_TextOnly`, `02_FirstChart`, `03_WeatherStation`, `04_Controls`, `07_TextCommands`
+  (the last two grew real `onText`/`onControl` handlers once the receive path existed).
+- Receive path (§6.3): `loop()` reads the Stream, accumulates a line (`SERIALDASH_RX_BUFFER`,
+  LIB-RX-01), and dispatches it — a minimal in-place JSON parser for flat a2d objects (LIB-RX-02
+  /03, nested values skipped per spec rather than erroring), overflow reported as an `rx overflow`
+  event (LIB-RX-04), free text routed to `onText` (LIB-RX-05), `hi`/`ping`/`c` handled
+  automatically (LIB-RX-06), unknown control ids acked `ok:false` (LIB-RX-07).
+- Controls API (§6.5): `DashValue` (type queries, tolerant `toInt()`/`toBool()`/... conversions,
+  `set()` to change the echoed value, `reject()` to refuse with a reason); `onControl()` (both
+  `const char*` and `F()` ids) and `onAnyControl()` fallback; automatic `ack` + echo `d` after a
+  successful control (LIB-CTL-04), `setAutoEcho(false)` to opt out of just the echo.
+- `appConnected()` is now real: true once the app's `hi` has been seen and a `ping` arrived within
+  the last 5s (SPEC.md §3.5 rule 5).
 - Native unit tests (`pio test -e native`) reconstructing the shared `/protocol/test-vectors`
-  fixtures through the builder API, plus schema validation of every line the tests produce
-  (QA-10, QA-11, PRO-04).
+  fixtures through the builder API and, since M4, through the real receive path (every a2d vector,
+  fed byte-by-byte and dispatched via `loop()`) — plus schema validation of every line the tests
+  produce (QA-10, QA-11, PRO-04, now covering both directions).
 - CI: `arduino-lint` (Library Manager mode), `clang-format`, and an 8-board compile matrix
   (Uno, Mega, ESP32, ESP32-S3, ESP32-C3, ESP8266, RP2040, SAMD — LIB-GEN-03/QA-12), plus a size
   report comparing `02_FirstChart` with and without the library against the LIB-GEN-07 budget
-  (§9.3, DOC-14): current overhead is ~1.4 KB flash / ~12 B RAM on Uno, well within the 6 KB /
-  150 B allowance.
+  (§9.3, DOC-14, RX buffer correctly excluded from the RAM figure per that requirement's own
+  wording): current overhead is ~5.4 KB flash / ~99 B RAM beyond the receive buffer on Uno, within
+  the 6 KB / 150 B allowance but markedly closer to the flash ceiling now that the RX parser is
+  always linked in — worth watching in future milestones.
 
 ### Known limitations (tracked for later milestones)
 
-- `appConnected()` always returns `false`: a truthful answer needs the app's `hi`/`ping` to be
-  received, which needs the RX parser landing in M4.
-- Controls (`onControl`, `onAnyControl`, `onText`, ack/echo) are not implemented yet — declaring
-  control widgets works, but nothing dispatches incoming commands until M4 (§6.3, §6.5).
-- The float formatter targets realistic sensor-reading magnitudes (fixed-point, up to 6 decimal
-  places); values near the extremes of the `double` range are out of scope.
+- The float formatter (both directions) targets realistic sensor-reading magnitudes (fixed-point,
+  up to 6 decimal places); values near the extremes of the `double` range are out of scope.
+- `\uXXXX` escapes in incoming strings decode BMP code points only — surrogate pairs (astral-plane
+  characters) aren't combined. Control ids/values are short by construction (PRT-11), so this is
+  unlikely to matter in practice.

@@ -46,7 +46,9 @@
     "protocolErrors_other": "{{count}} protocol errors",
     "protocolErrorsHint": "Filter the console to protocol errors only",
     "reconnect": "Reconnect",
-    "changeDevice": "Change device"
+    "changeDevice": "Change device",
+    "latency": "{{ms}} ms",
+    "notResponding": "Device not responding"
   },
   "console": {
     "title": "Console",
@@ -81,6 +83,7 @@
     "autoReconnect": "Reconnect automatically when a known device reappears",
     "autoDiscovery": "Auto-create a widget for undeclared channels",
     "consoleLineLimit": "Console line limit",
+    "ackTimeoutMs": "Control response timeout (ms)",
     "clearLocalData": "Clear all local data",
     "clearLocalDataConfirm": "This removes all locally stored settings, port permissions memory, and history from this browser. This cannot be undone. Continue?",
     "about": "About",
@@ -114,6 +117,10 @@
       "name": "Indicator",
       "description": "A status LED for a boolean, numeric, or text value."
     },
-    "log": { "name": "Event log", "description": "A scrolling log of device events." }
+    "log": { "name": "Event log", "description": "A scrolling log of device events." },
+    "button": { "name": "Button", "description": "A push button that sends a command on click." },
+    "switch": { "name": "Switch", "description": "An on/off toggle bound to a boolean control." },
+    "slider": { "name": "Slider", "description": "A draggable numeric control." },
+    "noResponse": "No response from the device"
   }
 }

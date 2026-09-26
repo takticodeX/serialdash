@@ -18,11 +18,14 @@ const REPO_ROOT = path.resolve(__dirname, '../../..');
 const MEMORY_MD = path.join(REPO_ROOT, 'docs', 'library', 'memory.md');
 
 // LIB-GEN-07: overhead <= 6KB flash, <= 150 bytes RAM beyond the receive
-// buffer. M3 doesn't allocate a receive buffer yet (LIB-RX-01 lands in M4),
-// so today's whole RAM overhead is compared directly against the 150-byte
-// allowance with no buffer to subtract.
+// buffer. Since M4 (LIB-RX-01), the line buffer really is allocated — as a
+// static SERIALDASH_RX_BUFFER-byte member (internal/LineBuffer.h) — so its
+// size is subtracted from the measured RAM overhead before comparing to the
+// 150 B allowance, matching §6.2's AVR default (this report always measures
+// Uno) exactly as SerialDash.h falls back to when the macro isn't overridden.
 const FLASH_BUDGET_BYTES = 6 * 1024;
 const RAM_BUDGET_BYTES = 150;
+const AVR_DEFAULT_RX_BUFFER_BYTES = 64;
 
 interface ArduinoCliCompileOutput {
   builder_result: {
@@ -47,10 +50,11 @@ if (!withLibFile || !withoutLibFile) {
 const withLib = readSizes(withLibFile);
 const withoutLib = readSizes(withoutLibFile);
 const flashOverhead = withLib.flash - withoutLib.flash;
-const ramOverhead = withLib.ram - withoutLib.ram;
+const ramOverheadTotal = withLib.ram - withoutLib.ram;
+const ramOverheadBeyondRxBuffer = ramOverheadTotal - AVR_DEFAULT_RX_BUFFER_BYTES;
 
 const flashOk = flashOverhead <= FLASH_BUDGET_BYTES;
-const ramOk = ramOverhead <= RAM_BUDGET_BYTES;
+const ramOk = ramOverheadBeyondRxBuffer <= RAM_BUDGET_BYTES;
 
 const today = new Date().toISOString().slice(0, 10);
 
@@ -68,13 +72,15 @@ Last measured: ${today}.
 | --- | ---: | ---: |
 | Without SerialDash | ${withoutLib.flash} B | ${withoutLib.ram} B |
 | With SerialDash | ${withLib.flash} B | ${withLib.ram} B |
-| **Overhead** | **${flashOverhead} B** | **${ramOverhead} B** |
+| **Overhead (total)** | **${flashOverhead} B** | **${ramOverheadTotal} B** |
+| Receive buffer (\`SERIALDASH_RX_BUFFER\`, excluded by LIB-GEN-07) | — | ${AVR_DEFAULT_RX_BUFFER_BYTES} B |
+| **RAM overhead beyond the receive buffer** | | **${ramOverheadBeyondRxBuffer} B** |
 
 LIB-GEN-07 budget: overhead must stay within ${FLASH_BUDGET_BYTES} B (6 KB) of
-flash and ${RAM_BUDGET_BYTES} B of RAM beyond the receive buffer. As of M3
-(SPEC.md §11), the receive buffer itself isn't allocated yet — that lands in
-M4 alongside the rest of §6.3 — so today's RAM overhead is compared directly
-against the 150 B allowance with no buffer size to subtract yet.
+flash and ${RAM_BUDGET_BYTES} B of RAM beyond the receive buffer — the buffer
+itself is explicitly excluded ("oltre al buffer di ricezione"), so its
+${AVR_DEFAULT_RX_BUFFER_BYTES} B (the AVR default) is subtracted from the
+measured total above before comparing to the 150 B allowance.
 
 Result: flash ${flashOk ? '✅ within budget' : '❌ OVER BUDGET'}, RAM ${
   ramOk ? '✅ within budget' : '❌ OVER BUDGET'
@@ -84,7 +90,9 @@ Result: flash ${flashOk ? '✅ within budget' : '❌ OVER BUDGET'}, RAM ${
 writeFileSync(MEMORY_MD, md);
 console.log(`Wrote ${path.relative(REPO_ROOT, MEMORY_MD)}`);
 console.log(`Flash overhead: ${flashOverhead} B (budget ${FLASH_BUDGET_BYTES} B)`);
-console.log(`RAM overhead:   ${ramOverhead} B (budget ${RAM_BUDGET_BYTES} B)`);
+console.log(
+  `RAM overhead:   ${ramOverheadTotal} B total, ${ramOverheadBeyondRxBuffer} B beyond the RX buffer (budget ${RAM_BUDGET_BYTES} B)`,
+);
 
 if (!flashOk || !ramOk) {
   console.error('LIB-GEN-07 budget exceeded.');

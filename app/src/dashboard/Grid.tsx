@@ -40,12 +40,23 @@ export function Grid({ deviceKey, group, widgets, session }: Props): JSX.Element
       rowHeight={ROW_HEIGHT}
       layout={layout}
       compactType="vertical"
+      // Without this, react-grid-layout's own mousedown/touchstart handling (drag-to-move) races
+      // interactive elements for the same click — control widgets (button/switch/slider, M4)
+      // would silently swallow real user clicks otherwise, since a grid item's whole area is a
+      // drag handle by default. Found via e2e testing: Playwright's synthesized mouse events
+      // reproduced it deterministically, but the same race exists for a real mouse click too.
+      draggableCancel="button, input, select, textarea, a"
       onLayoutChange={(next: Layout[]) => setGroupLayout(deviceKey, group, next)}
     >
       {widgets.map(([id, entry]) => {
         const descriptor = getWidgetDescriptor(entry.declaration.k);
         return (
-          <div key={id} data-orphan={entry.orphan} style={{ opacity: entry.orphan ? 0.5 : 1 }}>
+          <div
+            key={id}
+            data-testid={`widget-${id}`}
+            data-orphan={entry.orphan}
+            style={{ opacity: entry.orphan ? 0.5 : 1 }}
+          >
             {descriptor ? (
               // Suspense covers lazy-loaded widgets (currently just `gauge`, SPEC.md §2.2) —
               // a no-op boundary for every other widget, which resolves synchronously.

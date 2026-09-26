@@ -6,10 +6,10 @@ The simulator is a virtual device speaking protocol v1 exactly like a real one �
 
 ## The "All widgets" scenario
 
-The one scenario available today declares every implemented widget kind — currently the P0 set: [line chart](../widgets/line), [value](../widgets/value), [gauge](../widgets/gauge), [indicator](../widgets/led), and [event log](../widgets/log) — each fed by that widget's own demo data generator, plus an occasional log event. It's driven by the same descriptor every widget ships with (SPEC.md §4, DOC-01), so it stays in sync automatically as new widgets are added.
+The one scenario available today declares every implemented widget kind — the P0 set: [line chart](../widgets/line), [value](../widgets/value), [gauge](../widgets/gauge), [indicator](../widgets/led), [event log](../widgets/log), and — since M4 — the three control widgets, button, switch, and slider. Display widgets are each fed by their own demo data generator; controls actually respond to what you do with them: the switch toggles for real, the slider clamps anything past 200 and echoes what was really applied (SPEC.md §3.6 rule 4), and the button is rejected whenever the switch is on (mirroring the library's own `onControl` reject example, §6.5). It's driven by the same descriptor every widget ships with (SPEC.md §4, DOC-01), so it stays in sync automatically as new widgets are added.
 
 ::: info Scope note
-More scenarios ("Weather station", "Motor control" with rejected commands, "Stress test", "Protocol errors") are listed in SPEC.md §5.7 (APP-SIM-02) but not built yet — some need bidirectional controls (M4) or aren't required until later. The simulator is also what M2's own acceptance criterion checks: the "All widgets (P0)" scenario renders correctly.
+Dedicated named scenarios ("Weather station" as its own picker entry, "Stress test", "Protocol errors") are listed in SPEC.md §5.7 (APP-SIM-02) but not built yet — the reject/clamp behavior described above already covers what "Motor control" was meant to demonstrate, just as part of "All widgets" rather than a separate scenario. The simulator is also what M2's and M4's acceptance criteria check against directly, including the e2e suite (`app/e2e/controls.spec.ts`).
 :::
 
 ## Disconnecting

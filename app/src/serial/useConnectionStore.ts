@@ -176,6 +176,11 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => {
       });
       wireTransport(transport, session, set);
       set({ transport, session });
+      // QA-03 e2e test hook only — the app itself never reads this. Harmless to expose
+      // unconditionally: the simulator is already fake data, not a real device or user data.
+      (
+        window as typeof window & { __serialDashSimulator?: SimulatorTransport }
+      ).__serialDashSimulator = transport;
       await transport.connect();
     },
 

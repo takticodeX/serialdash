@@ -21,6 +21,21 @@
 
 #include <string>
 
+// Real Arduino.h; used by SerialDash's RX path (§6.3) for handshake/ping timing. The native
+// tests that need `millis()` to actually advance drive it themselves via advanceMillis() below —
+// there's no wall clock to read on the host that would mean anything.
+//
+// A function-local static (not a namespace-scope `inline` variable — that needs C++17, and this
+// header is included from multiple translation units under this project's C++11 target) so every
+// TU's copy of these inline functions shares the exact same counter, per the standard's
+// single-instance guarantee for statics in inline functions since C++98.
+inline unsigned long& fakeMillisRef() {
+  static unsigned long value = 0;
+  return value;
+}
+inline unsigned long millis() { return fakeMillisRef(); }
+inline void advanceMillis(unsigned long ms) { fakeMillisRef() += ms; }
+
 // On real cores, F("...") wraps a string literal so it is stored in flash
 // (PROGMEM) instead of RAM (LIB-GEN-09). On this host build there is no
 // separate flash address space, so __FlashStringHelper is just a distinct
@@ -68,13 +83,28 @@ class Stream : public Print {
   virtual int peek() { return -1; }
 };
 
-// Captures everything written to it in a std::string, so native tests can
-// make assertions on the exact bytes SerialDash produced.
+// Captures everything written to it in a std::string, so native tests can make assertions on the
+// exact bytes SerialDash produced. Also holds an input queue (`feedInput`) so RX-path tests
+// (§6.3) can simulate the app sending bytes, consumed via the usual available()/read().
 class FakeStream : public Stream {
  public:
   size_t write(uint8_t c) override {
     captured.push_back(static_cast<char>(c));
     return 1;
   }
+
+  int available() override { return static_cast<int>(toRead.size() - readPos); }
+
+  int read() override {
+    if (readPos >= toRead.size()) return -1;
+    return static_cast<uint8_t>(toRead[readPos++]);
+  }
+
+  void feedInput(const char* s) { toRead += s; }
+
   std::string captured;
+
+ private:
+  std::string toRead;
+  size_t readPos = 0;
 };

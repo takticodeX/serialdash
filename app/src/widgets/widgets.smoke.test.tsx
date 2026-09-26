@@ -13,7 +13,7 @@ registerBuiltinWidgets();
 // not a bug in the widgets, a jsdom limitation. Those two are verified by rendering the app in a
 // real browser instead (see the M2 Playwright pass against the simulator); this smoke test covers
 // the plain-DOM widgets.
-const DOM_ONLY_KINDS = new Set(['value', 'led', 'log']);
+const DOM_ONLY_KINDS = new Set(['value', 'led', 'log', 'button', 'switch', 'slider']);
 
 describe('P0 widget components render without throwing, fed by their own demo', () => {
   let container: HTMLDivElement;

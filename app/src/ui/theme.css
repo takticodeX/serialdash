@@ -208,3 +208,31 @@ button:disabled {
   color: var(--console-bg);
   border-radius: 2px;
 }
+
+/* SPEC.md §3.6: control widget states — pending (animated dashed border), error, disabled. */
+.control-card[data-control-status='pending'] {
+  border-color: var(--color-accent);
+  border-style: dashed;
+  animation: control-pending-pulse 1s linear infinite;
+}
+
+.control-card[data-control-status='error'] {
+  border-color: var(--color-danger);
+  border-style: solid;
+}
+
+.control-card[data-control-disabled='true'] {
+  opacity: 0.5;
+}
+
+@keyframes control-pending-pulse {
+  0% {
+    border-color: var(--color-accent);
+  }
+  50% {
+    border-color: transparent;
+  }
+  100% {
+    border-color: var(--color-accent);
+  }
+}

@@ -24,6 +24,7 @@ EXAMPLES=(
   "01_TextOnly"
   "02_FirstChart"
   "03_WeatherStation"
+  "04_Controls"
   "07_TextCommands"
 )
 

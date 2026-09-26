@@ -8,9 +8,10 @@ interface Props {
   onClose: () => void;
 }
 
-/** §5.8: language, theme, auto-reconnect, auto-discovery, console line limit, clear local data,
- * about. Plotter compatibility / ack timeout / buffer capacity toggles are deferred — they
- * configure subsystems (Plotter parser, DeviceSession timeouts) that arrive in M4/M6. */
+/** §5.8: language, theme, auto-reconnect, auto-discovery, console line limit, control ack
+ * timeout, clear local data, about. Plotter compatibility / buffer capacity toggles are still
+ * deferred — they configure subsystems (Plotter parser, ChannelStore capacity) that arrive in
+ * M6. */
 export function SettingsPanel({ onClose }: Props): JSX.Element {
   const { t, i18n } = useTranslation();
   const theme = useSettingsStore((s) => s.theme);
@@ -21,6 +22,8 @@ export function SettingsPanel({ onClose }: Props): JSX.Element {
   const setAutoDiscovery = useSettingsStore((s) => s.setAutoDiscovery);
   const consoleLineLimit = useSettingsStore((s) => s.consoleLineLimit);
   const setConsoleLineLimit = useSettingsStore((s) => s.setConsoleLineLimit);
+  const ackTimeoutMs = useSettingsStore((s) => s.ackTimeoutMs);
+  const setAckTimeoutMs = useSettingsStore((s) => s.setAckTimeoutMs);
   const clearAllLocalData = useSettingsStore((s) => s.clearAllLocalData);
 
   const handleClearData = (): void => {
@@ -108,6 +111,18 @@ export function SettingsPanel({ onClose }: Props): JSX.Element {
           step={100}
           value={consoleLineLimit}
           onChange={(e) => setConsoleLineLimit(Number(e.target.value))}
+          style={{ display: 'block', marginTop: 4, width: '100%' }}
+        />
+      </label>
+
+      <label style={{ display: 'block', marginTop: 16 }}>
+        {t('settings.ackTimeoutMs')}
+        <input
+          type="number"
+          min={100}
+          step={100}
+          value={ackTimeoutMs}
+          onChange={(e) => setAckTimeoutMs(Number(e.target.value))}
           style={{ display: 'block', marginTop: 4, width: '100%' }}
         />
       </label>
