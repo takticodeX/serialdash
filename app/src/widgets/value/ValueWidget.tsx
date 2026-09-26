@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useChannelSeries } from '../../data/useChannelSeries';
 import type { ChannelValue } from '../../data/ChannelStore';
 import { WidgetCard, primaryChannel, useStale, widgetTitle } from '../common';
+import { useWidgetStatsStore } from '../../dashboard/useWidgetStatsStore';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { ValueWidget as ValueWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -35,6 +36,7 @@ export function ValueWidgetComponent({
   const previous = series[series.length - 2];
   const stale = useStale(latest?.t, declaration.stale);
   const color = severityColor(latest?.v, declaration.warn, declaration.alarm);
+  const statsResetAt = useWidgetStatsStore((s) => s.resetAt[declaration.id] ?? 0);
 
   const trend =
     declaration.trend && typeof latest?.v === 'number' && typeof previous?.v === 'number'
@@ -45,16 +47,38 @@ export function ValueWidgetComponent({
           : '·'
       : undefined;
 
+  // APP-DSH-07 "azzera statistiche" resets the window these are computed over (statsResetAt),
+  // not the underlying channel data other widgets on the same channel may still need.
+  let sessionMin: number | undefined;
+  let sessionMax: number | undefined;
+  if (declaration.minmax) {
+    for (const point of series) {
+      if (point.t < statsResetAt || typeof point.v !== 'number') continue;
+      if (sessionMin === undefined || point.v < sessionMin) sessionMin = point.v;
+      if (sessionMax === undefined || point.v > sessionMax) sessionMax = point.v;
+    }
+  }
+
   return (
     <WidgetCard title={widgetTitle(declaration)} stale={stale} staleLabel={t('widgets.stale')}>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, height: '100%' }}>
-        <span style={{ fontSize: '1.8em', fontWeight: 700, color }}>
-          {formatValue(latest?.v, declaration.dec)}
-        </span>
-        {declaration.unit && (
-          <span style={{ color: 'var(--color-text-muted)' }}>{declaration.unit}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', height: '100%', gap: 4 }}>
+        <div style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+          <span style={{ fontSize: '1.8em', fontWeight: 700, color }}>
+            {formatValue(latest?.v, declaration.dec)}
+          </span>
+          {declaration.unit && (
+            <span style={{ color: 'var(--color-text-muted)' }}>{declaration.unit}</span>
+          )}
+          {trend && <span aria-hidden="true">{trend}</span>}
+        </div>
+        {declaration.minmax && sessionMin !== undefined && sessionMax !== undefined && (
+          <div style={{ fontSize: '0.75em', color: 'var(--color-text-muted)' }}>
+            {t('widgets.value.minmax', {
+              min: formatValue(sessionMin, declaration.dec),
+              max: formatValue(sessionMax, declaration.dec),
+            })}
+          </div>
         )}
-        {trend && <span aria-hidden="true">{trend}</span>}
       </div>
     </WidgetCard>
   );

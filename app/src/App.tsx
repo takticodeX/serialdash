@@ -13,6 +13,7 @@ import { useSettingsStore } from './settings/useSettingsStore';
 import { useConsoleStore } from './console/useConsoleStore';
 import { usePanelLayoutStore } from './console/usePanelLayoutStore';
 import { useDashboardLayoutStore } from './dashboard/useDashboardLayoutStore';
+import { useWidgetOverridesStore } from './dashboard/useWidgetOverridesStore';
 import { isWebSerialSupported } from './serial/webSerialTransport';
 import { registerBuiltinWidgets } from './widgets/index';
 
@@ -26,6 +27,7 @@ export function App(): JSX.Element {
   const loadSendHistory = useConsoleStore((s) => s.loadSendHistory);
   const hydrateConsoleLayout = usePanelLayoutStore((s) => s.hydrate);
   const hydrateDashboardLayout = useDashboardLayoutStore((s) => s.hydrate);
+  const hydrateWidgetOverrides = useWidgetOverridesStore((s) => s.hydrate);
   const connectionState = useConnectionStore((s) => s.state);
   const session = useConnectionStore((s) => s.session);
   const port = useConnectionStore((s) => s.port);
@@ -43,7 +45,14 @@ export function App(): JSX.Element {
     void loadSendHistory();
     void hydrateConsoleLayout();
     void hydrateDashboardLayout();
-  }, [hydrateSettings, loadSendHistory, hydrateConsoleLayout, hydrateDashboardLayout]);
+    void hydrateWidgetOverrides();
+  }, [
+    hydrateSettings,
+    loadSendHistory,
+    hydrateConsoleLayout,
+    hydrateDashboardLayout,
+    hydrateWidgetOverrides,
+  ]);
 
   useEffect(() => {
     if (connectionState === 'connected') setShowConnectScreen(false);

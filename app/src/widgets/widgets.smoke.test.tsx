@@ -9,11 +9,26 @@ import { DeviceSession } from '../session/DeviceSession';
 registerBuiltinWidgets();
 
 // jsdom has no real <canvas> 2D context (that needs the native `canvas` package, which this repo
-// doesn't otherwise need), so uPlot (line) and ECharts (gauge) fail at actual paint time here —
-// not a bug in the widgets, a jsdom limitation. Those two are verified by rendering the app in a
-// real browser instead (see the M2 Playwright pass against the simulator); this smoke test covers
-// the plain-DOM widgets.
-const DOM_ONLY_KINDS = new Set(['value', 'led', 'log', 'button', 'switch', 'slider']);
+// doesn't otherwise need), so uPlot (line) and ECharts (gauge/pie/heat) fail at actual paint time
+// here — not a bug in the widgets, a jsdom limitation. Those are verified by rendering the app in
+// a real browser instead (see the M2/M5 Playwright passes against the simulator); this smoke test
+// covers every plain-DOM/SVG widget (everything else).
+const DOM_ONLY_KINDS = new Set([
+  'value',
+  'led',
+  'log',
+  'button',
+  'switch',
+  'slider',
+  'level',
+  'xy',
+  'bar',
+  'table',
+  'number',
+  'select',
+  'text',
+  'color',
+]);
 
 describe('P0 widget components render without throwing, fed by their own demo', () => {
   let container: HTMLDivElement;

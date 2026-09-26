@@ -13,6 +13,8 @@ interface PersistedSettings {
   autoDiscovery: boolean;
   /** SPEC.md §3.6 rule 5 / §5.8: ms to wait for a control's `ack` before reverting it. */
   ackTimeoutMs: number;
+  /** APP-DSH-09: disables drag/resize on the dashboard grid to prevent accidental changes. */
+  lockLayout: boolean;
 }
 
 export const DEFAULT_ACK_TIMEOUT_MS = 1000;
@@ -23,6 +25,7 @@ const DEFAULTS: PersistedSettings = {
   consoleLineLimit: DEFAULT_CONSOLE_LINE_LIMIT,
   autoDiscovery: true,
   ackTimeoutMs: DEFAULT_ACK_TIMEOUT_MS,
+  lockLayout: false,
 };
 
 interface SettingsStore extends PersistedSettings {
@@ -33,12 +36,13 @@ interface SettingsStore extends PersistedSettings {
   setConsoleLineLimit: (value: number) => void;
   setAutoDiscovery: (value: boolean) => void;
   setAckTimeoutMs: (value: number) => void;
+  setLockLayout: (value: boolean) => void;
   clearAllLocalData: () => Promise<void>;
 }
 
 function persisted(state: SettingsStore): PersistedSettings {
-  const { theme, autoReconnect, consoleLineLimit, autoDiscovery, ackTimeoutMs } = state;
-  return { theme, autoReconnect, consoleLineLimit, autoDiscovery, ackTimeoutMs };
+  const { theme, autoReconnect, consoleLineLimit, autoDiscovery, ackTimeoutMs, lockLayout } = state;
+  return { theme, autoReconnect, consoleLineLimit, autoDiscovery, ackTimeoutMs, lockLayout };
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -72,6 +76,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   setAckTimeoutMs: (ackTimeoutMs) => {
     set({ ackTimeoutMs });
+    void kvSet('settings', persisted(get()));
+  },
+
+  setLockLayout: (lockLayout) => {
+    set({ lockLayout });
     void kvSet('settings', persisted(get()));
   },
 

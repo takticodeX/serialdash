@@ -72,14 +72,23 @@ const MAX_EVENTS = 500; // matches the `log` widget's own default (SPEC.md §4.1
 
 type Listener = () => void;
 
-function inferAutoWidgetKind(value: ChannelValue): 'line' | 'led' | 'value' | undefined {
+function inferAutoWidgetKind(
+  value: ChannelValue,
+): 'line' | 'led' | 'value' | 'xy' | 'bar' | 'table' | undefined {
   if (typeof value === 'number') return 'line';
   if (typeof value === 'boolean') return 'led';
   if (typeof value === 'string') return 'value';
-  // Pair/array/object shapes map to xy/bar/table, which are P1 widgets that arrive in M5 — see
-  // the M2 plan's flagged scope reduction. The channel still gets buffered in ChannelStore; it
-  // just has no widget yet.
-  return undefined;
+  if (value === null) return undefined; // no shape to infer a widget from yet
+  if (Array.isArray(value)) {
+    // A bare 2-number array is genuinely ambiguous — schema-valid as both an `[x,y]` pair and a
+    // 2-element spectrum (APP-DAT-03's own `channels` schema is `anyOf`, not `oneOf`, precisely
+    // because which one it means depends on the consuming widget, not the JSON shape). A device
+    // that cares about the distinction declares the widget itself (PRT-32 auto-discovery only
+    // ever applies to *undeclared* channels); for a guess with no other signal, 2 elements reads
+    // as a coordinate pair more often than a 2-bin spectrum.
+    return value.length === 2 ? 'xy' : 'bar';
+  }
+  return 'table'; // plain object (label -> number/string)
 }
 
 /**

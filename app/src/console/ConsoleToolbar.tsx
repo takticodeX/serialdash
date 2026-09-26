@@ -1,16 +1,7 @@
 import type { JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConsoleStore } from './useConsoleStore';
-
-function downloadTextFile(filename: string, text: string): void {
-  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  a.click();
-  URL.revokeObjectURL(url);
-}
+import { downloadTextFile } from '../ui/downloadTextFile';
 
 /** APP-CSL-03 (timestamps, wrap), APP-CSL-04 (search), APP-CSL-08 (hex), APP-CSL-09 (clear/copy/save). */
 export function ConsoleToolbar(): JSX.Element {

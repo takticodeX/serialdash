@@ -103,7 +103,32 @@
   },
   "dashboard": {
     "empty": "No widgets in this group yet.",
-    "unsupportedWidget": "Unsupported widget type \"{{kind}}\""
+    "unsupportedWidget": "Unsupported widget type \"{{kind}}\"",
+    "addWidget": "Add widget",
+    "exportProfile": "Export profile",
+    "importProfile": "Import profile",
+    "lockLayout": "Lock layout",
+    "panel": {
+      "title": "Widget settings",
+      "widgetType": "Widget type",
+      "deleteWidget": "Delete widget",
+      "resetToDevice": "Reset to device value"
+    },
+    "toolbar": {
+      "settings": "Widget settings",
+      "fullscreen": "Full screen",
+      "exitFullscreen": "Exit full screen",
+      "exportCsv": "Export data as CSV",
+      "resetStats": "Reset statistics"
+    },
+    "addWidgetDialog": {
+      "title": "Add widget",
+      "type": "Type",
+      "channel": "Channel",
+      "id": "Widget id",
+      "noChannels": "No channels available yet — connect a device or wait for data.",
+      "add": "Add"
+    }
   },
   "widgets": {
     "stale": "No recent data",
@@ -111,7 +136,11 @@
       "name": "Line chart",
       "description": "Real-time line chart for one or more numeric channels."
     },
-    "value": { "name": "Value", "description": "A numeric or text KPI card." },
+    "value": {
+      "name": "Value",
+      "description": "A numeric or text KPI card.",
+      "minmax": "min {{min}} · max {{max}}"
+    },
     "gauge": { "name": "Gauge", "description": "A needle gauge with configurable color zones." },
     "led": {
       "name": "Indicator",
@@ -121,6 +150,21 @@
     "button": { "name": "Button", "description": "A push button that sends a command on click." },
     "switch": { "name": "Switch", "description": "An on/off toggle bound to a boolean control." },
     "slider": { "name": "Slider", "description": "A draggable numeric control." },
+    "xy": { "name": "XY plot", "description": "A scatter or line plot of [x, y] pairs." },
+    "bar": { "name": "Bar chart", "description": "One bar per channel, label, or array element." },
+    "pie": { "name": "Pie chart", "description": "A pie or donut chart of labeled values." },
+    "level": { "name": "Level bar", "description": "A horizontal or vertical fill/progress bar." },
+    "table": {
+      "name": "Table",
+      "description": "A key-value table, highlighting changed rows.",
+      "key": "Key",
+      "value": "Value"
+    },
+    "heat": { "name": "Heatmap", "description": "A rows x cols color-mapped matrix." },
+    "number": { "name": "Number field", "description": "A numeric input control." },
+    "select": { "name": "Select", "description": "A dropdown choice control." },
+    "text": { "name": "Text field", "description": "A text input control." },
+    "color": { "name": "Color picker", "description": "A #RRGGBB color control." },
     "noResponse": "No response from the device"
   }
 }

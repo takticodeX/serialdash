@@ -180,12 +180,19 @@ describe('APP-DAT-03 auto-discovery', () => {
     expect(session.getWidgets().get('mode')?.declaration).toMatchObject({ k: 'value' });
   });
 
-  it('does not create a widget for pair/array/object shapes (xy/bar/table are P1, arrive in M5)', () => {
+  it('creates xy/bar/table widgets for pair/array/object channel shapes (P1, SPEC.md §4.1)', () => {
     const session = new DeviceSession(() => {});
     session.feed({ t: 'd', d: { pos: [1, 2], spectrum: [1, 2, 3], obj: { a: 1 } } } as DataMessage);
+    expect(session.getWidgets().get('pos')?.declaration).toMatchObject({ k: 'xy', ch: 'pos' });
+    expect(session.getWidgets().get('spectrum')?.declaration).toMatchObject({ k: 'bar' });
+    expect(session.getWidgets().get('obj')?.declaration).toMatchObject({ k: 'table' });
+  });
+
+  it('treats null as not-yet-shaped and creates no widget for it', () => {
+    const session = new DeviceSession(() => {});
+    session.feed({ t: 'd', d: { unknown: null } } as DataMessage);
     expect(session.getWidgets().size).toBe(0);
-    // the data is still buffered even without a widget:
-    expect(session.channelStore.series('pos')).toHaveLength(1);
+    expect(session.channelStore.series('unknown')).toHaveLength(1); // still buffered
   });
 
   it('does not auto-discover a channel already referenced by a declared widget', () => {

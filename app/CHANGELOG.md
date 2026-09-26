@@ -22,6 +22,23 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   mirroring the library's own `onControl` example; first Playwright e2e suite
   (`app/e2e/controls.spec.ts`, QA-03) covering round-trip, rejection, timeout, and external
   update.
+- **M5 — Full dashboard**: per-widget overrides (config panel wired to every widget's
+  `ConfigPanel`, "reset to device value") and kind switching between value-compatible widgets
+  (line/value/gauge/level, APP-DSH-05); user-created widgets bound to any known channel
+  (`AddWidgetDialog`); per-widget toolbar (fullscreen, CSV export, value-widget stats reset);
+  dashboard profile export/import (`.serialdash.json` — layout + overrides + user widgets) and a
+  layout-lock toggle; the 10 P1 widgets — display: xy, bar, pie, level, table, heat; controls:
+  number, select, text, color; auto-discovery extended to pair/array/object channel shapes
+  (xy/bar/table); second Playwright e2e suite (`app/e2e/dashboard.spec.ts`, QA-03) covering
+  override editing, kind switching, adding a widget, lock layout, and profile export/import.
+
+### Deviations
+
+- M5: PNG export of a widget or the dashboard (APP-DSH-07) is deferred in full — none of the
+  app's existing widgets have any screenshot capability, and adding one means a new rendering
+  dependency; CSV export covers the same need for now. "Reset to device value" is whole-widget
+  rather than per-property, since today's `ConfigPanel`s are too minimal (1-2 fields) for a
+  per-field revert control to be proportionate.
 
 ### Fixed
 

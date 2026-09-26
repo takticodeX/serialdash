@@ -50,7 +50,9 @@ test('reject: pressing the button while the switch is on shows an error and does
   // demo-button declares `confirm` (SPEC.md §4.3) — accept the native dialog it triggers.
   // Playwright auto-dismisses dialogs by default, which would silently cancel the send.
   page.once('dialog', (dialog) => void dialog.accept());
-  await page.getByTestId('widget-demo-button').getByRole('button').click();
+  // Named, not the bare role, since M5 added a per-widget toolbar (settings/fullscreen/CSV
+  // export) inside the same test id — a bare getByRole('button') is ambiguous now.
+  await page.getByTestId('widget-demo-button').getByRole('button', { name: 'Reboot' }).click();
 
   await expect(page.getByTestId('widget-demo-button').locator('.control-card')).toHaveAttribute(
     'data-control-status',
@@ -73,7 +75,9 @@ test('timeout: no response within the configured window reverts the control and 
   // The simulator's ack always lands ~30ms after a command (simulatorTransport.ts,
   // RESPONSE_DELAY_MS) — an ack timeout shorter than that guarantees the timeout path fires
   // deterministically instead of racing the simulator's real response.
-  await page.getByRole('button', { name: 'Settings' }).click();
+  // Exact match — M5's per-widget "Widget settings" buttons would otherwise also match this
+  // substring, since Playwright's accessible-name matching isn't exact by default.
+  await page.getByRole('button', { name: 'Settings', exact: true }).click();
   await page.getByLabel('Control response timeout (ms)').fill('5');
   await page.getByRole('button', { name: 'Close' }).click();
 

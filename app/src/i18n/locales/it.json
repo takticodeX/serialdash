@@ -103,7 +103,32 @@
   },
   "dashboard": {
     "empty": "Ancora nessun widget in questo gruppo.",
-    "unsupportedWidget": "Tipo di widget non supportato \"{{kind}}\""
+    "unsupportedWidget": "Tipo di widget non supportato \"{{kind}}\"",
+    "addWidget": "Aggiungi widget",
+    "exportProfile": "Esporta profilo",
+    "importProfile": "Importa profilo",
+    "lockLayout": "Blocca layout",
+    "panel": {
+      "title": "Impostazioni widget",
+      "widgetType": "Tipo di widget",
+      "deleteWidget": "Elimina widget",
+      "resetToDevice": "Ripristina valore del dispositivo"
+    },
+    "toolbar": {
+      "settings": "Impostazioni widget",
+      "fullscreen": "Schermo intero",
+      "exitFullscreen": "Esci da schermo intero",
+      "exportCsv": "Esporta dati come CSV",
+      "resetStats": "Azzera statistiche"
+    },
+    "addWidgetDialog": {
+      "title": "Aggiungi widget",
+      "type": "Tipo",
+      "channel": "Canale",
+      "id": "Id widget",
+      "noChannels": "Nessun canale disponibile ancora — connetti un dispositivo o attendi i dati.",
+      "add": "Aggiungi"
+    }
   },
   "widgets": {
     "stale": "Nessun dato recente",
@@ -111,7 +136,11 @@
       "name": "Grafico a linea",
       "description": "Grafico a linea in tempo reale per uno o più canali numerici."
     },
-    "value": { "name": "Valore", "description": "Una card numerica o testuale (KPI)." },
+    "value": {
+      "name": "Valore",
+      "description": "Una card numerica o testuale (KPI).",
+      "minmax": "min {{min}} · max {{max}}"
+    },
     "gauge": {
       "name": "Lancetta",
       "description": "Un indicatore a lancetta con zone colorate configurabili."
@@ -133,6 +162,33 @@
       "description": "Un interruttore on/off collegato a un controllo booleano."
     },
     "slider": { "name": "Cursore", "description": "Un controllo numerico trascinabile." },
+    "xy": {
+      "name": "Grafico XY",
+      "description": "Un grafico a dispersione o linee di coppie [x, y]."
+    },
+    "bar": {
+      "name": "Grafico a barre",
+      "description": "Una barra per canale, etichetta o elemento dell'array."
+    },
+    "pie": {
+      "name": "Grafico a torta",
+      "description": "Un grafico a torta o ciambella di valori etichettati."
+    },
+    "level": {
+      "name": "Barra di livello",
+      "description": "Una barra di riempimento/avanzamento orizzontale o verticale."
+    },
+    "table": {
+      "name": "Tabella",
+      "description": "Una tabella chiave-valore, evidenzia le righe cambiate.",
+      "key": "Chiave",
+      "value": "Valore"
+    },
+    "heat": { "name": "Mappa di calore", "description": "Una matrice righe x colonne colorata." },
+    "number": { "name": "Campo numerico", "description": "Un controllo di inserimento numerico." },
+    "select": { "name": "Selezione", "description": "Un controllo a scelta da menu." },
+    "text": { "name": "Campo di testo", "description": "Un controllo di inserimento testo." },
+    "color": { "name": "Selettore colore", "description": "Un controllo colore #RRGGBB." },
     "noResponse": "Nessuna risposta dal dispositivo"
   }
 }
