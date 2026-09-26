@@ -1,0 +1,15 @@
+{
+  "name": "@serialdash/size-report",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Generates docs/library/memory.md from arduino-cli's compile size output (SPEC.md §9.3, DOC-14).",
+  "type": "module",
+  "scripts": {
+    "gen": "tsx src/index.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.7.5",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3"
+  }
+}

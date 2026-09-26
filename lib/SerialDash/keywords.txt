@@ -1,0 +1,136 @@
+#######################################
+# Syntax Coloring Map for SerialDash
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+SerialDash	KEYWORD1
+WidgetBuilder	KEYWORD1
+UpdateBuilder	KEYWORD1
+PropertyWriter	KEYWORD1
+DataBuilder	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+
+begin	KEYWORD2
+loop	KEYWORD2
+onDeclare	KEYWORD2
+appConnected	KEYWORD2
+
+widget	KEYWORD2
+line	KEYWORD2
+value	KEYWORD2
+gauge	KEYWORD2
+led	KEYWORD2
+log	KEYWORD2
+xy	KEYWORD2
+bar	KEYWORD2
+pie	KEYWORD2
+level	KEYWORD2
+table	KEYWORD2
+heat	KEYWORD2
+hist	KEYWORD2
+polar	KEYWORD2
+compass	KEYWORD2
+attitude	KEYWORD2
+button	KEYWORD2
+toggle	KEYWORD2
+slider	KEYWORD2
+number	KEYWORD2
+select	KEYWORD2
+text	KEYWORD2
+color	KEYWORD2
+
+update	KEYWORD2
+remove	KEYWORD2
+removeAll	KEYWORD2
+
+title	KEYWORD2
+ch	KEYWORD2
+labels	KEYWORD2
+colors	KEYWORD2
+group	KEYWORD2
+order	KEYWORD2
+size	KEYWORD2
+unit	KEYWORD2
+decimals	KEYWORD2
+stale	KEYWORD2
+range	KEYWORD2
+disabled	KEYWORD2
+confirm	KEYWORD2
+prop	KEYWORD2
+
+window	KEYWORD2
+step	KEYWORD2
+fill	KEYWORD2
+stepSize	KEYWORD2
+trend	KEYWORD2
+minmax	KEYWORD2
+warn	KEYWORD2
+alarm	KEYWORD2
+on	KEYWORD2
+off	KEYWORD2
+state	KEYWORD2
+zone	KEYWORD2
+vert	KEYWORD2
+minLevel	KEYWORD2
+sources	KEYWORD2
+limit	KEYWORD2
+placeholder	KEYWORD2
+donut	KEYWORD2
+pct	KEYWORD2
+horiz	KEYWORD2
+xlabels	KEYWORD2
+cols	KEYWORD2
+rows	KEYWORD2
+palette	KEYWORD2
+interp	KEYWORD2
+bins	KEYWORD2
+samples	KEYWORD2
+rmax	KEYWORD2
+angleRange	KEYWORD2
+sweep	KEYWORD2
+ref	KEYWORD2
+hold	KEYWORD2
+label	KEYWORD2
+xrange	KEYWORD2
+yrange	KEYWORD2
+trail	KEYWORD2
+mode	KEYWORD2
+xlabel	KEYWORD2
+ylabel	KEYWORD2
+option	KEYWORD2
+swatches	KEYWORD2
+
+data	KEYWORD2
+add	KEYWORD2
+addXY	KEYWORD2
+addArray	KEYWORD2
+map	KEYWORD2
+kv	KEYWORD2
+ts	KEYWORD2
+send	KEYWORD2
+sendXY	KEYWORD2
+sendArray	KEYWORD2
+
+debug	KEYWORD2
+info	KEYWORD2
+error	KEYWORD2
+debugf	KEYWORD2
+infof	KEYWORD2
+warnf	KEYWORD2
+errorf	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+
+SERIALDASH_RX_BUFFER	LITERAL1
+SERIALDASH_MAX_CONTROLS	LITERAL1
+SERIALDASH_MAX_CHANNELS_ARG	LITERAL1
+SERIALDASH_THREAD_SAFE	LITERAL1
+SERIALDASH_FLOAT_DECIMALS	LITERAL1

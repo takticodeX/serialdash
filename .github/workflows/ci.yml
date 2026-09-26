@@ -6,10 +6,9 @@ on:
     branches: [main]
 
 jobs:
-  # M0+M1 scope (SPEC.md §11, §9.4): lint, schema/type generation alignment, protocol test
-  # vectors, app unit tests + build, and the docs site build. E2e against the simulator, native
-  # library tests, example compilation, and the size report are wired in as that code lands
-  # (M2, M3, M6).
+  # M0+M1+M2 scope (SPEC.md §11, §9.4): lint, schema/type generation alignment, protocol test
+  # vectors, app unit tests + build, and the docs site build. E2e against the simulator (M4+) and
+  # the load test (M6) are wired in as that code lands.
   base:
     runs-on: ubuntu-latest
     steps:
@@ -44,3 +43,108 @@ jobs:
 
       - name: Build documentation site
         run: npm run docs:build
+
+  # M3 scope (SPEC.md §9.2, §11): native tests for the library's transmit path (QA-10), every
+  # produced line re-validated against the schema (QA-11), formatting (QA-13's clang-format half),
+  # and the size report (§9.3, DOC-14, LIB-GEN-07). arduino-lint (QA-13's other half) and the
+  # multi-board compile matrix (QA-12) run separately below since they need the Arduino toolchain
+  # rather than PlatformIO/Node.
+  library-native:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - run: npm ci
+
+      - run: pip install platformio
+
+      - name: clang-format (QA-13)
+        run: |
+          find lib/SerialDash -path '*/.pio/*' -prune -o \( -name '*.h' -o -name '*.cpp' \) -print \
+            | xargs clang-format --dry-run --Werror
+
+      - name: Native unit tests (QA-10, PRO-04 encoder round-trip)
+        run: pio test -e native -d lib/SerialDash
+
+      - name: Every line the native tests produced validates against the schema (QA-11)
+        run: |
+          ./lib/SerialDash/.pio/build/native/program /tmp/lib-native-output.jsonl
+          npm run --prefix tools/validate-vectors validate-lines -- /tmp/lib-native-output.jsonl
+
+      - name: Size report (§9.3, DOC-14, LIB-GEN-07 budget)
+        run: |
+          arduino-cli config init
+          arduino-cli core install arduino:avr
+          arduino-cli compile --fqbn arduino:avr:uno --library lib/SerialDash --format json \
+            lib/SerialDash/examples/02_FirstChart > /tmp/with-lib.json
+          arduino-cli compile --fqbn arduino:avr:uno --format json \
+            tools/size-report/fixtures/size-baseline > /tmp/without-lib.json
+          npm run --prefix tools/size-report gen -- /tmp/with-lib.json /tmp/without-lib.json
+          echo "docs/library/memory.md (informational diff, not gated — the date line always"
+          echo "changes; only the size numbers and the LIB-GEN-07 pass/fail above are load-bearing):"
+          git diff --stat docs/library/memory.md || true
+
+  # QA-12: arduino-lint (Library Manager mode) plus every example compiled for every board
+  # LIB-GEN-03 declares as tested. Split from library-native above since these need the real
+  # Arduino toolchain/board cores rather than PlatformIO.
+  library-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/arduino-lint-action@v1
+        with:
+          library-manager: update
+          project-type: library
+          path: lib/SerialDash
+
+  library-compile:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - fqbn: arduino:avr:uno
+          - fqbn: arduino:avr:mega
+          - fqbn: esp32:esp32:esp32
+            platforms: |
+              - name: esp32:esp32
+                source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          - fqbn: esp32:esp32:esp32s3
+            platforms: |
+              - name: esp32:esp32
+                source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          - fqbn: esp32:esp32:esp32c3
+            platforms: |
+              - name: esp32:esp32
+                source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+          - fqbn: esp8266:esp8266:nodemcuv2
+            platforms: |
+              - name: esp8266:esp8266
+                source-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
+          - fqbn: rp2040:rp2040:rpipico
+            platforms: |
+              - name: rp2040:rp2040
+                source-url: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+          - fqbn: arduino:samd:mkrzero
+    steps:
+      - uses: actions/checkout@v4
+      - uses: arduino/compile-sketches@v1
+        with:
+          fqbn: ${{ matrix.fqbn }}
+          platforms: ${{ matrix.platforms }}
+          libraries: |
+            - source-path: lib/SerialDash
+          sketch-paths: |
+            - lib/SerialDash/examples/01_TextOnly
+            - lib/SerialDash/examples/02_FirstChart
+            - lib/SerialDash/examples/03_WeatherStation
+            - lib/SerialDash/examples/07_TextCommands

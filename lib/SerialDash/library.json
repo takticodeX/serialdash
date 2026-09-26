@@ -1,0 +1,33 @@
+{
+  "name": "SerialDash",
+  "version": "0.1.0",
+  "description": "Turn any Arduino/ESP32 sketch into a live web dashboard over a single serial line. No app-side code, no external dependencies, works on any core exposing Stream.",
+  "keywords": ["serial", "dashboard", "iot", "monitoring", "telemetry", "web-serial"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/serialdash/serialdash.git"
+  },
+  "homepage": "https://serialdash.github.io/",
+  "authors": [
+    {
+      "name": "SerialDash contributors",
+      "url": "https://github.com/serialdash/serialdash"
+    }
+  ],
+  "license": "MIT",
+  "frameworks": "arduino",
+  "platforms": "*",
+  "headers": "SerialDash.h",
+  "export": {
+    "include": [
+      "src",
+      "examples",
+      "keywords.txt",
+      "library.properties",
+      "library.json",
+      "README.md",
+      "CHANGELOG.md",
+      "LICENSE"
+    ]
+  }
+}
