@@ -37,6 +37,23 @@ test('a plotter-style line auto-discovers a widget and stays visible in the cons
   await expect(page.getByRole('log')).toContainText('plottertemp:23.4 plotterhum:58');
 });
 
+test('a label:value pair with a space after the colon parses the value, not just the label', async ({
+  page,
+}) => {
+  await connectViaSimulator(page);
+
+  // A real sketch's `Serial.println("spacetemp: " + String(value))` shape — space after the
+  // colon. This used to silently mis-tokenize into {spacetemp: 0} plus a spurious "ch0" holding
+  // the real number instead (Number('') is 0, not NaN — found testing against a real sketch).
+  await injectPlotterLine(page, 'spacetemp: 7');
+  await injectPlotterLine(page, 'spacehum: 14');
+
+  await page.getByRole('tab', { name: 'Auto' }).click();
+  await expect(page.getByTestId('widget-spacetemp')).toBeVisible();
+  await expect(page.getByTestId('widget-spacehum')).toBeVisible();
+  await expect(page.locator('[data-testid^="widget-ch"]')).toHaveCount(0);
+});
+
 test('turning off Plotter compatibility stops recognizing the same line as data', async ({
   page,
 }) => {

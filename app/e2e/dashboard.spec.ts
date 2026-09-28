@@ -62,11 +62,16 @@ test('add widget: a user-created widget appears on the grid without any device d
   await page.getByRole('button', { name: 'Add widget' }).click();
   const dialog = page.getByRole('dialog', { name: 'Add widget' });
   await expect(dialog).toBeVisible();
+  const boundChannel = await dialog.locator('select').nth(1).inputValue();
   await dialog.getByRole('button', { name: 'Add' }).click();
 
   await expect(dialog).not.toBeVisible();
   await expect(async () => expect(await widgetCount()).toBe(before + 1)).toPass();
-  await expect(page.locator('[data-testid^="widget-user-"]')).toHaveCount(1);
+  const newWidget = page.locator('[data-testid^="widget-user-"]');
+  await expect(newWidget).toHaveCount(1);
+  // The title defaults to the bound channel's name, not the widget's own random id — a bare
+  // "user-xxxxxxxx" on screen is meaningless to look at (found from real testing).
+  await expect(newWidget).toContainText(boundChannel);
 });
 
 test('add widget: a control kind excludes ids that already have their own widget', async ({

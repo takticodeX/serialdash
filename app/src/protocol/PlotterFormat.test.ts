@@ -10,6 +10,22 @@ describe('APP-DAT-04 Arduino Serial Plotter compatibility', () => {
     expect(parsePlotterLine('temp:23.4,hum:58')).toEqual({ temp: 23.4, hum: 58 });
   });
 
+  it('allows whitespace after the colon — a common real-world sketch style ("temp: " + value)', () => {
+    // Previously mis-tokenized: splitting on all whitespace first turned "temp: 7" into the two
+    // separate tokens "temp:" and "7", and Number('') is 0 (not NaN), so this silently produced
+    // {temp: 0} plus a spurious ch0 instead of {temp: 7} — found testing against a real sketch.
+    expect(parsePlotterLine('temp: 7')).toEqual({ temp: 7 });
+    expect(parsePlotterLine('humid: 14')).toEqual({ humid: 14 });
+  });
+
+  it('allows whitespace on both sides of the colon', () => {
+    expect(parsePlotterLine('temp : 7')).toEqual({ temp: 7 });
+  });
+
+  it('parses two label:value pairs each with a space after the colon, space-separated', () => {
+    expect(parsePlotterLine('temp: 23.4 hum: 58')).toEqual({ temp: 23.4, hum: 58 });
+  });
+
   it('parses bare comma-separated numbers as positionally-named channels', () => {
     expect(parsePlotterLine('23.4,58')).toEqual({ ch0: 23.4, ch1: 58 });
   });

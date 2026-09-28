@@ -70,3 +70,12 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   second) while open, which most browsers handle badly (the dropdown stops responding to clicks);
   it's now snapshotted once when the dialog opens. `gauge`'s default size rendered as a squashed
   arc, not a circle — default height tripled.
+- M6 (found testing a plain `Serial.println()` sketch with no SerialDash library, i.e. exactly
+  the audience APP-DAT-04 targets): `PlotterFormat.parsePlotterLine` tokenized on every space,
+  so `"temp: " + String(v)` (a space after the colon — a common real-world style the SPEC.md
+  example itself doesn't have) split into `"temp:"` and the number as two separate tokens; since
+  `Number('')` is `0`, not `NaN`, this silently produced `{temp: 0}` plus a spurious `ch0` holding
+  the real value, instead of `{temp: <value>}`. Rewritten as a field-scanning parser that treats
+  whitespace around the colon as part of the same field. `AddWidgetDialog`-created display
+  widgets had no default `title`, so they showed their own meaningless random id on screen
+  (`user-mn4h32n`); now defaults to the bound channel's name.

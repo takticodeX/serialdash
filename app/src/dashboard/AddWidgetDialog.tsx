@@ -65,7 +65,10 @@ export function AddWidgetDialog({
       t: 'w',
       id,
       k: kind,
-      ...(!isControl && channel ? { ch: channel } : {}),
+      // A control's id is already the channel name (e.g. "relay") and needs no help — but a
+      // display widget's id is the random `id` above, meaningless on screen (widgetTitle() falls
+      // back to it verbatim, "user-mn4h32n" and all) unless something better is set here.
+      ...(!isControl && channel ? { ch: channel, title: channel } : {}),
     } as WidgetDeclaration;
     addUserWidget(deviceKey, declaration);
     onClose();
