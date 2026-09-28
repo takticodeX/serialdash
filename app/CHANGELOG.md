@@ -41,6 +41,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   lines), and "Stress test" (~1000 undeclared-channel lines/s, relying entirely on
   auto-discovery) — selectable from a new picker on the connect screen. 2 new Playwright e2e
   suites (`app/e2e/plotter.spec.ts`, `app/e2e/simulatorScenarios.spec.ts`).
+- Line chart Min/Max: `LineWidgetConfigPanel` now exposes the fixed-range Min/Max fields
+  `LineWidgetComponent` already supported but never had UI for — lets a channel that arrives with
+  no widget declaration at all (Plotter-format or auto-discovered) get a fixed y-axis instead of
+  staying auto-scaled forever. Clearing a field goes back to auto-scaling for that bound.
+- SerialDash's logo (favicon, PWA icons, connect screen).
 
 ### Deviations
 

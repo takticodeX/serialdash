@@ -165,6 +165,35 @@ export function LineWidgetConfigPanel({
           onChange={(e) => onChange({ win: Number(e.target.value) })}
         />
       </label>
+      <label>
+        Min
+        <input
+          type="number"
+          value={declaration.min ?? ''}
+          placeholder="auto"
+          onChange={(e) =>
+            onChange({
+              // Clearing the field goes back to auto-scaling (LineWidgetComponent only fixes the
+              // range once both min and max are set) — exactOptionalPropertyTypes requires the
+              // cast since `min?: number` alone doesn't admit an explicit `undefined`.
+              min: e.target.value === '' ? undefined : Number(e.target.value),
+            } as Partial<LineWidgetDeclaration>)
+          }
+        />
+      </label>
+      <label>
+        Max
+        <input
+          type="number"
+          value={declaration.max ?? ''}
+          placeholder="auto"
+          onChange={(e) =>
+            onChange({
+              max: e.target.value === '' ? undefined : Number(e.target.value),
+            } as Partial<LineWidgetDeclaration>)
+          }
+        />
+      </label>
     </div>
   );
 }

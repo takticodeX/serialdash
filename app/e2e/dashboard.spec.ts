@@ -51,6 +51,39 @@ test('kind switching: a numeric widget can be switched to a value-compatible kin
   await panel.getByRole('button', { name: 'Close' }).click();
 });
 
+test('line chart: min/max can be set from the config panel and cleared back to auto', async ({
+  page,
+}) => {
+  await connectViaSimulator(page);
+
+  const panel = await openPanel(page, 'widget-demo-line');
+  await expect(panel.getByLabel('Min')).toHaveValue('-1.2');
+  await expect(panel.getByLabel('Max')).toHaveValue('1.2');
+
+  await panel.getByLabel('Min').fill('0');
+  await panel.getByLabel('Max').fill('10');
+  await panel.getByRole('button', { name: 'Close' }).click();
+
+  // Persisted as an override — reopening the panel shows the values just set, not the device's.
+  const panel2 = await openPanel(page, 'widget-demo-line');
+  await expect(panel2.getByLabel('Min')).toHaveValue('0');
+  await expect(panel2.getByLabel('Max')).toHaveValue('10');
+
+  // Clearing a field goes back to auto-scaling for that bound — doesn't require the other field
+  // to also be cleared.
+  await panel2.getByLabel('Min').fill('');
+  await panel2.getByRole('button', { name: 'Close' }).click();
+  const panel3 = await openPanel(page, 'widget-demo-line');
+  await expect(panel3.getByLabel('Min')).toHaveValue('');
+  await expect(panel3.getByLabel('Max')).toHaveValue('10');
+
+  // Whole-widget reset brings back the device's own min/max too.
+  await panel3.getByRole('button', { name: 'Reset to device value' }).click();
+  const panel4 = await openPanel(page, 'widget-demo-line');
+  await expect(panel4.getByLabel('Min')).toHaveValue('-1.2');
+  await expect(panel4.getByLabel('Max')).toHaveValue('1.2');
+});
+
 test('add widget: a user-created widget appears on the grid without any device declaration', async ({
   page,
 }) => {
