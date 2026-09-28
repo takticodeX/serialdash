@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { useConnectionStore } from '../serial/useConnectionStore';
 import { describePort, BAUD_RATE_PRESETS } from '../serial/webSerialTransport';
 import type { SimulatorScenario } from '../transport/simulatorTransport';
+import logo from '../assets/serialdash-logo.png';
 
 // APP-SIM-02. Values are `connect.scenario_*` i18n keys (APP-GEN-04: no literal UI strings).
 const SIMULATOR_SCENARIOS: [SimulatorScenario, string][] = [
@@ -37,7 +38,14 @@ export function ConnectScreen(): JSX.Element {
 
   return (
     <div style={{ maxWidth: 560, margin: '48px auto', padding: '0 16px' }}>
-      <h1>{t('connect.title')}</h1>
+      <img
+        src={logo}
+        alt=""
+        width={96}
+        height={96}
+        style={{ display: 'block', margin: '0 auto 16px' }}
+      />
+      <h1 style={{ textAlign: 'center' }}>{t('connect.title')}</h1>
 
       {error === 'portBusy' && (
         <p role="alert" style={{ color: 'var(--color-danger)' }}>
