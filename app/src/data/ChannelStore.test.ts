@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { ChannelStore } from './ChannelStore';
+import { ChannelStore, listNonEmptyChannelIds } from './ChannelStore';
 
 describe('APP-DAT-01 ChannelStore ring buffer', () => {
   it('appends points and exposes them in arrival order', () => {
@@ -103,6 +103,16 @@ describe('subscribe', () => {
     const store = new ChannelStore();
     store.subscribe('not-yet', () => {});
     expect(store.channelIds()).toContain('not-yet');
+  });
+});
+
+describe('listNonEmptyChannelIds', () => {
+  it('excludes channels a widget merely subscribed to but that never received any data', () => {
+    const store = new ChannelStore();
+    store.ingest({ real: 1 }, undefined);
+    store.subscribe('phantom', () => {}); // e.g. a broken control widget's own id
+    expect(store.channelIds()).toEqual(expect.arrayContaining(['real', 'phantom']));
+    expect(listNonEmptyChannelIds(store)).toEqual(['real']);
   });
 });
 

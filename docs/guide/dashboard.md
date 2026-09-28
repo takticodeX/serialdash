@@ -22,7 +22,7 @@ The layout is remembered per device: keyed by the device's name (from its `hi` m
 
 Each widget has a small toolbar in its top-right corner:
 
-- **⚙ Settings** opens a side panel for that widget: the kind's own configuration fields, a **type** picker if the widget's current kind has value-compatible alternatives (e.g. a `line` chart can become a `value` card, since both read a single numeric channel), and either **reset to device value** — clears any override so the widget goes back to exactly what the device declared — or, for a widget you added yourself, **delete widget**.
+- **⚙ Settings** opens a side panel for that widget: which **channel** it reads (for kinds that read one — controls are bound by id instead, see below, so they don't show this), the kind's own configuration fields, a **type** picker if the widget's current kind has value-compatible alternatives (e.g. a `line` chart can become a `value` card, since both read a single numeric channel), and either **reset to device value** — clears any override so the widget goes back to exactly what the device declared — or, for a widget you added yourself, **delete widget**.
 - **⛶ Fullscreen** expands the widget to fill the screen; useful for keeping an eye on one chart from across the room.
 - **⬇ Export CSV** downloads that widget's channel data — one row per channel per sample, sorted by time.
 - **↺ Reset stats** (value widgets only) clears the running min/max shown on the card, without touching the underlying data.
@@ -30,6 +30,8 @@ Each widget has a small toolbar in its top-right corner:
 ## Adding widgets by hand
 
 **+ Add widget** lets you bind a widget from the catalog to any channel that's produced data so far, with no device involvement — useful for a second view of a channel the device already covers, or for channels the device sends without declaring a widget for at all. These are stored alongside your layout/overrides and travel with profile export/import; they have no device declaration to "reset to," so their settings panel offers delete instead.
+
+Adding a **control** (button/switch/slider/number/select/text/color) works differently: a control's id _is_ its channel (there's no separate `ch`), so the picker here lists existing control ids instead — and only ones that don't already have their own widget, since giving a new widget the same id as an existing one would replace it rather than add a second one. This covers a control the device's firmware handles (`onControl`/`onAnyControl`) but never built a widget for; picking any other kind of channel for a control will send a command the device doesn't recognize.
 
 ## Stale and orphaned widgets
 

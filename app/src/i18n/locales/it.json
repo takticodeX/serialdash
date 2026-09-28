@@ -110,6 +110,7 @@
     "lockLayout": "Blocca layout",
     "panel": {
       "title": "Impostazioni widget",
+      "channel": "Canale",
       "widgetType": "Tipo di widget",
       "deleteWidget": "Elimina widget",
       "resetToDevice": "Ripristina valore del dispositivo"
@@ -125,6 +126,9 @@
       "title": "Aggiungi widget",
       "type": "Tipo",
       "channel": "Canale",
+      "controlId": "Controllo esistente",
+      "controlIdHint": "I controlli si legano per id, non per canale — sono elencati solo gli id senza un proprio widget.",
+      "controlNoTargets": "Ogni controllo esposto dal dispositivo ha già un proprio widget.",
       "id": "Id widget",
       "noChannels": "Nessun canale disponibile ancora — connetti un dispositivo o attendi i dati.",
       "add": "Aggiungi"

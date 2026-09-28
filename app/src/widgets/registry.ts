@@ -58,3 +58,13 @@ export function getWidgetDescriptor(kind: string): WidgetDescriptor<WidgetDeclar
 export function listWidgetDescriptors(): WidgetDescriptor<WidgetDeclaration>[] {
   return [...registry.values()];
 }
+
+// SPEC.md §4.3 `controlExtras`: a control's `id` doubles as its state channel (PRT-13), so it has
+// no `ch` at all — unlike every display kind. AddWidgetDialog/WidgetPanel need to know which is
+// which: a control widget's "channel" is really an existing control id it talks to, not a `ch` to
+// bind, and there's no schema flag for this, so it's a static list mirroring the P0/P1 controls.
+const CONTROL_KINDS = new Set(['button', 'switch', 'slider', 'number', 'select', 'text', 'color']);
+
+export function isControlKind(kind: string): boolean {
+  return CONTROL_KINDS.has(kind);
+}

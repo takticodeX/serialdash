@@ -69,6 +69,48 @@ test('add widget: a user-created widget appears on the grid without any device d
   await expect(page.locator('[data-testid^="widget-user-"]')).toHaveCount(1);
 });
 
+test('add widget: a control kind excludes ids that already have their own widget', async ({
+  page,
+}) => {
+  await connectViaSimulator(page);
+
+  await page.getByRole('button', { name: 'Add widget' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Add widget' });
+  await dialog.getByLabel('Type').selectOption('switch');
+
+  // demo-switch already has its own native Switch widget (declareAll() in simulatorTransport.ts)
+  // — offering it here would let a new "switch" widget silently take over that id/slot
+  // (effectiveWidgets.ts is keyed by id) instead of adding a separate one. Other non-empty
+  // channels (e.g. demo-sine, a plain data channel with no widget of its own) are still offered —
+  // there's no way to know from here whether the device would recognize them as a control at all.
+  await expect(dialog.getByRole('option', { name: 'demo-switch', exact: false })).toHaveCount(0);
+});
+
+test('add widget: the channel picker stays stable while incoming data keeps arriving', async ({
+  page,
+}) => {
+  await connectViaSimulator(page);
+
+  await page.getByRole('button', { name: 'Add widget' }).click();
+  const dialog = page.getByRole('dialog', { name: 'Add widget' });
+  const channelSelect = dialog.locator('select').nth(1);
+  const optionsBefore = await channelSelect.locator('option').allTextContents();
+
+  // The dashboard re-renders on every simulator tick (300ms) while this dialog is open. The
+  // channel list used to be recomputed from live channel data on every one of those renders,
+  // appending each channel's latest value to its option text — a <select>'s options mutating out
+  // from under the user while open is a real, previously-reported bug (not just a Playwright
+  // artifact): most browsers glitch the open dropdown and stop registering clicks in it,
+  // recoverable only via Esc. The list is now snapshotted once when the dialog opens instead.
+  await page.waitForTimeout(1200);
+  const optionsAfter = await channelSelect.locator('option').allTextContents();
+  expect(optionsAfter).toEqual(optionsBefore);
+
+  // The picker still works: selecting an option actually registers.
+  await channelSelect.selectOption({ index: 0 });
+  await expect(channelSelect).not.toHaveValue('');
+});
+
 test('lock layout: disables dragging and resizing on every widget until unchecked', async ({
   page,
 }) => {

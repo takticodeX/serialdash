@@ -121,29 +121,51 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # 05_AllWidgets is deliberately absent here (SPEC.md §6.6: "Solo non-AVR, troppa flash
+          # per Uno") — the two AVR entries get the base sketch list, every other board gets it
+          # plus 05_AllWidgets, via the YAML anchors below.
           - fqbn: arduino:avr:uno
+            sketch-paths: &avr_sketches |
+              - lib/SerialDash/examples/01_TextOnly
+              - lib/SerialDash/examples/02_FirstChart
+              - lib/SerialDash/examples/03_WeatherStation
+              - lib/SerialDash/examples/04_Controls
+              - lib/SerialDash/examples/07_TextCommands
           - fqbn: arduino:avr:mega
+            sketch-paths: *avr_sketches
           - fqbn: esp32:esp32:esp32
             platforms: |
               - name: esp32:esp32
                 source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+            sketch-paths: &all_sketches |
+              - lib/SerialDash/examples/01_TextOnly
+              - lib/SerialDash/examples/02_FirstChart
+              - lib/SerialDash/examples/03_WeatherStation
+              - lib/SerialDash/examples/04_Controls
+              - lib/SerialDash/examples/05_AllWidgets
+              - lib/SerialDash/examples/07_TextCommands
           - fqbn: esp32:esp32:esp32s3
             platforms: |
               - name: esp32:esp32
                 source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+            sketch-paths: *all_sketches
           - fqbn: esp32:esp32:esp32c3
             platforms: |
               - name: esp32:esp32
                 source-url: https://raw.githubusercontent.com/espressif/arduino-esp32/gh-pages/package_esp32_index.json
+            sketch-paths: *all_sketches
           - fqbn: esp8266:esp8266:nodemcuv2
             platforms: |
               - name: esp8266:esp8266
                 source-url: https://arduino.esp8266.com/stable/package_esp8266com_index.json
+            sketch-paths: *all_sketches
           - fqbn: rp2040:rp2040:rpipico
             platforms: |
               - name: rp2040:rp2040
                 source-url: https://github.com/earlephilhower/arduino-pico/releases/download/global/package_rp2040_index.json
+            sketch-paths: *all_sketches
           - fqbn: arduino:samd:mkrzero
+            sketch-paths: *all_sketches
     steps:
       - uses: actions/checkout@v4
       - uses: arduino/compile-sketches@v1
@@ -152,9 +174,4 @@ jobs:
           platforms: ${{ matrix.platforms }}
           libraries: |
             - source-path: lib/SerialDash
-          sketch-paths: |
-            - lib/SerialDash/examples/01_TextOnly
-            - lib/SerialDash/examples/02_FirstChart
-            - lib/SerialDash/examples/03_WeatherStation
-            - lib/SerialDash/examples/04_Controls
-            - lib/SerialDash/examples/07_TextCommands
+          sketch-paths: ${{ matrix.sketch-paths }}

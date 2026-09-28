@@ -49,8 +49,10 @@ void loop() {
 
 Load `examples/02_FirstChart` for the simplest possible starting point (no
 sensors required — a simulated sine wave), `examples/03_WeatherStation` for
-a fuller display-only dashboard, or `examples/04_Controls` for the
-bidirectional side below.
+a fuller display-only dashboard, `examples/04_Controls` for the
+bidirectional side below, or `examples/05_AllWidgets` for every widget kind
+the app currently renders in one sketch (ESP32/ESP8266/RP2040/SAMD only —
+too much flash for an Uno/Mega).
 
 ## Controls
 

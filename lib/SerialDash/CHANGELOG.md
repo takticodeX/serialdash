@@ -17,8 +17,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   escape hatch); `update()`/`remove()`/`removeAll()`; `data()`/`send()`/`sendXY()`/`sendArray()`
   for channel data (LIB-TX-01..12); `debug()`/`info()`/`warn()`/`error()` events, plus printf
   variants on non-AVR platforms.
-- Examples: `01_TextOnly`, `02_FirstChart`, `03_WeatherStation`, `04_Controls`, `07_TextCommands`
-  (the last two grew real `onText`/`onControl` handlers once the receive path existed).
+- Examples: `01_TextOnly`, `02_FirstChart`, `03_WeatherStation`, `04_Controls`, `05_AllWidgets`,
+  `07_TextCommands` (the last two grew real `onText`/`onControl` handlers once the receive path
+  existed; `05_AllWidgets` exercises every widget kind the app currently renders — non-AVR only,
+  too much flash for an Uno/Mega, LIB-GEN-03).
 - Receive path (§6.3): `loop()` reads the Stream, accumulates a line (`SERIALDASH_RX_BUFFER`,
   LIB-RX-01), and dispatches it — a minimal in-place JSON parser for flat a2d objects (LIB-RX-02
   /03, nested values skipped per spec rather than erroring), overflow reported as an `rx overflow`
@@ -49,3 +51,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
 - `\uXXXX` escapes in incoming strings decode BMP code points only — surrogate pairs (astral-plane
   characters) aren't combined. Control ids/values are short by construction (PRT-11), so this is
   unlikely to matter in practice.
+- `DataBuilder::kv()` has a `bool` overload, but a `map()`'s label→value entries (pie/bar/table)
+  only accept number/string per `channelValue`'s schema (device-to-app.schema.json) — unlike a
+  plain top-level channel, which does allow boolean. Calling `kv(label, true/false)` compiles and
+  sends fine, but the app rejects the resulting `d` line as a protocol error (found writing
+  `05_AllWidgets`, which used to do exactly this). The overload isn't removed since a caller might
+  reasonably want `0`/`1` semantics via an explicit `int` cast instead — but it's a real footgun
+  worth a wire-format note in the API docs once those exist, or worth reconsidering the schema's
+  `channelValue` restriction if boolean-in-a-map turns out to be a common, legitimate need.

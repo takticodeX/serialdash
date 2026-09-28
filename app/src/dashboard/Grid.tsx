@@ -159,6 +159,7 @@ export function Grid({ deviceKey, group, widgets, session }: Props): JSX.Element
           deviceKey={deviceKey}
           widgetId={configEntry[0]}
           entry={configEntry[1]}
+          channelStore={session.channelStore}
           onClose={() => setConfigWidgetId(null)}
         />
       )}

@@ -161,6 +161,7 @@ export function Dashboard({ session, port }: Props): JSX.Element {
         <AddWidgetDialog
           deviceKey={deviceKey}
           channelStore={session.channelStore}
+          existingWidgetIds={new Set(widgetEntries.map(([id]) => id))}
           onClose={() => setAddWidgetOpen(false)}
         />
       )}

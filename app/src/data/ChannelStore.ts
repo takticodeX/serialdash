@@ -122,3 +122,11 @@ export class ChannelStore {
     this.lastDeviceTs = undefined;
   }
 }
+
+/** `channelIds()` includes ids that only exist because some widget subscribed to them (creating
+ * an empty channel — see `subscribe`) — every control widget does this for its own id, whether or
+ * not the device actually recognizes that control. Pickers that let a user choose "an existing
+ * channel" (AddWidgetDialog, WidgetPanel) want real data, not these phantom entries. */
+export function listNonEmptyChannelIds(store: ChannelStore): string[] {
+  return store.channelIds().filter((id) => store.size(id) > 0);
+}

@@ -110,6 +110,7 @@
     "lockLayout": "Lock layout",
     "panel": {
       "title": "Widget settings",
+      "channel": "Channel",
       "widgetType": "Widget type",
       "deleteWidget": "Delete widget",
       "resetToDevice": "Reset to device value"
@@ -125,6 +126,9 @@
       "title": "Add widget",
       "type": "Type",
       "channel": "Channel",
+      "controlId": "Existing control",
+      "controlIdHint": "Controls bind by id, not by channel — only ids without a widget of their own are listed.",
+      "controlNoTargets": "Every control the device exposes already has its own widget.",
       "id": "Widget id",
       "noChannels": "No channels available yet — connect a device or wait for data.",
       "add": "Add"
