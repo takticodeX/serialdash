@@ -10,10 +10,11 @@ import {
   requestNewPort,
   type SerialConnectionOptions,
 } from './webSerialTransport';
-import { SimulatorTransport } from '../transport/simulatorTransport';
+import { SimulatorTransport, type SimulatorScenario } from '../transport/simulatorTransport';
 import { onSerialPortConnected } from './hotplug';
 import { LineSplitter } from '../protocol/LineSplitter';
 import { parseLine } from '../protocol/Parser';
+import { parsePlotterLine } from '../protocol/PlotterFormat';
 import { DeviceSession } from '../session/DeviceSession';
 import { useConsoleStore } from '../console/useConsoleStore';
 import { useSettingsStore } from '../settings/useSettingsStore';
@@ -48,8 +49,11 @@ interface ConnectionStore {
   connectToNewPort: () => Promise<void>;
   connectToPort: (port: SerialPort) => Promise<void>;
   /** APP-SIM-03: "try without hardware", reachable from the connect screen and from the
-   * unsupported-browser page (neither needs a real serial port). */
-  connectToSimulator: () => Promise<void>;
+   * unsupported-browser page (neither needs a real serial port). Defaults to `all-widgets`
+   * (APP-SIM-02) — the unsupported-browser page's shortcut doesn't offer a scenario picker, and
+   * every existing e2e test connects this way too, so the default has to keep matching what it
+   * always has. */
+  connectToSimulator: (scenario?: SimulatorScenario) => Promise<void>;
   disconnect: () => Promise<void>;
 }
 
@@ -81,6 +85,14 @@ function wireTransport(
         session.feed(parsed.message);
       } else if (parsed.kind === 'protocolError') {
         protocolErrorCount++;
+      } else if (parsed.kind === 'text' && useSettingsStore.getState().plotterCompat) {
+        // APP-DAT-04: a line that isn't a SerialDash protocol line at all might still be Arduino
+        // Serial Plotter–style data (`temp:23.4 hum:58`, `23.4,58`) — fed into the exact same `d`
+        // path a real `{"t":"d",...}` line would take (ingest + auto-discovery), so it shows up
+        // as a normal channel. The line itself stays visible in the console either way; this only
+        // adds a second destination for it, never removes the first.
+        const reading = parsePlotterLine(parsed.text);
+        if (reading) session.feed({ t: 'd', d: reading });
       }
     }
   });
@@ -168,9 +180,9 @@ export const useConnectionStore = create<ConnectionStore>((set, get) => {
       }
     },
 
-    connectToSimulator: async () => {
+    connectToSimulator: async (scenario = 'all-widgets') => {
       set({ error: null, port: null, info: { label: 'Simulator' }, throughput: ZERO_THROUGHPUT });
-      const transport = new SimulatorTransport();
+      const transport = new SimulatorTransport(scenario);
       const session = new DeviceSession((line) => {
         void transport.write(new TextEncoder().encode(line + '\n'));
       });

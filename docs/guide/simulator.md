@@ -1,16 +1,28 @@
 # Simulator
 
-Click **"Try without hardware"** on the connect screen (or on the "browser not supported" page) to explore SerialDash with no board plugged in.
+Click **"Try without hardware"** on the connect screen (or on the "browser not supported" page) to explore SerialDash with no board plugged in. A **Scenario** dropdown next to the button picks which of the 5 scenarios below it runs — it defaults to "All widgets."
 
 The simulator is a virtual device speaking protocol v1 exactly like a real one — it goes through the same handshake, widget declarations, and data flow as a real connection, so anything you see with it behaves the same way it would with real hardware.
 
-## The "All widgets" scenario
+## All widgets
 
-The one scenario available today declares every implemented widget kind — the P0 set: [line chart](../widgets/line), [value](../widgets/value), [gauge](../widgets/gauge), [indicator](../widgets/led), [event log](../widgets/log), and — since M4 — the three control widgets, button, switch, and slider. Display widgets are each fed by their own demo data generator; controls actually respond to what you do with them: the switch toggles for real, the slider clamps anything past 200 and echoes what was really applied (SPEC.md §3.6 rule 4), and the button is rejected whenever the switch is on (mirroring the library's own `onControl` reject example, §6.5). It's driven by the same descriptor every widget ships with (SPEC.md §4, DOC-01), so it stays in sync automatically as new widgets are added.
+Declares every implemented widget kind and feeds each one from its own demo data generator — display widgets included, plus all 7 control widgets, which actually respond to what you do with them: a switch toggles for real, a slider clamps anything past its declared range and echoes what was really applied (SPEC.md §3.6 rule 4), and the button is rejected whenever the switch is on (mirroring the library's own `onControl` reject example, §6.5). It's driven by the same descriptor every widget ships with (SPEC.md §4, DOC-01), so it stays in sync automatically as new widgets are added. This is also what the app's own e2e suite connects to by default.
 
-::: info Scope note
-Dedicated named scenarios ("Weather station" as its own picker entry, "Stress test", "Protocol errors") are listed in SPEC.md §5.7 (APP-SIM-02) but not built yet — the reject/clamp behavior described above already covers what "Motor control" was meant to demonstrate, just as part of "All widgets" rather than a separate scenario. The simulator is also what M2's and M4's acceptance criteria check against directly, including the e2e suite (`app/e2e/controls.spec.ts`).
-:::
+## Weather station
+
+Just the P0 display widgets — line chart, value, gauge, indicator, event log — with the same demo data "All widgets" uses for them, minus everything else. A quieter dashboard for a first look, or for screenshots that don't need every widget kind crowded in.
+
+## Motor control
+
+Just the 3 P0 controls — button, switch, slider — the same ones and the same reject/clamp behavior as "All widgets," isolated so the bidirectional flow is the only thing on screen.
+
+## Protocol errors
+
+Mostly ordinary weather-station-shaped data, with roughly one line in three replaced by something deliberately broken instead: invalid JSON, valid JSON missing a required field, an invalid widget id, or plain garbled text. Use this to see how the console and the status bar's protocol-error counter behave when a device (or a flaky connection) sends something the parser can't accept — SerialDash keeps going rather than getting stuck on a bad line (PRT-04).
+
+## Stress test
+
+No widgets are declared at all — a small pool of channels gets flooded with data at roughly 1000 lines/s, and whatever ends up on screen comes entirely from auto-discovery reacting to that throughput. Useful as a manual sanity check of how the UI holds up under a fast stream; it isn't hooked up to an automated pass/fail check.
 
 ## Disconnecting
 

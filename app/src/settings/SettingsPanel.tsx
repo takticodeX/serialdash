@@ -8,10 +8,9 @@ interface Props {
   onClose: () => void;
 }
 
-/** §5.8: language, theme, auto-reconnect, auto-discovery, console line limit, control ack
- * timeout, clear local data, about. Plotter compatibility / buffer capacity toggles are still
- * deferred — they configure subsystems (Plotter parser, ChannelStore capacity) that arrive in
- * M6. */
+/** §5.8: language, theme, auto-reconnect, auto-discovery, Plotter compatibility, console line
+ * limit, control ack timeout, clear local data, about. Buffer capacity is still deferred — it
+ * configures ChannelStore capacity, a subsystem M6 doesn't touch. */
 export function SettingsPanel({ onClose }: Props): JSX.Element {
   const { t, i18n } = useTranslation();
   const theme = useSettingsStore((s) => s.theme);
@@ -20,6 +19,8 @@ export function SettingsPanel({ onClose }: Props): JSX.Element {
   const setAutoReconnect = useSettingsStore((s) => s.setAutoReconnect);
   const autoDiscovery = useSettingsStore((s) => s.autoDiscovery);
   const setAutoDiscovery = useSettingsStore((s) => s.setAutoDiscovery);
+  const plotterCompat = useSettingsStore((s) => s.plotterCompat);
+  const setPlotterCompat = useSettingsStore((s) => s.setPlotterCompat);
   const consoleLineLimit = useSettingsStore((s) => s.consoleLineLimit);
   const setConsoleLineLimit = useSettingsStore((s) => s.setConsoleLineLimit);
   const ackTimeoutMs = useSettingsStore((s) => s.ackTimeoutMs);
@@ -101,6 +102,15 @@ export function SettingsPanel({ onClose }: Props): JSX.Element {
           onChange={(e) => setAutoDiscovery(e.target.checked)}
         />{' '}
         {t('settings.autoDiscovery')}
+      </label>
+
+      <label style={{ display: 'block', marginTop: 16 }}>
+        <input
+          type="checkbox"
+          checked={plotterCompat}
+          onChange={(e) => setPlotterCompat(e.target.checked)}
+        />{' '}
+        {t('settings.plotterCompat')}
       </label>
 
       <label style={{ display: 'block', marginTop: 16 }}>

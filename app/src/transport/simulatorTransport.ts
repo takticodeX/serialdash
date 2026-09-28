@@ -1,5 +1,6 @@
 import type { ConnectionState, Transport, TransportInfo } from './transport';
-import { listWidgetDescriptors } from '../widgets/registry';
+import { listWidgetDescriptors, type WidgetDescriptor } from '../widgets/registry';
+import type { WidgetDeclaration } from '../protocol/generated/index.js';
 
 type DataListener = (chunk: Uint8Array) => void;
 type StateListener = (state: ConnectionState) => void;
@@ -22,19 +23,63 @@ interface IncomingMessage {
   v?: number | boolean | string;
 }
 
+/** APP-SIM-02: the 5 selectable simulator scenarios. `all-widgets` is the original M2/M4 default
+ * (every registered widget's own demo example) and stays the default here too, so every existing
+ * caller (e2e tests, `connectToSimulator()` with no argument) keeps behaving exactly as before. */
+export type SimulatorScenario =
+  'all-widgets' | 'weather-station' | 'motor-control' | 'protocol-errors' | 'stress-test';
+
+// `weather-station`/`motor-control` don't get their own hand-written demo data — they reuse the
+// exact same per-widget `demo.declaration`/`demo.generate()` every widget already ships with
+// (SPEC.md §4, DOC-01), just filtered to a themed subset of kinds, so they can't drift from what
+// "all-widgets" already demonstrates for each of those widgets individually.
+const WEATHER_KINDS = new Set(['line', 'value', 'gauge', 'led', 'log']);
+const MOTOR_KINDS = new Set(['button', 'switch', 'slider']);
+
+function descriptorsForScenario(
+  scenario: SimulatorScenario,
+): WidgetDescriptor<WidgetDeclaration>[] {
+  switch (scenario) {
+    case 'weather-station':
+      return listWidgetDescriptors().filter((d) => WEATHER_KINDS.has(d.kind));
+    case 'motor-control':
+      return listWidgetDescriptors().filter((d) => MOTOR_KINDS.has(d.kind));
+    // protocol-errors reuses the weather-station subset for its "everything is actually fine"
+    // lines, interleaved with deliberately broken ones (see tickProtocolErrors) — stress-test
+    // declares nothing at all and leans entirely on auto-discovery (see startStressTest).
+    case 'protocol-errors':
+      return listWidgetDescriptors().filter((d) => WEATHER_KINDS.has(d.kind));
+    case 'stress-test':
+      return [];
+    case 'all-widgets':
+    default:
+      return listWidgetDescriptors();
+  }
+}
+
+// A handful of genuinely malformed/invalid lines for the `protocol-errors` scenario — sent as raw
+// text (not through emitLine's JSON.stringify) so they can actually be broken, covering a spread
+// of failure modes: syntactically invalid JSON, valid JSON missing a required field, an invalid
+// identifier (PRT-11), and free text a real device's minimal parser would also just drop.
+const PROTOCOL_ERROR_SAMPLES = [
+  '{"t":"d","d":{"temp":}}',
+  '{"t":"d"}',
+  '{"t":"w","id":"not a valid id!","k":"line"}',
+  'garbled non-json output from a bad sketch',
+];
+
 /**
  * APP-SIM-01/02/03: a virtual device speaking protocol v1, implementing the same `Transport`
  * interface as `WebSerialTransport` — nothing above the transport layer (LineSplitter, Parser,
  * DeviceSession, widgets) can tell the difference (ADR-001).
  *
- * Declares every registered widget's demo example on connect (the "All widgets (P0)" scenario
- * from M2), then feeds each one's `generate()` on a fixed tick. Since M4, also answers what the
- * app writes back (`hi` requests, `ping`, `c`) — mirroring what a real device's library does
- * (LIB-RX-01..07, LIB-CTL-04): `ping` gets a `pong`; a control gets an `ack` plus, if accepted,
- * an echo `d` with the applied value (clamped to the control's own declared range, same as a
- * real device would). `demo-button`'s accept/reject logic mirrors §6.5's own worked example
- * (reject while "the motor" — here, `demo-switch` — is on) so the reject path in §3.6 rule 4 has
- * something real to exercise in e2e tests, without needing a separate selectable scenario.
+ * Declares the widgets its scenario calls for on connect, then feeds each one's `generate()` on a
+ * fixed tick. Since M4, also answers what the app writes back (`hi` requests, `ping`, `c`) —
+ * mirroring what a real device's library does (LIB-RX-01..07, LIB-CTL-04): `ping` gets a `pong`;
+ * a control gets an `ack` plus, if accepted, an echo `d` with the applied value (clamped to the
+ * control's own declared range, same as a real device would). `demo-button`'s accept/reject logic
+ * mirrors §6.5's own worked example (reject while "the motor" — here, `demo-switch` — is on), so
+ * both `all-widgets` and `motor-control` get a real reject to exercise §3.6 rule 4 with.
  */
 export class SimulatorTransport implements Transport {
   readonly info: TransportInfo = { label: 'Simulator' };
@@ -47,6 +92,9 @@ export class SimulatorTransport implements Transport {
   private tickTimer: ReturnType<typeof setInterval> | undefined;
   private startTime = 0;
   private switchOn = false;
+  private errorTickCount = 0;
+
+  constructor(private readonly scenario: SimulatorScenario = 'all-widgets') {}
 
   get state(): ConnectionState {
     return this._state;
@@ -58,14 +106,24 @@ export class SimulatorTransport implements Transport {
   }
 
   private emitLine(payload: unknown): void {
-    const line = `@${JSON.stringify(payload)}\n`;
-    const bytes = this.encoder.encode(line);
+    this.emitRawLine(JSON.stringify(payload));
+  }
+
+  /** A line that looks like an attempted (possibly broken) SerialDash protocol line — `@`-
+   * prefixed, same as every real line this class emits. Not for plain device text: see
+   * `emitBytes` for that. */
+  private emitRawLine(text: string): void {
+    this.emitBytes(`@${text}`);
+  }
+
+  private emitBytes(text: string): void {
+    const bytes = this.encoder.encode(`${text}\n`);
     for (const listener of this.dataListeners) listener(bytes);
   }
 
   private declareAll(): void {
     this.emitLine({ t: 'hi', v: 1, name: 'SerialDash Simulator', fw: '1.0.0', board: 'Simulator' });
-    for (const descriptor of listWidgetDescriptors()) {
+    for (const descriptor of descriptorsForScenario(this.scenario)) {
       this.emitLine(descriptor.demo.declaration);
     }
   }
@@ -77,14 +135,24 @@ export class SimulatorTransport implements Transport {
     this.startTime = Date.now();
     this.switchOn = false;
 
+    if (this.scenario === 'stress-test') {
+      this.startStressTest();
+      return;
+    }
+
     this.declareAll();
 
     let lastEventAt = 0;
     this.tickTimer = setInterval(() => {
       const tickMs = Date.now() - this.startTime;
 
+      if (this.scenario === 'protocol-errors') {
+        this.tickProtocolErrors(tickMs);
+        return;
+      }
+
       const data: Record<string, unknown> = {};
-      for (const descriptor of listWidgetDescriptors()) {
+      for (const descriptor of descriptorsForScenario(this.scenario)) {
         Object.assign(data, descriptor.demo.generate(tickMs));
       }
       if (Object.keys(data).length > 0) this.emitLine({ t: 'd', d: data });
@@ -94,6 +162,43 @@ export class SimulatorTransport implements Transport {
         this.emitLine({ t: 'e', lvl: 'info', msg: 'Simulator heartbeat', src: 'sim' });
       }
     }, TICK_MS);
+  }
+
+  /** Every 3rd tick sends one of `PROTOCOL_ERROR_SAMPLES` instead of real data, so the console's
+   * protocol-error handling (dimmed/red lines, the status bar's error counter) has something
+   * genuine to show — the other 2 ticks send real weather-station-shaped data so there's still a
+   * dashboard behind the noise. */
+  private tickProtocolErrors(tickMs: number): void {
+    this.errorTickCount++;
+    if (this.errorTickCount % 3 === 0) {
+      const sample = PROTOCOL_ERROR_SAMPLES[this.errorTickCount % PROTOCOL_ERROR_SAMPLES.length]!;
+      this.emitRawLine(sample);
+      return;
+    }
+    const data: Record<string, unknown> = {};
+    for (const descriptor of descriptorsForScenario('protocol-errors')) {
+      Object.assign(data, descriptor.demo.generate(tickMs));
+    }
+    if (Object.keys(data).length > 0) this.emitLine({ t: 'd', d: data });
+  }
+
+  // APP-SIM-02 "1000 righe/s": no widgets declared at all — every channel here is undeclared on
+  // purpose, so what's actually on screen comes entirely from auto-discovery (APP-DAT-03) reacting
+  // to real throughput, rather than a fixed dashboard built ahead of time. 50 ticks/s x 20 lines =
+  // ~1000 separate `d` lines/s, spread across a small pool of channels.
+  private readonly stressChannelCount = 10;
+  private startStressTest(): void {
+    const STRESS_TICK_MS = 20;
+    const LINES_PER_TICK = 20;
+    this.emitLine({ t: 'hi', v: 1, name: 'SerialDash Simulator', fw: '1.0.0', board: 'Simulator' });
+    this.tickTimer = setInterval(() => {
+      const tickMs = Date.now() - this.startTime;
+      for (let i = 0; i < LINES_PER_TICK; i++) {
+        const channel = `s${(tickMs + i) % this.stressChannelCount}`;
+        const value = Math.round(Math.sin(tickMs / 500 + i) * 1000) / 10;
+        this.emitLine({ t: 'd', d: { [channel]: value } });
+      }
+    }, STRESS_TICK_MS);
   }
 
   async disconnect(): Promise<void> {
@@ -110,6 +215,15 @@ export class SimulatorTransport implements Transport {
   simulateExternalUpdate(id: string, value: number | boolean | string): void {
     if (id === 'demo-switch') this.switchOn = Boolean(value);
     this.emitLine({ t: 'd', d: { [id]: value } });
+  }
+
+  /** Test-only hook (QA-03 e2e, APP-DAT-04): injects a raw incoming line exactly as given — no
+   * `@` prefix added, unlike every real protocol line this class emits — for exercising Arduino
+   * Serial Plotter–style plain text (`temp:23.4`) without adding a whole scenario just to send
+   * one line on demand. Same exposure/never-called-by-the-app caveat as `simulateExternalUpdate`
+   * above. */
+  injectRawLine(text: string): void {
+    this.emitBytes(text);
   }
 
   async write(data: Uint8Array): Promise<void> {

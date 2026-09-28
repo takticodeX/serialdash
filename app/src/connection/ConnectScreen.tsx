@@ -2,6 +2,16 @@ import { useEffect, useState, type JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useConnectionStore } from '../serial/useConnectionStore';
 import { describePort, BAUD_RATE_PRESETS } from '../serial/webSerialTransport';
+import type { SimulatorScenario } from '../transport/simulatorTransport';
+
+// APP-SIM-02. Values are `connect.scenario_*` i18n keys (APP-GEN-04: no literal UI strings).
+const SIMULATOR_SCENARIOS: [SimulatorScenario, string][] = [
+  ['all-widgets', 'connect.scenario_allWidgets'],
+  ['weather-station', 'connect.scenario_weatherStation'],
+  ['motor-control', 'connect.scenario_motorControl'],
+  ['protocol-errors', 'connect.scenario_protocolErrors'],
+  ['stress-test', 'connect.scenario_stressTest'],
+];
 
 export function ConnectScreen(): JSX.Element {
   const { t } = useTranslation();
@@ -17,6 +27,7 @@ export function ConnectScreen(): JSX.Element {
 
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [customBaud, setCustomBaud] = useState(false);
+  const [scenario, setScenario] = useState<SimulatorScenario>('all-widgets');
 
   useEffect(() => {
     void refreshKnownPorts();
@@ -173,9 +184,28 @@ export function ConnectScreen(): JSX.Element {
       </div>
 
       <div style={{ marginTop: 12, textAlign: 'center' }}>
-        <button type="button" disabled={connecting} onClick={() => void connectToSimulator()}>
-          {t('connect.tryDemo')}
-        </button>
+        <label>
+          {t('connect.scenario')}{' '}
+          <select
+            value={scenario}
+            onChange={(e) => setScenario(e.target.value as SimulatorScenario)}
+          >
+            {SIMULATOR_SCENARIOS.map(([value, labelKey]) => (
+              <option key={value} value={value}>
+                {t(labelKey)}
+              </option>
+            ))}
+          </select>
+        </label>
+        <div style={{ marginTop: 8 }}>
+          <button
+            type="button"
+            disabled={connecting}
+            onClick={() => void connectToSimulator(scenario)}
+          >
+            {t('connect.tryDemo')}
+          </button>
+        </div>
       </div>
     </div>
   );

@@ -117,3 +117,82 @@ describe('SimulatorTransport bidirectional behavior (SPEC.md §6.5, PRT-20, §3.
     ).resolves.toBeUndefined();
   });
 });
+
+describe('APP-SIM-02 scenarios', () => {
+  beforeEach(() => vi.useFakeTimers());
+  afterEach(() => vi.useRealTimers());
+
+  function declaredKinds(lines: string[]): string[] {
+    return lines
+      .filter((l) => l.includes('"t":"w"'))
+      .map((l) => /"k":"([a-z]+)"/.exec(l)?.[1])
+      .filter((k): k is string => k !== undefined);
+  }
+
+  it('defaults to all-widgets when no scenario is given (unchanged behavior for existing callers)', async () => {
+    const transport = new SimulatorTransport();
+    const { lines } = collectLines(transport);
+    await connectAndDrainHandshake(transport);
+    expect(declaredKinds(lines).length).toBeGreaterThanOrEqual(18); // every registered kind
+  });
+
+  it('weather-station declares only line/value/gauge/led/log', async () => {
+    const transport = new SimulatorTransport('weather-station');
+    const { lines } = collectLines(transport);
+    await connectAndDrainHandshake(transport);
+    expect(new Set(declaredKinds(lines))).toEqual(
+      new Set(['line', 'value', 'gauge', 'led', 'log']),
+    );
+  });
+
+  it('motor-control declares only button/switch/slider, and the reject demo still works', async () => {
+    const transport = new SimulatorTransport('motor-control');
+    const { lines } = collectLines(transport);
+    await connectAndDrainHandshake(transport);
+    expect(new Set(declaredKinds(lines))).toEqual(new Set(['button', 'switch', 'slider']));
+
+    await transport.write(
+      new TextEncoder().encode('@{"t":"c","r":1,"id":"demo-switch","v":true}\n'),
+    );
+    await vi.advanceTimersByTimeAsync(200);
+    lines.length = 0;
+    await transport.write(
+      new TextEncoder().encode('@{"t":"c","r":2,"id":"demo-button","v":true}\n'),
+    );
+    await vi.advanceTimersByTimeAsync(200);
+    expect(lines.some((l) => l.includes('"r":2') && l.includes('"ok":false'))).toBe(true);
+  });
+
+  it('protocol-errors sends real weather-station-shaped data interleaved with malformed lines', async () => {
+    const transport = new SimulatorTransport('protocol-errors');
+    const { lines } = collectLines(transport);
+    await connectAndDrainHandshake(transport);
+    await vi.advanceTimersByTimeAsync(300 * 6); // several ticks
+
+    expect(declaredKinds(lines).length).toBeGreaterThan(0);
+    // At least one line must fail plain JSON.parse (the deliberately malformed ones aren't even
+    // valid JSON.stringify output, unlike everything else this class ever emits).
+    expect(lines.some((l) => l.startsWith('@') && !isValidJson(l.slice(1)))).toBe(true);
+  });
+
+  it('stress-test declares no widgets and streams roughly 1000 lines/s across a small channel pool', async () => {
+    const transport = new SimulatorTransport('stress-test');
+    const { lines } = collectLines(transport);
+    await connectAndDrainHandshake(transport);
+    await vi.advanceTimersByTimeAsync(1000);
+
+    expect(declaredKinds(lines)).toHaveLength(0);
+    const dataLines = lines.filter((l) => l.includes('"t":"d"'));
+    expect(dataLines.length).toBeGreaterThanOrEqual(900); // ~1000/s, some tolerance
+    expect(dataLines.length).toBeLessThanOrEqual(1100);
+  });
+});
+
+function isValidJson(text: string): boolean {
+  try {
+    JSON.parse(text);
+    return true;
+  } catch {
+    return false;
+  }
+}

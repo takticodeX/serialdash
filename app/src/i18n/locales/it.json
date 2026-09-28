@@ -31,7 +31,13 @@
     "disconnectToFlash": "Disconnetti per caricare lo sketch",
     "disconnectToFlashHint": "Libera la porta così l'Arduino IDE (o un altro strumento di caricamento) può usarla. Si riconnette da sola quando la scheda riappare, se la riconnessione automatica è attiva.",
     "autoReconnect": "Riconnetti automaticamente",
-    "tryDemo": "Prova senza hardware"
+    "tryDemo": "Prova senza hardware",
+    "scenario": "Scenario",
+    "scenario_allWidgets": "Tutti i widget",
+    "scenario_weatherStation": "Stazione meteo",
+    "scenario_motorControl": "Controllo motore",
+    "scenario_protocolErrors": "Errori di protocollo",
+    "scenario_stressTest": "Stress test (1000 righe/s)"
   },
   "statusBar": {
     "disconnected": "Disconnesso",
@@ -82,6 +88,7 @@
     "theme_auto": "Automatico (segue il sistema)",
     "autoReconnect": "Riconnetti automaticamente quando un dispositivo noto riappare",
     "autoDiscovery": "Crea automaticamente un widget per i canali non dichiarati",
+    "plotterCompat": "Riconosci il testo in stile Plotter Seriale di Arduino come dati",
     "consoleLineLimit": "Limite righe console",
     "ackTimeoutMs": "Timeout risposta controlli (ms)",
     "clearLocalData": "Cancella tutti i dati locali",

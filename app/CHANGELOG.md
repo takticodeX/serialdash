@@ -31,6 +31,16 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   number, select, text, color; auto-discovery extended to pair/array/object channel shapes
   (xy/bar/table); second Playwright e2e suite (`app/e2e/dashboard.spec.ts`, QA-03) covering
   override editing, kind switching, adding a widget, lock layout, and profile export/import.
+- **M6 (partial — recording/replay and the load-test job deferred) — Plotter compatibility and
+  simulator scenarios**: `PlotterFormat.parsePlotterLine` recognizes Arduino Serial Plotter–style
+  plain text (`temp:23.4 hum:58`, `23.4,58`) and feeds it through the same auto-discovery path a
+  real `d` message would take, while it stays visible in the console unchanged (APP-DAT-04);
+  toggle in Settings, default on. `SimulatorTransport` gained 4 more scenarios besides
+  "All widgets" (APP-SIM-02) — "Weather station" and "Motor control" (themed subsets of the same
+  per-widget demo data), "Protocol errors" (real data interleaved with deliberately malformed
+  lines), and "Stress test" (~1000 undeclared-channel lines/s, relying entirely on
+  auto-discovery) — selectable from a new picker on the connect screen. 2 new Playwright e2e
+  suites (`app/e2e/plotter.spec.ts`, `app/e2e/simulatorScenarios.spec.ts`).
 
 ### Deviations
 
@@ -39,6 +49,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   dependency; CSV export covers the same need for now. "Reset to device value" is whole-widget
   rather than per-property, since today's `ConfigPanel`s are too minimal (1-2 fields) for a
   per-field revert control to be proportionate.
+- M6: recording/replay (APP-REC-01..04), the automated load-test job (QA-04), and the NFR-01..03
+  performance verification it would gate are explicitly out of scope for this pass — by request,
+  not an oversight. `docs/guide/recording.md` is still the M6-pending stub; the "Stress test"
+  simulator scenario exists (APP-SIM-02) but nothing automated asserts on it yet.
 
 ### Fixed
 
@@ -46,3 +60,13 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   button/input placed inside a widget (found via e2e, not just a Playwright artifact — a real
   mouse click generates the same event sequence). Fixed with `draggableCancel` in
   `app/src/dashboard/Grid.tsx`.
+- M5 (found testing against real hardware, not just the simulator): opening a widget's settings
+  panel before a lazy-loaded chunk (gauge/pie/heat) finished loading crashed the whole app to a
+  blank page — `WidgetPanel`'s `ConfigPanel` now renders inside a `Suspense` boundary. A control
+  widget added by hand (`AddWidgetDialog`) always got a fresh random `id`, but a control's `id`
+  doubles as its state channel (PRT-13) — every hand-added control was unreachable ("unknown
+  control") regardless of which channel was picked; it now reuses the picked channel as its `id`.
+  The channel/control-id picker recomputed live on every incoming `d` message (a few times a
+  second) while open, which most browsers handle badly (the dropdown stops responding to clicks);
+  it's now snapshotted once when the dialog opens. `gauge`'s default size rendered as a squashed
+  arc, not a circle — default height tripled.

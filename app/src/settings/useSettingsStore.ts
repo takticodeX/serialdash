@@ -11,6 +11,9 @@ interface PersistedSettings {
   consoleLineLimit: number;
   /** APP-DAT-03: whether an undeclared channel auto-creates a widget. */
   autoDiscovery: boolean;
+  /** APP-DAT-04: whether Arduino Serial Plotter–style text lines (`temp:23.4 hum:58`, `23.4,58`)
+   * are recognized as data. */
+  plotterCompat: boolean;
   /** SPEC.md §3.6 rule 5 / §5.8: ms to wait for a control's `ack` before reverting it. */
   ackTimeoutMs: number;
   /** APP-DSH-09: disables drag/resize on the dashboard grid to prevent accidental changes. */
@@ -24,6 +27,7 @@ const DEFAULTS: PersistedSettings = {
   autoReconnect: true,
   consoleLineLimit: DEFAULT_CONSOLE_LINE_LIMIT,
   autoDiscovery: true,
+  plotterCompat: true,
   ackTimeoutMs: DEFAULT_ACK_TIMEOUT_MS,
   lockLayout: false,
 };
@@ -35,14 +39,31 @@ interface SettingsStore extends PersistedSettings {
   setAutoReconnect: (value: boolean) => void;
   setConsoleLineLimit: (value: number) => void;
   setAutoDiscovery: (value: boolean) => void;
+  setPlotterCompat: (value: boolean) => void;
   setAckTimeoutMs: (value: number) => void;
   setLockLayout: (value: boolean) => void;
   clearAllLocalData: () => Promise<void>;
 }
 
 function persisted(state: SettingsStore): PersistedSettings {
-  const { theme, autoReconnect, consoleLineLimit, autoDiscovery, ackTimeoutMs, lockLayout } = state;
-  return { theme, autoReconnect, consoleLineLimit, autoDiscovery, ackTimeoutMs, lockLayout };
+  const {
+    theme,
+    autoReconnect,
+    consoleLineLimit,
+    autoDiscovery,
+    plotterCompat,
+    ackTimeoutMs,
+    lockLayout,
+  } = state;
+  return {
+    theme,
+    autoReconnect,
+    consoleLineLimit,
+    autoDiscovery,
+    plotterCompat,
+    ackTimeoutMs,
+    lockLayout,
+  };
 }
 
 export const useSettingsStore = create<SettingsStore>((set, get) => ({
@@ -71,6 +92,11 @@ export const useSettingsStore = create<SettingsStore>((set, get) => ({
 
   setAutoDiscovery: (autoDiscovery) => {
     set({ autoDiscovery });
+    void kvSet('settings', persisted(get()));
+  },
+
+  setPlotterCompat: (plotterCompat) => {
+    set({ plotterCompat });
     void kvSet('settings', persisted(get()));
   },
 

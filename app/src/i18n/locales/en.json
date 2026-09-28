@@ -31,7 +31,13 @@
     "disconnectToFlash": "Disconnect to upload a sketch",
     "disconnectToFlashHint": "Frees the port so the Arduino IDE (or another uploader) can use it. Reconnects automatically once the board reappears, if auto-reconnect is on.",
     "autoReconnect": "Reconnect automatically",
-    "tryDemo": "Try without hardware"
+    "tryDemo": "Try without hardware",
+    "scenario": "Scenario",
+    "scenario_allWidgets": "All widgets",
+    "scenario_weatherStation": "Weather station",
+    "scenario_motorControl": "Motor control",
+    "scenario_protocolErrors": "Protocol errors",
+    "scenario_stressTest": "Stress test (1000 lines/s)"
   },
   "statusBar": {
     "disconnected": "Disconnected",
@@ -82,6 +88,7 @@
     "theme_auto": "Automatic (follow system)",
     "autoReconnect": "Reconnect automatically when a known device reappears",
     "autoDiscovery": "Auto-create a widget for undeclared channels",
+    "plotterCompat": "Recognize Arduino Serial Plotter–style text as data",
     "consoleLineLimit": "Console line limit",
     "ackTimeoutMs": "Control response timeout (ms)",
     "clearLocalData": "Clear all local data",
