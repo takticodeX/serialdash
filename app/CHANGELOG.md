@@ -50,6 +50,11 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   instead of one run of plain text; settings moved from a `position: fixed` overlay into the same
   flex row as the rest of the bar's buttons (see Fixed, below). `gauge`'s default width narrowed
   (was 4 grid columns, now 3 — height unchanged from the earlier fix).
+- Widget resize handle: redrawn as a themed corner bracket (dim at rest, full contrast on hover)
+  instead of react-resizable's library default, a fixed-black icon baked at ~30% opacity into the
+  image itself — passable on a light background, functionally invisible on this app's dark theme.
+  Resizing widgets already worked (`isResizable`, wired since M2); the handle just wasn't
+  discoverable enough to notice it was there.
 
 ### Deviations
 
@@ -106,3 +111,9 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   enough content (a connected device with a long name) let the overlay sit on top of and swallow
   clicks on it. Moved into the bar's normal flex row instead, so it can no longer overlap anything
   in it.
+- The first cut of the resize-handle restyle silently lost its own `width` override:
+  `react-grid-layout`'s stylesheet has a same-specificity `.react-grid-item > .react-resizable-handle`
+  rule not guaranteed to load before this app's CSS, and — oddly — it won for `width` but not for
+  `background-image` from the very same rule. Found by inspecting `getComputedStyle` directly
+  rather than assuming the override applied; fixed by going one class deeper
+  (`.dashboard-grid .react-grid-item .react-resizable-handle`) to outrank it outright.

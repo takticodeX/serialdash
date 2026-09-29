@@ -169,6 +169,36 @@ test('lock layout: disables dragging and resizing on every widget until unchecke
   await expect(widget).toHaveClass(/react-draggable\b/);
 });
 
+test('resize handle: visible (not the library default, which is unreadably low-contrast) and actually resizes the widget', async ({
+  page,
+}) => {
+  await connectViaSimulator(page);
+  const widget = page.getByTestId('widget-demo-value');
+  const handle = widget.locator('.react-resizable-handle');
+
+  // Regression guard for a real CSS specificity bug: react-grid-layout's own stylesheet has a
+  // same-specificity `.react-grid-item > .react-resizable-handle` rule not guaranteed to load
+  // before this app's override, which silently lost the fight for `width` (though not for
+  // `background-image`, of all things — found by inspecting getComputedStyle directly, not
+  // assumed). 18px (this app's override) rather than the library's own default of 20px is the
+  // simplest reliable signal that the override is the one actually winning.
+  await expect(handle).toHaveCSS('width', '18px');
+  await expect(handle).toHaveCSS('background-image', 'none');
+
+  const before = await widget.boundingBox();
+  const handleBox = await handle.boundingBox();
+  await page.mouse.move(handleBox!.x + handleBox!.width / 2, handleBox!.y + handleBox!.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(handleBox!.x + 150, handleBox!.y + 100, { steps: 10 });
+  await page.mouse.up();
+
+  await expect(async () => {
+    const after = await widget.boundingBox();
+    expect(after!.width).toBeGreaterThan(before!.width);
+    expect(after!.height).toBeGreaterThan(before!.height);
+  }).toPass();
+});
+
 test('profile export/import: importing a previously exported profile restores an override', async ({
   page,
 }) => {
