@@ -32,7 +32,7 @@ function makeFakePort(): {
   return { port, controller, written };
 }
 
-const FAST_OPTIONS = { ...DEFAULT_CONNECTION_OPTIONS, resetOnConnect: false }; // skip the 250ms DTR pulse delay
+const FAST_OPTIONS = { ...DEFAULT_CONNECTION_OPTIONS, resetOnConnect: false }; // skip the reset pulse's delay
 
 describe('WebSerialTransport', () => {
   it('delivers received bytes via onData', async () => {
@@ -96,4 +96,63 @@ describe('WebSerialTransport', () => {
     expect(written).toHaveLength(1);
     expect(new TextDecoder().decode(written[0])).toBe('ping\n');
   });
+
+  describe(
+    'reset signals (APP-CON-04) — regression coverage: dataTerminalReady left asserted at the ' +
+      'end of connect() held the GPIO0 strap low for as long as the port stayed open, so the ' +
+      'next reset from any source (a later reconnect, or the physical reset button) landed in ' +
+      'the ROM bootloader instead of the running sketch',
+    () => {
+      it('resetOnConnect=true pulses RTS (EN) while DTR (GPIO0) stays deasserted throughout, then leaves both signals deasserted', async () => {
+        vi.useFakeTimers();
+        try {
+          const { port } = makeFakePort();
+          const transport = new WebSerialTransport(port, {
+            ...DEFAULT_CONNECTION_OPTIONS,
+            resetOnConnect: true,
+          });
+
+          const connectPromise = transport.connect();
+          await vi.advanceTimersByTimeAsync(100);
+          await connectPromise;
+
+          expect(port.setSignals).toHaveBeenNthCalledWith(1, {
+            dataTerminalReady: false,
+            requestToSend: true,
+          });
+          expect(port.setSignals).toHaveBeenNthCalledWith(2, {
+            dataTerminalReady: false,
+            requestToSend: false,
+          });
+          expect(port.setSignals).toHaveBeenCalledTimes(2);
+        } finally {
+          vi.useRealTimers();
+        }
+      });
+
+      it('resetOnConnect=false leaves both signals deasserted without pulsing anything', async () => {
+        const { port } = makeFakePort();
+        const transport = new WebSerialTransport(port, FAST_OPTIONS);
+
+        await transport.connect();
+
+        expect(port.setSignals).toHaveBeenCalledTimes(1);
+        expect(port.setSignals).toHaveBeenCalledWith({
+          dataTerminalReady: false,
+          requestToSend: false,
+        });
+      });
+
+      it('never asserts dataTerminalReady (true) in either mode', async () => {
+        for (const resetOnConnect of [true, false]) {
+          const { port } = makeFakePort();
+          const transport = new WebSerialTransport(port, { ...FAST_OPTIONS, resetOnConnect });
+          await transport.connect();
+          for (const call of (port.setSignals as ReturnType<typeof vi.fn>).mock.calls) {
+            expect((call[0] as SerialOutputSignals).dataTerminalReady).not.toBe(true);
+          }
+        }
+      });
+    },
+  );
 });

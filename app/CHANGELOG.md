@@ -46,6 +46,10 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   no widget declaration at all (Plotter-format or auto-discovered) get a fixed y-axis instead of
   staying auto-scaled forever. Clearing a field goes back to auto-scaling for that bound.
 - SerialDash's logo (favicon, PWA icons, connect screen).
+- `StatusBar`: grouped into tinted chips (connection state, port/baud/device, live traffic)
+  instead of one run of plain text; settings moved from a `position: fixed` overlay into the same
+  flex row as the rest of the bar's buttons (see Fixed, below). `gauge`'s default width narrowed
+  (was 4 grid columns, now 3 — height unchanged from the earlier fix).
 
 ### Deviations
 
@@ -84,3 +88,21 @@ Format: [Keep a Changelog](https://keepachangelog.com/en/1.1.0/). Versioned inde
   whitespace around the colon as part of the same field. `AddWidgetDialog`-created display
   widgets had no default `title`, so they showed their own meaningless random id on screen
   (`user-mn4h32n`); now defaults to the bound channel's name.
+- Real-hardware bug (ESP32, both with "reset on connect" checked and, later, via the board's own
+  physical reset button): `pulseResetSignals` pulsed DTR instead of RTS, and left DTR asserted
+  (`true`) as its final state regardless of the "reset on connect" setting. On the classic
+  CP2102/CH340 auto-program circuit these boards use, DTR asserted pulls GPIO0 (the boot-mode
+  strap) low — so the chip was never actually reset via EN by this code, and GPIO0 stayed held low
+  for as long as the port was open. The _next_ reset from anywhere (a later reconnect, or the
+  board's own reset button) then sampled GPIO0 low and landed in the ROM bootloader
+  ("rst:0x1 (POWERON_RESET) ... waiting for download") instead of the running sketch — recoverable
+  only by unplugging and replugging the board. Rewritten to pulse RTS (EN) while DTR (GPIO0) stays
+  deasserted throughout — the same "reset into run mode" convention the Arduino IDE and esptool.py
+  itself use — and both signals are now left fully deasserted once connect() returns, in both
+  modes. Verified via unit tests asserting the exact `setSignals()` call sequence; not verified
+  against real hardware in this pass (no board available here) — please confirm on yours.
+- `StatusBar`'s settings button was a `position: fixed` overlay pinned to the same top-right
+  corner the bar's own rightmost button ("Disconnect to upload a sketch") could grow into — wide
+  enough content (a connected device with a long name) let the overlay sit on top of and swallow
+  clicks on it. Moved into the bar's normal flex row instead, so it can no longer overlap anything
+  in it.

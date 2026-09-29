@@ -1,5 +1,4 @@
 import { useEffect, useState, type JSX } from 'react';
-import { useTranslation } from 'react-i18next';
 import { useThemeEffect } from './ui/useThemeEffect';
 import { StatusBar } from './ui/StatusBar';
 import { UpdateBanner } from './ui/UpdateBanner';
@@ -20,7 +19,6 @@ import { registerBuiltinWidgets } from './widgets/index';
 registerBuiltinWidgets();
 
 export function App(): JSX.Element {
-  const { t } = useTranslation();
   useThemeEffect();
 
   const hydrateSettings = useSettingsStore((s) => s.hydrate);
@@ -72,15 +70,10 @@ export function App(): JSX.Element {
   return (
     <div className="app-shell">
       <UpdateBanner />
-      <StatusBar onChangeDevice={session ? () => setShowConnectScreen(true) : undefined} />
-      <button
-        type="button"
-        onClick={() => setSettingsOpen(true)}
-        aria-label={t('settings.title')}
-        style={{ position: 'fixed', top: 8, right: 8, zIndex: 5 }}
-      >
-        ⚙
-      </button>
+      <StatusBar
+        onChangeDevice={session ? () => setShowConnectScreen(true) : undefined}
+        onOpenSettings={() => setSettingsOpen(true)}
+      />
       {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
 
       {displayConnectScreen ? (

@@ -98,7 +98,7 @@ export function registerBuiltinWidgets(): void {
     nameKey: 'widgets.gauge.name',
     descriptionKey: 'widgets.gauge.description',
     icon: '🌡️',
-    defaultSize: [4, 12],
+    defaultSize: [3, 12],
     Component: GaugeWidgetComponent,
     ConfigPanel: GaugeWidgetConfigPanel,
     demo: gaugeWidgetDemo,

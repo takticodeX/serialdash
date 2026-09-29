@@ -38,14 +38,31 @@ function isPortBusy(err: unknown): boolean {
   return err instanceof DOMException && err.name === 'NetworkError';
 }
 
+/**
+ * On the classic CP2102/CH340 auto-program circuit these ESP32/ESP8266 boards almost all use,
+ * DTR asserted (`true`) pulls GPIO0 low (bootloader strap) and RTS asserted (`true`) pulls EN low
+ * (chip held in reset) — the same mapping esptool.py's own reset sequences rely on. "Reset the
+ * board on connect" must reset into the *running sketch*, not the ROM bootloader: that means
+ * pulsing RTS (EN) low then high while DTR (GPIO0) stays deasserted throughout, mirroring the
+ * Arduino IDE's own auto-reset / esptool's `hard_reset()` — never esptool's *bootloader-entry*
+ * sequence, which deliberately asserts DTR *before* releasing RTS so GPIO0 is sampled low at the
+ * moment of reset.
+ *
+ * Previously this pulsed DTR instead of RTS and left DTR asserted (`true`) as the final state
+ * either way (even with "reset on connect" off). That never actually reset the chip via EN, and
+ * left GPIO0 held low for as long as the port stayed open — so the *next* reset from any source
+ * (a later reconnect, or the board's own physical reset button) would sample GPIO0 low and land
+ * back in the ROM bootloader ("waiting for download") instead of the sketch. Both signals are now
+ * left fully deasserted once this returns, so a later reset — from wherever it comes — boots
+ * normally.
+ */
 async function pulseResetSignals(port: SerialPort, resetOnConnect: boolean): Promise<void> {
   if (resetOnConnect) {
-    // Mimics the Arduino IDE's auto-reset: pulse DTR low then high.
-    await port.setSignals({ dataTerminalReady: false });
-    await new Promise((resolve) => setTimeout(resolve, 250));
-    await port.setSignals({ dataTerminalReady: true, requestToSend: false });
+    await port.setSignals({ dataTerminalReady: false, requestToSend: true });
+    await new Promise((resolve) => setTimeout(resolve, 100));
+    await port.setSignals({ dataTerminalReady: false, requestToSend: false });
   } else {
-    await port.setSignals({ dataTerminalReady: true, requestToSend: false });
+    await port.setSignals({ dataTerminalReady: false, requestToSend: false });
   }
 }
 
