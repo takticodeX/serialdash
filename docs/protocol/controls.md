@@ -1,8 +1,6 @@
 # Controls — bidirectional semantics
 
-::: info
-This page documents the protocol semantics (SPEC.md §3.6), which are fixed as of v1 and already encoded in `/protocol/schema`. Both sides now implement it end to end: the app's pending/error UI states and rate limiting, and the library's receive parser and `onControl` API (**M4**, SPEC.md §11) — a polished guide with screenshots lands in **M5** alongside the rest of `dashboard.md`/`controls.md`'s user-facing writeup.
-:::
+This page documents the protocol semantics (SPEC.md §3.6), fixed as of v1 and encoded in `/protocol/schema`. Both sides implement it end to end: the app's pending/error UI states and rate limiting, and the library's receive parser and `onControl` API. For the app-side user guide, see [Controls](../guide/controls); for the library API, see [library reference](../library/api).
 
 The guiding rule (principle P4): **the device is the source of truth**. The app never shows a control as confirmed unless the device said so.
 

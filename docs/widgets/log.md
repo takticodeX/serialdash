@@ -22,12 +22,12 @@ Common properties every widget has (`id`, `title`, `ch`, `grp`, `ord`, `size`, `
 @{"t":"w","id":"evt","k":"log","lvl":"warn","max":200}
 ```
 
-<!-- generated:end -->
+## Arduino library
 
-## Arduino library example
-
-Arrives with the library (M3) — the builder method for `k: "log"`, and a runnable example sketch.
+`dash.log(id, title)` — see the [library reference](../library/api) for the full chainable property list, and `lib/SerialDash/examples/` for a runnable sketch using it.
 
 ## Compatible templates for switching type
 
-Arrives with dashboard overrides (M5, APP-DSH-05).
+No other kind shares this one's value shape, so there's nothing to switch it to.
+
+<!-- generated:end -->

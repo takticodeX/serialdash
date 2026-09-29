@@ -22,12 +22,12 @@ Common properties every widget has (`id`, `title`, `ch`, `grp`, `ord`, `size`, `
 @{"t":"w","id":"g1","k":"gauge","ch":"h","min":0,"max":100,"zones":[[0,30,"#e67e22"],[30,70,"#2ecc71"],[70,100,"#3498db"]]}
 ```
 
-<!-- generated:end -->
+## Arduino library
 
-## Arduino library example
-
-Arrives with the library (M3) — the builder method for `k: "gauge"`, and a runnable example sketch.
+`dash.gauge(id, title)` — see the [library reference](../library/api) for the full chainable property list, and `lib/SerialDash/examples/` for a runnable sketch using it.
 
 ## Compatible templates for switching type
 
-Arrives with dashboard overrides (M5, APP-DSH-05).
+From the widget's settings panel (APP-DSH-05), this widget can be switched to: `line`, `value`, `level` — same value shape, no firmware change needed.
+
+<!-- generated:end -->

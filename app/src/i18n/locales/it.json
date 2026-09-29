@@ -101,8 +101,7 @@
     "title": "Questo browser non può parlare con una porta seriale",
     "body": "SerialDash richiede la Web Serial API per collegarsi a un dispositivo reale, e il tuo browser attuale non la supporta.",
     "browserList": "Browser supportati: Chrome, Edge, Opera e Brave, su Windows, macOS, Linux o ChromeOS.",
-    "stillUseful": "Puoi comunque esplorare SerialDash senza una connessione seriale:",
-    "replayComingSoon": "Riproduci una registrazione (disponibile in una milestone futura)"
+    "stillUseful": "Puoi comunque esplorare SerialDash senza una connessione seriale:"
   },
   "pwa": {
     "updateAvailable": "Nuova versione disponibile",

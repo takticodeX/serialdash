@@ -467,12 +467,10 @@ Stati visivi comuni ai controlli: **normale**, **pendente** (comando inviato, in
 
 ### 5.6 Registrazione e riproduzione
 
-| ID         | Requisito                                                                                                                                                                                                  |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| APP-REC-01 | Pulsante "Registra": salva **tutte le righe ricevute e inviate** con timestamp in formato `.jsonl` (una riga: `{"ts":…, "dir":"rx"                                                                         | "tx", "line":"…"}`). Salvataggio progressivo in IndexedDB, per non perdere dati in caso di chiusura. |
-| APP-REC-02 | Esporta registrazione come `.jsonl` (completa) o `.csv` (solo dati: una colonna per canale, una riga per istante).                                                                                         |
-| APP-REC-03 | **Replay**: aprire un `.jsonl` lo riproduce tramite `ReplayTransport` con controlli play/pausa, velocità (0,25×–10×) e barra di avanzamento trascinabile. Durante il replay i controlli sono disabilitati. |
-| APP-REC-04 | Indicatore di registrazione attiva e durata/dimensione sempre visibili.                                                                                                                                    |
+**Rimosso dallo scope del progetto** (deciso durante M6): nessuna registrazione sessione/replay è
+prevista. L'export CSV per singolo widget (APP-DSH-07) copre l'esigenza di portare fuori i dati.
+Numerazione delle sezioni successive lasciata invariata per non rompere i riferimenti incrociati
+nel resto del documento.
 
 ### 5.7 Simulatore
 
@@ -480,7 +478,7 @@ Stati visivi comuni ai controlli: **normale**, **pendente** (comando inviato, in
 | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | APP-SIM-01 | `SimulatorTransport`: un dispositivo virtuale nel browser che parla il protocollo v1 esattamente come una scheda reale (handshake, `hi`, `w`, `d`, `ack`, eventi, reset).                                                                             |
 | APP-SIM-02 | Scenari predefiniti: "Tutti i widget" (usa l'esempio dimostrativo di ogni descrittore), "Stazione meteo", "Controllo motore" (controlli bidirezionali con rifiuti e limiti), "Stress test" (1000 righe/s), "Errori di protocollo" (righe malformate). |
-| APP-SIM-03 | Accessibile dalla schermata di connessione come "Prova senza hardware". È anche la base dei test e2e (§9) e degli screenshot della documentazione (§8.5).                                                                                             |
+| APP-SIM-03 | Accessibile dalla schermata di connessione come "Prova senza hardware". È anche la base dei test e2e (§9).                                                                                                                                            |
 
 ### 5.8 Impostazioni
 
@@ -688,7 +686,6 @@ docs/
 │   ├── console.md
 │   ├── dashboard.md              # layout, gruppi, override, cambio template, profili
 │   ├── controls.md               # controlli bidirezionali, stati pendente/errore
-│   ├── recording.md              # registrazione, export CSV, replay
 │   ├── simulator.md
 │   └── plotter-compat.md         # uso senza libreria con il formato del Plotter Arduino
 ├── widgets/                      # UNA PAGINA PER WIDGET — GENERATA (§8.3)
@@ -698,7 +695,7 @@ docs/
 │   ├── api.md                    # riferimento API — GENERATO da Doxygen (§8.4)
 │   ├── options.md                # macro di compilazione
 │   ├── memory.md                 # consumo RAM/flash per scheda, consigli per AVR
-│   └── examples.md               # indice degli esempi con screenshot della dashboard
+│   └── examples.md               # indice degli esempi, cosa aspettarsi nella dashboard
 ├── protocol/
 │   ├── overview.md               # concetti: framing, canali vs widget, handshake
 │   ├── messages.md               # riferimento messaggi — tabelle GENERATE dallo schema
@@ -735,11 +732,9 @@ docs/
 
 ### 8.5 Screenshot e animazioni automatici
 
-| ID     | Requisito                                                                                                                                                                                           |
-| ------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| DOC-20 | Screenshot e GIF della documentazione sono prodotti da Playwright usando il simulatore, con seed casuale fisso e orologio simulato (risultato deterministico). Comando: `npm run docs:screenshots`. |
-| DOC-21 | Ogni widget ha uno screenshot in tema chiaro e scuro.                                                                                                                                               |
-| DOC-22 | Nessuno screenshot fatto a mano nel repository (se non indispensabile, es. foto di hardware).                                                                                                       |
+**Rimosso dallo scope del progetto** (deciso durante M7): nessuna infrastruttura di screenshot/GIF
+automatici. Le pagine widget generate (§8.3) restano testuali (tabelle proprietà, esempi JSON e
+Arduino), senza immagini. Numerazione delle sezioni successive lasciata invariata.
 
 ### 8.6 Aiuto dentro l'app
 
@@ -774,8 +769,8 @@ Interfaccia dell'app: italiano e inglese. Documentazione: vedi decisione aperta 
 | ----- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | QA-01 | Unit test (Vitest) per: LineSplitter (righe spezzate tra chunk, **caratteri UTF-8 multibyte spezzati tra chunk**, CRLF, righe troppo lunghe), parser (tutti i test vector), encoder, ChannelStore (ring buffer, offset `ts`, salto all'indietro), DeviceSession (handshake con tentativi, `ack`, timeout, fusione dei comandi pendenti, orfani), precedenza override, auto-discovery, parser formato Plotter. |
 | QA-02 | Copertura minima 85% delle righe sui moduli `protocol`, `session`, `data`.                                                                                                                                                                                                                                                                                                                                    |
-| QA-03 | Test e2e (Playwright) con `SimulatorTransport`: avvio, connessione al simulatore, comparsa dei widget, round-trip di ogni controllo P0, rifiuto, timeout, reset dispositivo, persistenza del profilo dopo ricarica, registrazione e replay, funzionamento offline.                                                                                                                                            |
-| QA-04 | Test di carico automatizzato: scenario "Stress test" per 60 s, verifica nessuna riga persa e memoria stabile.                                                                                                                                                                                                                                                                                                 |
+| QA-03 | Test e2e (Playwright) con `SimulatorTransport`: avvio, connessione al simulatore, comparsa dei widget, round-trip di ogni controllo P0, rifiuto, timeout, reset dispositivo, persistenza del profilo dopo ricarica, funzionamento offline.                                                                                                                                                                    |
+| QA-04 | **Rimosso dallo scope del progetto** (deciso durante M6): nessun test di carico automatizzato. Lo scenario simulatore "Stress test" (APP-SIM-02) resta disponibile per un controllo manuale occasionale.                                                                                                                                                                                                      |
 | QA-05 | ESLint + Prettier, TypeScript `strict`, nessun `any` esplicito fuori dai file generati.                                                                                                                                                                                                                                                                                                                       |
 
 ### 9.2 Libreria
@@ -815,14 +810,14 @@ La CI compila `02_FirstChart` per Uno con e senza la libreria, calcola l'overhea
 
 Ogni decisione ha un **default**: si procede con quello finché non viene deciso diversamente.
 
-| #   | Decisione                                                                                     | Default                                                                                                                       |
-| --- | --------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| D1  | Nome definitivo del progetto (app, libreria, dominio).                                        | "SerialDash", costante unica in `app/src/config.ts`, `library.properties` e config VitePress.                                 |
-| D2  | Lingue della documentazione.                                                                  | Inglese completo come riferimento (libreria e protocollo sono pubblici e internazionali) + guida utente in italiano (`/it/`). |
-| D3  | Controlli con valori multipli (joystick 2D, coordinate). Violerebbe l'oggetto piatto di §3.4. | Rinviato. Proposta: ammettere per `v` un array piatto di massimo 4 numeri, supportato dal parser minimale.                    |
-| D4  | Licenza.                                                                                      | MIT per app, libreria e protocollo.                                                                                           |
-| D5  | Hosting e dominio.                                                                            | GitHub Pages con dominio `*.github.io`; dominio personalizzato opzionale.                                                     |
-| D6  | Web Worker per il parsing.                                                                    | Solo se QA-04 lo rende necessario (APP-NFR-02).                                                                               |
+| #   | Decisione                                                                                     | Default                                                                                                                                                                                             |
+| --- | --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| D1  | Nome definitivo del progetto (app, libreria, dominio).                                        | "SerialDash", costante unica in `app/src/config.ts`, `library.properties` e config VitePress.                                                                                                       |
+| D2  | Lingue della documentazione.                                                                  | Inglese completo come riferimento (libreria e protocollo sono pubblici e internazionali) + guida utente in italiano (`/it/`).                                                                       |
+| D3  | Controlli con valori multipli (joystick 2D, coordinate). Violerebbe l'oggetto piatto di §3.4. | Rinviato. Proposta: ammettere per `v` un array piatto di massimo 4 numeri, supportato dal parser minimale.                                                                                          |
+| D4  | Licenza.                                                                                      | MIT per app, libreria e protocollo.                                                                                                                                                                 |
+| D5  | Hosting e dominio.                                                                            | GitHub Pages con dominio `*.github.io`; dominio personalizzato opzionale.                                                                                                                           |
+| D6  | Web Worker per il parsing.                                                                    | Rinviato indefinitamente — nessun test di carico automatizzato lo richiederà (QA-04 rimosso, §9.1); da riconsiderare solo se emergono problemi di reattività osservati con dati reali (APP-NFR-02). |
 
 Sviluppi futuri (fuori dalla v1, ma l'architettura non deve impedirli):
 
@@ -840,14 +835,14 @@ Sviluppi futuri (fuori dalla v1, ma l'architettura non deve impedirli):
 
 Ogni milestone termina con tutti i criteri di accettazione verificati e la Definition of Done rispettata. **Non iniziare una milestone prima che la precedente sia completa.**
 
-| #   | Milestone                     | Contenuto                                                                                                                                                              | Criteri di accettazione                                                                                                           |
-| --- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| M0  | Fondamenta                    | Monorepo, tooling, JSON Schema v1 completo, test vector, `gen-types`, scheletro VitePress, CI di base, ADR-001…005, `CONTRIBUTING.md`.                                 | CI verde; tipi generati compilano; test vector validati contro lo schema.                                                         |
-| M1  | Console seriale               | `WebSerialTransport`, §5.1 (tranne tour), §5.2, §5.3, §5.8 base, PWA offline, i18n.                                                                                    | Sostituisce il monitor dell'Arduino IDE con uno sketch esistente; funziona offline; guida `connecting.md` e `console.md` scritte. |
-| M2  | Protocollo e dashboard base   | LineSplitter/Parser/Encoder, DeviceSession con handshake, ChannelStore, `SimulatorTransport`, widget P0 di visualizzazione, auto-discovery, griglia e gruppi, profili. | Scenario simulatore "Tutti i widget" (P0) funziona; test QA-01 per i moduli toccati; pagine widget generate.                      |
-| M3  | Libreria — trasmissione       | §6.1, §6.2, §6.4, esempi 01–03 e 07 (parte testo), test nativi output, compilazione CI, report dimensione.                                                             | `03_WeatherStation` su Uno ed ESP32 reali produce la dashboard attesa; budget LIB-GEN-07 rispettato.                              |
-| M4  | Bidirezionale                 | Controlli P0 nell'app, §3.6 completa, parser libreria §6.3, §6.5, esempio 04, ping/`appConnected`.                                                                     | Round-trip, rifiuto, timeout e aggiornamento esterno funzionano su scheda reale e in e2e.                                         |
-| M5  | Dashboard completa            | Override e precedenza, cambio template, widget creati dall'utente, export/import profili, widget e controlli P1.                                                       | QA-03 completo per queste funzioni; docs `dashboard.md` e `controls.md`.                                                          |
-| M6  | Registrazione e compatibilità | §5.6, formato Plotter (APP-DAT-04), stress test QA-04.                                                                                                                 | Registrazione di 1 ora riprodotta correttamente; stress test superato.                                                            |
-| M7  | Release 1.0                   | Tour, aiuto in-app (§8.6), screenshot automatici, documentazione completa, checklist manuale, pubblicazione Library Manager.                                           | Tutti i requisiti P0/P1 soddisfatti; checklist manuale superata su 4 schede.                                                      |
-| M8+ | Widget P2 e futuri            | `hist`, `polar`, `compass`, `attitude`, `color`, poi §10.                                                                                                              | —                                                                                                                                 |
+| #   | Milestone                   | Contenuto                                                                                                                                                                                                               | Criteri di accettazione                                                                                                           |
+| --- | --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| M0  | Fondamenta                  | Monorepo, tooling, JSON Schema v1 completo, test vector, `gen-types`, scheletro VitePress, CI di base, ADR-001…005, `CONTRIBUTING.md`.                                                                                  | CI verde; tipi generati compilano; test vector validati contro lo schema.                                                         |
+| M1  | Console seriale             | `WebSerialTransport`, §5.1 (tranne tour), §5.2, §5.3, §5.8 base, PWA offline, i18n.                                                                                                                                     | Sostituisce il monitor dell'Arduino IDE con uno sketch esistente; funziona offline; guida `connecting.md` e `console.md` scritte. |
+| M2  | Protocollo e dashboard base | LineSplitter/Parser/Encoder, DeviceSession con handshake, ChannelStore, `SimulatorTransport`, widget P0 di visualizzazione, auto-discovery, griglia e gruppi, profili.                                                  | Scenario simulatore "Tutti i widget" (P0) funziona; test QA-01 per i moduli toccati; pagine widget generate.                      |
+| M3  | Libreria — trasmissione     | §6.1, §6.2, §6.4, esempi 01–03 e 07 (parte testo), test nativi output, compilazione CI, report dimensione.                                                                                                              | `03_WeatherStation` su Uno ed ESP32 reali produce la dashboard attesa; budget LIB-GEN-07 rispettato.                              |
+| M4  | Bidirezionale               | Controlli P0 nell'app, §3.6 completa, parser libreria §6.3, §6.5, esempio 04, ping/`appConnected`.                                                                                                                      | Round-trip, rifiuto, timeout e aggiornamento esterno funzionano su scheda reale e in e2e.                                         |
+| M5  | Dashboard completa          | Override e precedenza, cambio template, widget creati dall'utente, export/import profili, widget e controlli P1.                                                                                                        | QA-03 completo per queste funzioni; docs `dashboard.md` e `controls.md`.                                                          |
+| M6  | Compatibilità               | Formato Plotter (APP-DAT-04), scenari simulatore aggiuntivi (APP-SIM-02). Registrazione/replay (§5.6) e test di carico automatizzato (QA-04) rimossi dallo scope — decisione presa a milestone conclusa, non un rinvio. | Scenari simulatore funzionano; docs `plotter-compat.md` e `simulator.md` scritte.                                                 |
+| M7  | Release 1.0                 | Tour, aiuto in-app (§8.6), documentazione completa, pubblicazione Library Manager. Checklist manuale su schede reali è l'**ultimo passo**, subito prima della pubblicazione — non blocca il resto di M7.                | Tutti i requisiti P0/P1 soddisfatti; checklist manuale superata su 4 schede; libreria pubblicata sul Library Manager.             |
+| M8+ | Widget P2 e futuri          | `hist`, `polar`, `compass`, `attitude`, poi §10.                                                                                                                                                                        | —                                                                                                                                 |

@@ -27,7 +27,6 @@ export default defineConfig({
             { text: 'Console', link: '/guide/console' },
             { text: 'Dashboard', link: '/guide/dashboard' },
             { text: 'Controls', link: '/guide/controls' },
-            { text: 'Recording & replay', link: '/guide/recording' },
             { text: 'Simulator', link: '/guide/simulator' },
             { text: 'Arduino Plotter compatibility', link: '/guide/plotter-compat' },
           ],

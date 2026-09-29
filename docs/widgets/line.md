@@ -24,12 +24,12 @@ Common properties every widget has (`id`, `title`, `ch`, `grp`, `ord`, `size`, `
 @{"t":"w","id":"acc","k":"line","title":"Accelerometer","ch":["ax","ay","az"],"labels":["X","Y","Z"],"unit":"g","min":-2,"max":2,"win":10}
 ```
 
-<!-- generated:end -->
+## Arduino library
 
-## Arduino library example
-
-Arrives with the library (M3) — the builder method for `k: "line"`, and a runnable example sketch.
+`dash.line(id, title)` — see the [library reference](../library/api) for the full chainable property list, and `lib/SerialDash/examples/` for a runnable sketch using it.
 
 ## Compatible templates for switching type
 
-Arrives with dashboard overrides (M5, APP-DSH-05).
+From the widget's settings panel (APP-DSH-05), this widget can be switched to: `value`, `gauge`, `level` — same value shape, no firmware change needed.
+
+<!-- generated:end -->

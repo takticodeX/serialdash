@@ -7,8 +7,7 @@ interface Props {
 
 /**
  * APP-GEN-02: when navigator.serial doesn't exist, explain why and list supported browsers, but
- * still offer a path forward. The simulator (M2) is real now; replay (M6) still isn't, so that
- * link stays disabled/"coming soon" until that milestone lands.
+ * still offer a path forward — the simulator.
  */
 export function UnsupportedBrowser({ onTryDemo }: Props): JSX.Element {
   const { t } = useTranslation();
@@ -24,11 +23,6 @@ export function UnsupportedBrowser({ onTryDemo }: Props): JSX.Element {
         <li>
           <button type="button" onClick={onTryDemo}>
             {t('connect.tryDemo')}
-          </button>
-        </li>
-        <li>
-          <button type="button" disabled title={t('unsupported.replayComingSoon')}>
-            {t('unsupported.replayComingSoon')}
           </button>
         </li>
       </ul>
