@@ -92,6 +92,14 @@ export default defineConfig({
             },
           },
         ],
+        // Without this, workbox's default NavigationRoute (registered below, over the whole
+        // `/serialdash/` scope) intercepts every full-page navigation — including a direct hit on
+        // a docs URL like `/serialdash/docs/widgets/gauge` — and serves the app's own cached
+        // `index.html` instead of letting it through to the real page. Same closure-serialization
+        // caveat as the runtimeCaching matcher above applies to RegExp literals too (workbox-build
+        // only keeps the compiled `/pattern/flags` text, not how it was constructed), but since
+        // BASE is substituted in at Node build time here, the resulting pattern is self-contained.
+        navigateFallbackDenylist: [new RegExp(`^${BASE}docs/`)],
       },
     }),
   ],
