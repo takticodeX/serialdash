@@ -1,6 +1,6 @@
 import { useMemo, type JSX } from 'react';
 import { useTranslation } from 'react-i18next';
-import { WidgetCard, useSessionVersion, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, useSessionVersion, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { LogWidget as LogWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -81,16 +81,14 @@ export function LogWidgetConfigPanel({
 }: WidgetConfigPanelProps<LogWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="log">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
-      <label>
-        Min level
+      </ConfigField>
+      <ConfigField label="Min level" kind="log" prop="lvl">
         <select
           value={declaration.lvl ?? 'info'}
           onChange={(e) => onChange({ lvl: e.target.value as Level })}
@@ -100,7 +98,7 @@ export function LogWidgetConfigPanel({
           <option value="warn">warn</option>
           <option value="err">err</option>
         </select>
-      </label>
+      </ConfigField>
     </div>
   );
 }

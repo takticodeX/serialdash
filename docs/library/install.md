@@ -20,7 +20,7 @@ Add it as a dependency in `platformio.ini`:
 ```ini
 [env:your_board]
 lib_deps =
-    https://github.com/serialdash/serialdash.git#lib-v1.0.0
+    https://github.com/takticodeX/serialdash.git#lib-v1.0.0
 ```
 
 (Pin to a tag once one exists — omitting `#lib-vX.Y.Z` tracks the default branch, which is fine for trying things out but not for a build you depend on.) Or, for local development against a clone of this repo, use a relative path instead:

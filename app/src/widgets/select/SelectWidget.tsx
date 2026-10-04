@@ -1,7 +1,7 @@
 import type { JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChannelSeries } from '../../data/useChannelSeries';
-import { WidgetCard, useConnected, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, useConnected, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { SelectWidget as SelectWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -70,14 +70,13 @@ export function SelectWidgetConfigPanel({
 }: WidgetConfigPanelProps<SelectWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="select">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

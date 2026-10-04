@@ -8,12 +8,12 @@ A pie or donut chart of labeled values.
 
 ## Properties
 
-Common properties every widget has (`id`, `title`, `ch`, `grp`, `ord`, `size`, `unit`, `dec`, `labels`, `colors`, `stale`) are documented once in [the message reference](../protocol/messages) — only `pie`-specific properties are listed below.
+Every widget also has a set of [common properties](../protocol/messages#common-widget-properties) (`id`, `title`, `ch`, `grp`, `ord`, `size`, `unit`, `dec`, `labels`, `colors`, `stale`), documented once on the message reference page — only `pie`-specific properties are listed below.
 
-| Property | Type    | Required | Description |
-| -------- | ------- | -------- | ----------- |
-| `donut`  | boolean | no       |             |
-| `pct`    | boolean | no       |             |
+| Property                       | Type    | Required | Description                                                        |
+| ------------------------------ | ------- | -------- | ------------------------------------------------------------------ |
+| <a id="prop-donut"></a>`donut` | boolean | no       | Draws the chart as a donut (hollow center) instead of a solid pie. |
+| <a id="prop-pct"></a>`pct`     | boolean | no       | Shows each slice's percentage of the total alongside its label.    |
 
 ## Example
 

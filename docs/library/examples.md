@@ -6,12 +6,12 @@ Every example lives under `lib/SerialDash/examples/` and shows up in the Arduino
 | ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
 | [`01_TextOnly`](#_01-textonly)             | The console works with an ordinary sketch that doesn't use the library at all.                                                    | None                                                    |
 | [`02_FirstChart`](#_02-firstchart)         | The smallest possible sketch: one line chart fed by `sin()`. Start here.                                                          | None                                                    |
-| [`03_WeatherStation`](#_03-weatherstation) | A full P0 dashboard — line, gauge, value, indicator, events — with simulated sensor values.                                       | None                                                    |
+| [`03_WeatherStation`](#_03-weatherstation) | A full dashboard — line, gauge, value, indicator, events — with simulated sensor values.                                          | None                                                    |
 | [`04_Controls`](#_04-controls)             | Bidirectional controls: a switch wired to the board's real LED, a slider that clamps and echoes, a button that can be rejected.   | None (uses the built-in LED)                            |
 | [`05_AllWidgets`](#_05-allwidgets)         | Every widget kind the app currently renders, including real handlers for all 7 controls.                                          | None — **non-AVR only**, too much flash for an Uno/Mega |
 | [`07_TextCommands`](#_07-textcommands)     | Plain text output/input and SerialDash protocol lines coexisting on the same `Stream`, for sketches with their own text commands. | None                                                    |
 
-`06_ESP32_Tasks` (two FreeRTOS tasks sending data in parallel, ESP32-only) and `08_ThermalCamera` (an 8×8 heatmap from a real AMG8833 sensor) are planned but not written yet (SPEC.md §6.6, M8+).
+`06_ESP32_Tasks` (two FreeRTOS tasks sending data in parallel, ESP32-only) and `08_ThermalCamera` (an 8×8 heatmap from a real AMG8833 sensor) are planned but not written yet.
 
 ## 01_TextOnly
 
@@ -23,7 +23,7 @@ The "hello world" of SerialDash. One `dash.line(...)` declaration and one `dash.
 
 ## 03_WeatherStation
 
-Every P0 display widget at once, all simulated (`sin()`/`millis()`, no sensors needed): a two-channel temperature line chart, a humidity gauge with colored zones, a pressure value card, a pump status indicator, and a periodic warning event.
+The core display widgets at once, all simulated (`sin()`/`millis()`, no sensors needed): a two-channel temperature line chart, a humidity gauge with colored zones, a pressure value card, a pump status indicator, and a periodic warning event.
 
 ## 04_Controls
 

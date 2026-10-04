@@ -85,6 +85,31 @@ const EXAMPLES: Record<string, string> = {
     '@{"t":"w","id":"ledColor","k":"color","swatches":["#ff0000","#00ff00","#0000ff"],"val":"#ff0000"}',
 };
 
+// APP-DAT-03's inferAutoWidgetKind() (app/src/session/DeviceSession.ts) maps exactly these 6
+// value shapes to these 6 kinds — nothing else is ever auto-discovered (gauge/log/pie/level/heat
+// and every control need an explicit `w` declaration). Kept here as a plain list rather than
+// derived from that function so this file doesn't need a runtime import of app code.
+const AUTO_DISCOVERY_SHAPE: Record<string, string> = {
+  line: 'a number',
+  led: 'a boolean',
+  value: 'a string',
+  xy: 'an array of exactly 2 numbers',
+  bar: 'an array of numbers of any other length',
+  table: 'a flat object of numbers/strings',
+};
+
+// The plain-text line (APP-DAT-04/06, no library, no protocol JSON) that produces the same
+// AUTO_DISCOVERY_SHAPE value for each of those 6 kinds — same channel ids as the worked examples
+// in docs/guide/dashboard.md's auto-discovery section, so the two pages stay recognizably linked.
+const PLOTTER_EXAMPLES: Record<string, string> = {
+  line: 'Serial.println("temp:23.4");',
+  led: 'Serial.println("pump:true");',
+  value: 'Serial.println("status:\\"Ready\\"");',
+  xy: 'Serial.println("pos:[3.0,4.0]");',
+  bar: 'Serial.println("spectrum:[10,45,23,67]");',
+  table: 'Serial.println("stats:{\\"min\\":18.2,\\"max\\":24.7}");',
+};
+
 // LIB-TX-01: the C++ factory method name, when it isn't just the kind string — Arduino's AVR core
 // #defines `switch` as a keyword (it's not, but `toggle()` was chosen to read better regardless).
 const LIBRARY_METHOD_NAMES: Record<string, string> = { switch: 'toggle' };
@@ -103,6 +128,9 @@ interface JsonSchemaNode {
   enum?: unknown[];
   const?: unknown;
   items?: JsonSchemaNode;
+  prefixItems?: JsonSchemaNode[];
+  oneOf?: JsonSchemaNode[];
+  anyOf?: JsonSchemaNode[];
   description?: string;
   [key: string]: unknown;
 }
@@ -129,7 +157,10 @@ function describeType(schema: JsonSchemaNode): string {
   if (schema.const !== undefined) return `\`${JSON.stringify(schema.const)}\``;
   if (schema.enum) return schema.enum.map((v) => `\`${JSON.stringify(v)}\``).join(' \\| ');
   if (Array.isArray(schema.type)) return schema.type.join(' \\| ');
+  if (schema.prefixItems) return `[${schema.prefixItems.map(describeType).join(', ')}]`;
   if (schema.type === 'array') return `${describeType(schema.items ?? {})}[]`;
+  const union = schema.oneOf ?? schema.anyOf;
+  if (union) return union.map(describeType).join(' \\| ');
   return schema.type ?? 'any';
 }
 
@@ -178,7 +209,10 @@ function propertyTable(properties: Record<string, JsonSchemaNode>, required: Set
     .map(([name, schema]) => {
       const req = required.has(name) ? '**yes**' : 'no';
       const desc = schema.description ?? '';
-      return `| \`${name}\` | ${describeType(schema)} | ${req} | ${desc} |`;
+      // DOC-30: the app's widget config panels link their "?" straight to the matching row here —
+      // an empty anchor ahead of the property name, not on the whole row, since a table row can't
+      // take an id directly in commonmark.
+      return `| <a id="prop-${name}"></a>\`${name}\` | ${describeType(schema)} | ${req} | ${desc} |`;
     });
   return ['| Property | Type | Required | Description |', '|---|---|---|---|', ...rows].join('\n');
 }
@@ -205,10 +239,31 @@ function pageTrailer(kind: string): string {
     '## Compatible templates for switching type',
     '',
     compatible.length > 0
-      ? `From the widget's settings panel (APP-DSH-05), this widget can be switched to: ${compatible.map((k) => `\`${k}\``).join(', ')} — same value shape, no firmware change needed.`
+      ? `From the widget's settings panel, this widget can be switched to: ${compatible.map((k) => `\`${k}\``).join(', ')} — same value shape, no firmware change needed.`
       : CONTROL_KINDS.has(kind)
-        ? "Controls aren't switchable between each other from the UI — their `id` is also their protocol identity (PRT-13), so changing kind would change what the device needs to recognize."
+        ? "Controls aren't switchable between each other from the UI — their `id` is also their protocol identity (it doubles as the channel id the device recognizes for this control), so changing kind would change what the device needs to match against."
         : "No other kind shares this one's value shape, so there's nothing to switch it to.",
+    '',
+  ].join('\n');
+}
+
+/** For the 6 kinds AUTO_DISCOVERY_SHAPE covers: the "this is also what shows up with zero setup"
+ * callout, with the matching plain-text line. Empty for every other kind (gauge/log/pie/level/
+ * heat, every control) — those always need an explicit `w` declaration. */
+function autoDiscoverySection(kind: string): string {
+  const shape = AUTO_DISCOVERY_SHAPE[kind];
+  const example = PLOTTER_EXAMPLES[kind];
+  if (!shape || !example) return '';
+  return [
+    '## Also the auto-discovery default',
+    '',
+    `This is also the widget kind the app creates automatically for any channel with no \`w\` declaration at all, as soon as its value looks like ${shape} — including one sent with nothing more than a plain \`Serial.println\`, no library and no protocol JSON required:`,
+    '',
+    '```cpp',
+    example,
+    '```',
+    '',
+    'See [dashboard → auto-discovery](../guide/dashboard#auto-discovery) for the full set of default widgets (with a screenshot for each), and [Arduino Plotter compatibility](../guide/plotter-compat) for the complete text format this line is written in.',
     '',
   ].join('\n');
 }
@@ -230,7 +285,7 @@ async function genWidgetPage(kind: string): Promise<void> {
     '',
     '## Properties',
     '',
-    `Common properties every widget has (\`id\`, \`title\`, \`ch\`, \`grp\`, \`ord\`, \`size\`, \`unit\`, \`dec\`, \`labels\`, \`colors\`, \`stale\`) are documented once in [the message reference](../protocol/messages) — only \`${kind}\`-specific properties are listed below.`,
+    `Every widget also has a set of [common properties](../protocol/messages#common-widget-properties) (\`id\`, \`title\`, \`ch\`, \`grp\`, \`ord\`, \`size\`, \`unit\`, \`dec\`, \`labels\`, \`colors\`, \`stale\`), documented once on the message reference page — only \`${kind}\`-specific properties are listed below.`,
     '',
     propertyTable(properties, required),
     '',
@@ -240,6 +295,7 @@ async function genWidgetPage(kind: string): Promise<void> {
     EXAMPLES[kind] ?? '',
     '```',
     '',
+    autoDiscoverySection(kind),
     pageTrailer(kind),
     '<!-- generated:end -->',
   ].join('\n');

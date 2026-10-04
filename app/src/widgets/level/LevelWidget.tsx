@@ -1,7 +1,7 @@
 import type { JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChannelSeries } from '../../data/useChannelSeries';
-import { WidgetCard, primaryChannel, useStale, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, primaryChannel, useStale, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { LevelWidget as LevelWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -82,14 +82,13 @@ export function LevelWidgetConfigPanel({
 }: WidgetConfigPanelProps<LevelWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="level">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

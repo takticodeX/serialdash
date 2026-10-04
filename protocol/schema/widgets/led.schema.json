@@ -14,13 +14,18 @@
       "const": "led"
     },
     "on": {
-      "$ref": "common.schema.json#/$defs/color"
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "description": "Color (#RRGGBB) shown when the channel's value is truthy (nonzero number, `true`, or a string other than empty/\"false\"/\"0\")."
     },
     "off": {
-      "$ref": "common.schema.json#/$defs/color"
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "description": "Color (#RRGGBB) shown when the channel's value is falsy."
     },
     "states": {
       "type": "object",
+      "description": "Maps a specific raw value to its own `[label, color]` — for more than two states (e.g. a 3-way mode channel). An entry here takes precedence over `on`/`off` when the current value matches it.",
       "additionalProperties": {
         "type": "array",
         "prefixItems": [

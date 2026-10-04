@@ -1,7 +1,7 @@
 import { useEffect, useState, type JSX, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChannelSeries } from '../../data/useChannelSeries';
-import { WidgetCard, useConnected, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, useConnected, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { NumberWidget as NumberWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -80,14 +80,13 @@ export function NumberWidgetConfigPanel({
 }: WidgetConfigPanelProps<NumberWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="number">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

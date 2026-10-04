@@ -1,7 +1,9 @@
 import { useEffect, useState, type JSX, type ReactNode } from 'react';
+import { useTranslation } from 'react-i18next';
 import type { WidgetDeclaration } from '../protocol/generated/index.js';
 import type { DeviceSession } from '../session/DeviceSession';
 import { useConnectionStore } from '../serial/useConnectionStore';
+import { docsUrl } from '../docsUrl';
 
 const DEFAULT_STALE_SECONDS = 5;
 
@@ -105,4 +107,41 @@ export function WidgetCard({
 export function primaryChannel(ch: string | [string, ...string[]] | undefined): string | undefined {
   if (!ch) return undefined;
   return Array.isArray(ch) ? ch[0] : ch;
+}
+
+interface ConfigFieldProps {
+  /** Field label shown next to the input. */
+  label: string;
+  /** Widget kind slug, matching `docs/widgets/<kind>.md` (DOC-01). */
+  kind: string;
+  /** Kind-specific property name, matching the `prop-<name>` anchor `tools/gen-docs` writes next
+   * to each row of that page's properties table. Omit for a common property (e.g. `title`, shared
+   * by every kind) — those have no per-property anchor, so the "?" links to the page's Properties
+   * section as a whole instead. */
+  prop?: string;
+  children: ReactNode;
+}
+
+/** DOC-30: every config-panel field gets a "?" that opens the widget's documentation at that
+ * property's anchor, in a new tab (the panel itself stays open). Shared by every kind's
+ * `ConfigPanel` so the link markup/behavior can't drift between them. */
+export function ConfigField({ label, kind, prop, children }: ConfigFieldProps): JSX.Element {
+  const { t } = useTranslation();
+  const href = docsUrl(`widgets/${kind}#${prop ? `prop-${prop}` : 'properties'}`);
+  return (
+    <label style={{ display: 'block', marginTop: 12 }}>
+      {label}{' '}
+      <a
+        href={href}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={t('widgets.configFieldHelp', { label })}
+        title={t('widgets.configFieldHelp', { label })}
+        style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}
+      >
+        (?)
+      </a>
+      {children}
+    </label>
+  );
 }

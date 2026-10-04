@@ -1,10 +1,10 @@
 # Controls
 
-Control widgets let the dashboard send commands back to the device — a button, a switch, a slider, a number field, a dropdown, a text field, or a color picker. All of them share the same interaction model, from SPEC.md §3.6.
+Control widgets let the dashboard send commands back to the device — a button, a switch, a slider, a number field, a dropdown, a text field, or a color picker. All of them share the same interaction model; see [Controls — bidirectional semantics](../protocol/controls) for the full round trip at the protocol level.
 
 ## Sending a command
 
-Interacting with a control (click, drag, type + Enter/blur) sends a `c` message to the device right away and shows the value you chose as **pending** — the widget dims slightly while it waits, rather than jumping back to the old value and then forward again once the device answers. When the device sends back its acknowledgement (`a`):
+Interacting with a control (click, drag, type + Enter/blur) sends a `c` message to the device right away and shows the value you chose as **pending** — the widget dims slightly while it waits, rather than jumping back to the old value and then forward again once the device answers. When the device sends back its acknowledgement (`ack`):
 
 - **ok** — the pending value becomes the confirmed one; the widget returns to normal.
 - **not ok**, or no acknowledgement within the configured timeout (**Settings → Timeout risposta controlli**, `ackTimeoutMs`) — the widget shows an error state for a few seconds (hover to see the message, or "Device not responding" on timeout), then reverts to the last confirmed value.
@@ -19,17 +19,14 @@ A control is disabled — greyed out, not interactive — whenever the device is
 
 A control declared with a `confirm` string (e.g. `"Are you sure?"`) shows a native confirm dialog before sending — useful for anything destructive like a reboot button. Cancelling the dialog leaves the control untouched; no message is sent.
 
-## The P0 controls
+## Every control kind
 
 - **Button** — sends `true` on click. With `hold` set, it sends `true` on press and `false` on release instead, for a momentary/dead-man-switch action.
 - **Switch** — a boolean toggle.
 - **Slider** — a numeric range, sent on release (not on every intermediate drag position).
-
-## The P1 controls
-
 - **Number** — a numeric input, sent on Enter or on blur (not on every keystroke), respecting `min`/`max`/`step`.
 - **Select** — a dropdown built from the widget's `opts` (plain strings, or `[value, label]` pairs when the wire value and the display label should differ).
-- **Text** — a free-text input, sent on Enter, capped at `max` characters client-side (the device's own receive buffer is the hard limit, PRT-08).
+- **Text** — a free-text input, sent on Enter, capped at `max` characters client-side (the device's own receive buffer is the hard limit).
 - **Color** — a native color picker, plus one-click swatch buttons for any colors listed in `swatches`.
 
 ## Liveness

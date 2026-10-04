@@ -10,6 +10,7 @@
 | `npm run lint`                 | ESLint + Prettier across the repo.                                                                                                                                                                                                                                                                                                                                 |
 | `npm run build -w app`         | Production build — also where lazy-loaded chunks (e.g. the gauge widget's ECharts bundle, SPEC.md §2.2) get verified to actually split out.                                                                                                                                                                                                                        |
 | `npm run e2e`                  | Playwright suite (`app/e2e/`) driven entirely by `SimulatorTransport` — round-trip, rejection, timeout, and external update of a control (QA-03, SPEC.md §3.6). Starts its own dev server (`app/playwright.config.ts`'s `webServer`); no separate setup needed. Chromium only (APP-GEN-01).                                                                        |
+| `npm run test:coverage -w app` | Same Vitest suite, instrumented (v8 provider) and gated: fails if `protocol`, `session`, or `data` drop below 85% line coverage (QA-02). `protocol/generated/**` is excluded — it's schema-generated, covered by its own validate-vectors path instead.                                                                                                            |
 
 ## A jsdom limitation worth knowing
 
@@ -21,7 +22,7 @@ jsdom (Vitest's test environment) has no real `<canvas>` 2D context without the 
 
 ## What's out of scope
 
-Minimum 85% line coverage on `protocol`, `session`, `data` (QA-02) hasn't been measured yet — no coverage tooling is wired into `npm test` currently. An automated load test (originally QA-04) was explicitly descoped (SPEC.md §9.1) — the "Stress test" simulator scenario (APP-SIM-02) still exists for an occasional manual look, just with nothing automated asserting on it.
+An automated load test (originally QA-04) was explicitly descoped (SPEC.md §9.1) — the "Stress test" simulator scenario (APP-SIM-02) still exists for an occasional manual look, just with nothing automated asserting on it.
 
 ## Testing without hardware
 

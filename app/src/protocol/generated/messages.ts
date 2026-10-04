@@ -5,42 +5,69 @@
 
 import type { WidgetDeclaration } from './widgets.js';
 
+/**
+ * Sent once by the device right after it starts (and again any time the app asks for one by sending its own `hi`). Identifies the device and its protocol version, and is normally followed immediately by the device's `w` widget declarations.
+ */
 export interface DeviceHiMessage {
   t: 'hi';
+  /**
+   * Protocol version the device speaks. The app uses this to know which message shapes to expect.
+   */
   v: number;
+  /**
+   * Device name shown in the app's status bar and About panel.
+   */
   name: string;
+  /**
+   * Firmware version string, shown alongside the device name. Entirely up to the sketch — not interpreted by the app.
+   */
   fw?: string;
+  /**
+   * Board name, e.g. "ESP32" or "Uno". Optional and purely informational.
+   */
   board?: string;
+  /**
+   * Size, in bytes, of the device's incoming line buffer. Tells the app how long an app→device line is safe to send before the device would have to truncate or drop it.
+   */
   rx?: number;
   [k: string]: unknown;
 }
 
 /**
- * Partial update: shallow-merges the given fields into the existing widget. `id` and `k` are not modifiable.
+ * Updates an existing widget's properties in place, without redeclaring it — only the given fields change, everything else about the widget stays as it was. `id` and `k` can't be changed this way; to change a widget's kind, remove it (`x`) and declare it again.
  */
 export interface UpdateMessage {
   t: 'u';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
   [k: string]: unknown;
 }
 
+/**
+ * Removes a widget from the dashboard, or every widget this device has declared if `id` is omitted.
+ */
 export interface RemoveMessage {
   t: 'x';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id?: string;
   [k: string]: unknown;
 }
 
+/**
+ * Carries one or more channels' current values. The most frequent message type on the wire — sent every time the device has new sensor/state data to report.
+ */
 export interface DataMessage {
   t: 'd';
+  /**
+   * Map of channel id to its new value. A channel doesn't need its own widget — an undeclared channel can still auto-create one, depending on the app's settings.
+   */
   d: {
     /**
-     * Forms a channel value may take (§3.3 `d`). anyOf, not oneOf: e.g. a 2-number array is a valid 'xy pair' and a valid 'array of numbers' at once — which one it means depends on the consuming widget, not on the JSON shape.
+     * The shapes a channel's value can take in a `d` message. This uses `anyOf` rather than `oneOf` on purpose: e.g. a 2-number array is simultaneously a valid [x, y] pair and a valid array of numbers — which one it means depends on which widget is consuming it, not on the JSON shape itself.
      */
     [k: string]:
       | number
@@ -53,28 +80,61 @@ export interface DataMessage {
           [k: string]: number | string;
         };
   };
+  /**
+   * Device-side timestamp (typically `millis()`), in milliseconds. Lets the app align samples from a device that buffers or batches data instead of always using arrival time. Omit if the device has no clock worth reporting — the app then just timestamps the data on arrival.
+   */
   ts?: number;
   [k: string]: unknown;
 }
 
+/**
+ * A log event — shown in the app's console and in any `log` widgets. Used for status messages, warnings, and errors the device wants to surface, as distinct from regular channel data.
+ */
 export interface EventMessage {
   t: 'e';
+  /**
+   * Severity. Defaults to `info` if omitted.
+   */
   lvl?: 'debug' | 'info' | 'warn' | 'err';
+  /**
+   * The event text.
+   */
   msg: string;
+  /**
+   * Optional origin label (e.g. a subsystem name), usable to filter a `log` widget to just this source.
+   */
   src?: string;
   [k: string]: unknown;
 }
 
+/**
+ * The device's response to an app→device `c` control command, matched back to it by `r`. Every `c` gets exactly one `ack` — the app's UI depends on it to know whether the command succeeded.
+ */
 export interface AckMessage {
   t: 'ack';
+  /**
+   * Echoes the `r` of the `c` message this acknowledges.
+   */
   r: number;
+  /**
+   * Whether the command was accepted. When `true`, the device is expected to also send a `d` with the control's actual resulting state.
+   */
   ok: boolean;
+  /**
+   * Human-readable reason the command was rejected. Only meaningful when `ok` is `false`; shown to the user in the app.
+   */
   err?: string;
   [k: string]: unknown;
 }
 
+/**
+ * The device's response to an app→device `ping`, matched back to it by `r`. The app uses the round trip to show connection latency and to detect a device that's stopped responding.
+ */
 export interface PongMessage {
   t: 'pong';
+  /**
+   * Echoes the `r` of the `ping` message this answers.
+   */
   r: number;
   [k: string]: unknown;
 }
@@ -89,28 +149,46 @@ export type DeviceToAppMessage =
   | AckMessage
   | PongMessage;
 
+/**
+ * Asks the device to (re)identify itself and (re)declare its widgets — sent once when the app first connects, and again any time the user asks the app to rediscover the device.
+ */
 export interface AppHiMessage {
   t: 'hi';
+  /**
+   * Protocol version the app speaks.
+   */
   v: 1;
   [k: string]: unknown;
 }
 
+/**
+ * Sends a command to one control (button, switch, slider, number, select, text, or color) — e.g. the user dragged a slider or clicked a button. The device answers with a matching `ack`.
+ */
 export interface ControlMessage {
   t: 'c';
+  /**
+   * Request id, chosen by the app. The device echoes it back in the `ack` so the app can match the response to this specific command.
+   */
   r: number;
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
   /**
-   * Type depends on the control (§4.3): number, boolean or string.
+   * The requested value. Its type depends on the target control: boolean for switch, number for slider/number, string for text/select/color.
    */
   v: number | boolean | string;
   [k: string]: unknown;
 }
 
+/**
+ * A keep-alive the app sends periodically. The device answers with a matching `pong`, which the app uses to show connection latency and to detect a device that's stopped responding.
+ */
 export interface PingMessage {
   t: 'ping';
+  /**
+   * Request id, chosen by the app. The device echoes it back in the `pong`.
+   */
   r: number;
   [k: string]: unknown;
 }

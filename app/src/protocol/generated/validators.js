@@ -5,11 +5,11 @@ const schema31 = {
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'SerialDash protocol v1 — device to app',
   description:
-    "Validates the JSON payload of a device→app protocol line, i.e. everything after the leading `@` (SPEC.md §3.3). A line whose `t` is not one of these is a message type unknown to v1: PRT-05 requires the app to ignore it rather than reject it, so it is intentionally outside this schema's `oneOf`.",
+    "Validates the JSON payload of a device→app protocol line, i.e. everything after the leading `@`. A line whose `t` is not one of these is a message type unknown to this protocol version: the app is required to ignore it rather than reject it, so it is intentionally outside this schema's `oneOf` (new message types can be introduced without breaking old apps).",
   $defs: {
     channelValue: {
       description:
-        "Forms a channel value may take (§3.3 `d`). anyOf, not oneOf: e.g. a 2-number array is a valid 'xy pair' and a valid 'array of numbers' at once — which one it means depends on the consuming widget, not on the JSON shape.",
+        "The shapes a channel's value can take in a `d` message. This uses `anyOf` rather than `oneOf` on purpose: e.g. a 2-number array is simultaneously a valid [x, y] pair and a valid array of numbers — which one it means depends on which widget is consuming it, not on the JSON shape itself.",
       anyOf: [
         { type: 'number' },
         { type: 'boolean' },
@@ -36,20 +36,45 @@ const schema31 = {
       ],
     },
     hi: {
+      description:
+        "Sent once by the device right after it starts (and again any time the app asks for one by sending its own `hi`). Identifies the device and its protocol version, and is normally followed immediately by the device's `w` widget declarations.",
       type: 'object',
       properties: {
         t: { const: 'hi' },
-        v: { type: 'integer', minimum: 1 },
-        name: { type: 'string', maxLength: 32 },
-        fw: { type: 'string', maxLength: 16 },
-        board: { type: 'string', maxLength: 16 },
-        rx: { type: 'integer', exclusiveMinimum: 0 },
+        v: {
+          type: 'integer',
+          minimum: 1,
+          description:
+            'Protocol version the device speaks. The app uses this to know which message shapes to expect.',
+        },
+        name: {
+          type: 'string',
+          maxLength: 32,
+          description: "Device name shown in the app's status bar and About panel.",
+        },
+        fw: {
+          type: 'string',
+          maxLength: 16,
+          description:
+            'Firmware version string, shown alongside the device name. Entirely up to the sketch — not interpreted by the app.',
+        },
+        board: {
+          type: 'string',
+          maxLength: 16,
+          description: 'Board name, e.g. "ESP32" or "Uno". Optional and purely informational.',
+        },
+        rx: {
+          type: 'integer',
+          exclusiveMinimum: 0,
+          description:
+            "Size, in bytes, of the device's incoming line buffer. Tells the app how long an app→device line is safe to send before the device would have to truncate or drop it.",
+        },
       },
       required: ['t', 'v', 'name'],
     },
     w: {
       description:
-        'Widget declaration. The exact shape depends on `k` (SPEC.md §4); see /protocol/schema/widgets/*.schema.json.',
+        'Declares one widget on the dashboard. The exact set of allowed properties depends on `k`, the widget kind.',
       oneOf: [
         { $ref: 'widgets/line.schema.json' },
         { $ref: 'widgets/value.schema.json' },
@@ -77,7 +102,7 @@ const schema31 = {
     },
     u: {
       description:
-        'Partial update: shallow-merges the given fields into the existing widget. `id` and `k` are not modifiable.',
+        "Updates an existing widget's properties in place, without redeclaring it — only the given fields change, everything else about the widget stays as it was. `id` and `k` can't be changed this way; to change a widget's kind, remove it (`x`) and declare it again.",
       type: 'object',
       properties: {
         t: { const: 'u' },
@@ -87,6 +112,8 @@ const schema31 = {
       required: ['t', 'id'],
     },
     x: {
+      description:
+        'Removes a widget from the dashboard, or every widget this device has declared if `id` is omitted.',
       type: 'object',
       properties: {
         t: { const: 'x' },
@@ -95,37 +122,85 @@ const schema31 = {
       required: ['t'],
     },
     d: {
+      description:
+        "Carries one or more channels' current values. The most frequent message type on the wire — sent every time the device has new sensor/state data to report.",
       type: 'object',
       properties: {
         t: { const: 'd' },
-        d: { type: 'object', additionalProperties: { $ref: '#/$defs/channelValue' } },
-        ts: { type: 'integer', minimum: 0 },
+        d: {
+          type: 'object',
+          description:
+            "Map of channel id to its new value. A channel doesn't need its own widget — an undeclared channel can still auto-create one, depending on the app's settings.",
+          additionalProperties: { $ref: '#/$defs/channelValue' },
+        },
+        ts: {
+          type: 'integer',
+          minimum: 0,
+          description:
+            'Device-side timestamp (typically `millis()`), in milliseconds. Lets the app align samples from a device that buffers or batches data instead of always using arrival time. Omit if the device has no clock worth reporting — the app then just timestamps the data on arrival.',
+        },
       },
       required: ['t', 'd'],
     },
     e: {
+      description:
+        "A log event — shown in the app's console and in any `log` widgets. Used for status messages, warnings, and errors the device wants to surface, as distinct from regular channel data.",
       type: 'object',
       properties: {
         t: { const: 'e' },
-        lvl: { enum: ['debug', 'info', 'warn', 'err'] },
-        msg: { type: 'string' },
-        src: { type: 'string', maxLength: 16 },
+        lvl: {
+          enum: ['debug', 'info', 'warn', 'err'],
+          description: 'Severity. Defaults to `info` if omitted.',
+        },
+        msg: { type: 'string', description: 'The event text.' },
+        src: {
+          type: 'string',
+          maxLength: 16,
+          description:
+            'Optional origin label (e.g. a subsystem name), usable to filter a `log` widget to just this source.',
+        },
       },
       required: ['t', 'msg'],
     },
     ack: {
+      description:
+        "The device's response to an app→device `c` control command, matched back to it by `r`. Every `c` gets exactly one `ack` — the app's UI depends on it to know whether the command succeeded.",
       type: 'object',
       properties: {
         t: { const: 'ack' },
-        r: { type: 'integer', minimum: 1, maximum: 65535 },
-        ok: { type: 'boolean' },
-        err: { type: 'string', maxLength: 48 },
+        r: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 65535,
+          description: 'Echoes the `r` of the `c` message this acknowledges.',
+        },
+        ok: {
+          type: 'boolean',
+          description:
+            "Whether the command was accepted. When `true`, the device is expected to also send a `d` with the control's actual resulting state.",
+        },
+        err: {
+          type: 'string',
+          maxLength: 48,
+          description:
+            'Human-readable reason the command was rejected. Only meaningful when `ok` is `false`; shown to the user in the app.',
+        },
       },
       required: ['t', 'r', 'ok'],
     },
     pong: {
+      description:
+        "The device's response to an app→device `ping`, matched back to it by `r`. The app uses the round trip to show connection latency and to detect a device that's stopped responding.",
       type: 'object',
-      properties: { t: { const: 'pong' }, r: { type: 'integer', minimum: 1, maximum: 65535 } },
+      properties: {
+        t: { const: 'pong' },
+        r: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 65535,
+          description: 'Echoes the `r` of the `ping` message this answers.',
+        },
+      },
       required: ['t', 'r'],
     },
   },
@@ -141,40 +216,101 @@ const schema31 = {
   ],
 };
 const schema32 = {
+  description:
+    "Sent once by the device right after it starts (and again any time the app asks for one by sending its own `hi`). Identifies the device and its protocol version, and is normally followed immediately by the device's `w` widget declarations.",
   type: 'object',
   properties: {
     t: { const: 'hi' },
-    v: { type: 'integer', minimum: 1 },
-    name: { type: 'string', maxLength: 32 },
-    fw: { type: 'string', maxLength: 16 },
-    board: { type: 'string', maxLength: 16 },
-    rx: { type: 'integer', exclusiveMinimum: 0 },
+    v: {
+      type: 'integer',
+      minimum: 1,
+      description:
+        'Protocol version the device speaks. The app uses this to know which message shapes to expect.',
+    },
+    name: {
+      type: 'string',
+      maxLength: 32,
+      description: "Device name shown in the app's status bar and About panel.",
+    },
+    fw: {
+      type: 'string',
+      maxLength: 16,
+      description:
+        'Firmware version string, shown alongside the device name. Entirely up to the sketch — not interpreted by the app.',
+    },
+    board: {
+      type: 'string',
+      maxLength: 16,
+      description: 'Board name, e.g. "ESP32" or "Uno". Optional and purely informational.',
+    },
+    rx: {
+      type: 'integer',
+      exclusiveMinimum: 0,
+      description:
+        "Size, in bytes, of the device's incoming line buffer. Tells the app how long an app→device line is safe to send before the device would have to truncate or drop it.",
+    },
   },
   required: ['t', 'v', 'name'],
 };
-const schema148 = {
+const schema145 = {
+  description:
+    "A log event — shown in the app's console and in any `log` widgets. Used for status messages, warnings, and errors the device wants to surface, as distinct from regular channel data.",
   type: 'object',
   properties: {
     t: { const: 'e' },
-    lvl: { enum: ['debug', 'info', 'warn', 'err'] },
-    msg: { type: 'string' },
-    src: { type: 'string', maxLength: 16 },
+    lvl: {
+      enum: ['debug', 'info', 'warn', 'err'],
+      description: 'Severity. Defaults to `info` if omitted.',
+    },
+    msg: { type: 'string', description: 'The event text.' },
+    src: {
+      type: 'string',
+      maxLength: 16,
+      description:
+        'Optional origin label (e.g. a subsystem name), usable to filter a `log` widget to just this source.',
+    },
   },
   required: ['t', 'msg'],
 };
-const schema149 = {
+const schema146 = {
+  description:
+    "The device's response to an app→device `c` control command, matched back to it by `r`. Every `c` gets exactly one `ack` — the app's UI depends on it to know whether the command succeeded.",
   type: 'object',
   properties: {
     t: { const: 'ack' },
-    r: { type: 'integer', minimum: 1, maximum: 65535 },
-    ok: { type: 'boolean' },
-    err: { type: 'string', maxLength: 48 },
+    r: {
+      type: 'integer',
+      minimum: 1,
+      maximum: 65535,
+      description: 'Echoes the `r` of the `c` message this acknowledges.',
+    },
+    ok: {
+      type: 'boolean',
+      description:
+        "Whether the command was accepted. When `true`, the device is expected to also send a `d` with the control's actual resulting state.",
+    },
+    err: {
+      type: 'string',
+      maxLength: 48,
+      description:
+        'Human-readable reason the command was rejected. Only meaningful when `ok` is `false`; shown to the user in the app.',
+    },
   },
   required: ['t', 'r', 'ok'],
 };
-const schema150 = {
+const schema147 = {
+  description:
+    "The device's response to an app→device `ping`, matched back to it by `r`. The app uses the round trip to show connection latency and to detect a device that's stopped responding.",
   type: 'object',
-  properties: { t: { const: 'pong' }, r: { type: 'integer', minimum: 1, maximum: 65535 } },
+  properties: {
+    t: { const: 'pong' },
+    r: {
+      type: 'integer',
+      minimum: 1,
+      maximum: 65535,
+      description: 'Echoes the `r` of the `ping` message this answers.',
+    },
+  },
   required: ['t', 'r'],
 };
 const func1 = function ucs2length(str) {
@@ -195,7 +331,7 @@ const func1 = function ucs2length(str) {
 };
 const schema33 = {
   description:
-    'Widget declaration. The exact shape depends on `k` (SPEC.md §4); see /protocol/schema/widgets/*.schema.json.',
+    'Declares one widget on the dashboard. The exact set of allowed properties depends on `k`, the widget kind.',
   oneOf: [
     { $ref: 'widgets/line.schema.json' },
     { $ref: 'widgets/value.schema.json' },
@@ -229,31 +365,60 @@ const schema34 = {
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
   properties: {
     k: { const: 'line' },
-    min: { type: 'number' },
-    max: { type: 'number' },
+    min: {
+      type: 'number',
+      description: 'Fixed Y-axis minimum. Omit (along with `max`) to auto-scale to the data.',
+    },
+    max: {
+      type: 'number',
+      description: 'Fixed Y-axis maximum. Omit (along with `min`) to auto-scale to the data.',
+    },
     win: {
       type: 'number',
       exclusiveMinimum: 0,
-      description: 'Time window in seconds. Default 30.',
+      description: 'Time window shown, in seconds. Default 30.',
     },
-    step: { type: 'boolean' },
-    fill: { type: 'boolean' },
+    step: {
+      type: 'boolean',
+      description: 'Draws steps between points instead of straight connecting lines.',
+    },
+    fill: { type: 'boolean', description: 'Fills the area under the curve.' },
   },
   required: ['k'],
 };
 const schema36 = {
-  description: 'Properties common to every widget declared with a `w` message (SPEC.md §3.3).',
+  description: 'Properties common to every widget declared with a `w` message.',
   type: 'object',
   properties: {
     t: { const: 'w' },
     id: { $ref: '#/$defs/identifier' },
-    k: { type: 'string' },
-    title: { type: 'string', maxLength: 48 },
+    k: {
+      type: 'string',
+      description:
+        'Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.',
+    },
+    title: {
+      type: 'string',
+      maxLength: 48,
+      description:
+        "Display title shown on the widget's card. Falls back to the widget's `id` if omitted.",
+    },
     ch: { $ref: '#/$defs/channels' },
-    grp: { type: 'string', maxLength: 24 },
-    ord: { type: 'integer' },
+    grp: {
+      type: 'string',
+      maxLength: 24,
+      description:
+        'Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.',
+    },
+    ord: {
+      type: 'integer',
+      description:
+        "Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.",
+    },
     size: {
       type: 'array',
+      description:
+        'Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.',
       prefixItems: [
         { type: 'integer', minimum: 1, maximum: 12 },
         { type: 'integer', minimum: 1 },
@@ -262,14 +427,27 @@ const schema36 = {
       minItems: 2,
       maxItems: 2,
     },
-    unit: { type: 'string', maxLength: 8 },
-    dec: { type: 'integer', minimum: 0, maximum: 6 },
-    labels: { type: 'array', items: { type: 'string' } },
-    colors: { type: 'array', items: { $ref: '#/$defs/color' } },
+    unit: {
+      type: 'string',
+      maxLength: 8,
+      description: 'Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.',
+    },
+    dec: { type: 'integer', minimum: 0, maximum: 6, description: 'Decimal places to display.' },
+    labels: {
+      type: 'array',
+      items: { type: 'string' },
+      description:
+        'Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).',
+    },
+    colors: {
+      type: 'array',
+      items: { $ref: '#/$defs/color' },
+      description: 'Colors for each channel in `ch`, matched up positionally, as #RRGGBB.',
+    },
     stale: {
       type: 'number',
       exclusiveMinimum: 0,
-      description: 'Seconds before the widget is shown as stale (default 5, §4.1).',
+      description: 'Seconds of no new data before the widget dims and shows as stale. Default 5.',
     },
   },
   required: ['t', 'id', 'k'],
@@ -278,7 +456,7 @@ const schema37 = {
   type: 'string',
   pattern: '^[A-Za-z_][A-Za-z0-9_.-]{0,15}$',
   description:
-    'Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).',
+    'Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.',
 };
 const schema41 = { type: 'string', pattern: '^#[0-9A-Fa-f]{6}$', description: 'Color as #RRGGBB.' };
 const pattern4 = new RegExp('^[A-Za-z_][A-Za-z0-9_.-]{0,15}$', 'u');
@@ -1281,10 +1459,18 @@ const schema42 = {
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
   properties: {
     k: { const: 'value' },
-    trend: { type: 'boolean' },
-    minmax: { type: 'boolean' },
+    trend: {
+      type: 'boolean',
+      description: 'Shows an up/down/flat trend arrow based on the recent value history.',
+    },
+    minmax: {
+      type: 'boolean',
+      description:
+        "Shows the session's minimum and maximum observed values alongside the current one.",
+    },
     warn: {
       type: 'array',
+      description: '`[low, high]` range. Values outside it are highlighted as a warning.',
       prefixItems: [{ type: 'number' }, { type: 'number' }],
       items: false,
       minItems: 2,
@@ -1292,6 +1478,8 @@ const schema42 = {
     },
     alarm: {
       type: 'array',
+      description:
+        '`[low, high]` range. Values outside it are highlighted as an alarm (more severe than `warn`).',
       prefixItems: [{ type: 'number' }, { type: 'number' }],
       items: false,
       minItems: 2,
@@ -2263,9 +2451,13 @@ const schema46 = {
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
   properties: {
     k: { const: 'gauge' },
-    min: { type: 'number' },
-    max: { type: 'number' },
-    zones: { type: 'array', items: { $ref: 'common.schema.json#/$defs/zone' } },
+    min: { type: 'number', description: "Value at the start of the needle's sweep." },
+    max: { type: 'number', description: "Value at the end of the needle's sweep." },
+    zones: {
+      type: 'array',
+      description: 'Color bands drawn behind the needle, each `[from, to, color]`.',
+      items: { $ref: 'common.schema.json#/$defs/zone' },
+    },
   },
   required: ['k', 'min', 'max'],
 };
@@ -3253,10 +3445,21 @@ const schema52 = {
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
   properties: {
     k: { const: 'led' },
-    on: { $ref: 'common.schema.json#/$defs/color' },
-    off: { $ref: 'common.schema.json#/$defs/color' },
+    on: {
+      type: 'string',
+      pattern: '^#[0-9A-Fa-f]{6}$',
+      description:
+        'Color (#RRGGBB) shown when the channel\'s value is truthy (nonzero number, `true`, or a string other than empty/"false"/"0").',
+    },
+    off: {
+      type: 'string',
+      pattern: '^#[0-9A-Fa-f]{6}$',
+      description: "Color (#RRGGBB) shown when the channel's value is falsy.",
+    },
     states: {
       type: 'object',
+      description:
+        'Maps a specific raw value to its own `[label, color]` — for more than two states (e.g. a 3-way mode channel). An entry here takes precedence over `on`/`off` when the current value matches it.',
       additionalProperties: {
         type: 'array',
         prefixItems: [{ type: 'string' }, { $ref: 'common.schema.json#/$defs/color' }],
@@ -3950,7 +4153,7 @@ function validate41(
         if (!pattern7.test(data1)) {
           const err2 = {
             instancePath: instancePath + '/on',
-            schemaPath: 'common.schema.json#/$defs/color/pattern',
+            schemaPath: '#/properties/on/pattern',
             keyword: 'pattern',
             params: { pattern: '^#[0-9A-Fa-f]{6}$' },
             message: 'must match pattern "' + '^#[0-9A-Fa-f]{6}$' + '"',
@@ -3965,7 +4168,7 @@ function validate41(
       } else {
         const err3 = {
           instancePath: instancePath + '/on',
-          schemaPath: 'common.schema.json#/$defs/color/type',
+          schemaPath: '#/properties/on/type',
           keyword: 'type',
           params: { type: 'string' },
           message: 'must be string',
@@ -3984,7 +4187,7 @@ function validate41(
         if (!pattern7.test(data2)) {
           const err4 = {
             instancePath: instancePath + '/off',
-            schemaPath: 'common.schema.json#/$defs/color/pattern',
+            schemaPath: '#/properties/off/pattern',
             keyword: 'pattern',
             params: { pattern: '^#[0-9A-Fa-f]{6}$' },
             message: 'must match pattern "' + '^#[0-9A-Fa-f]{6}$' + '"',
@@ -3999,7 +4202,7 @@ function validate41(
       } else {
         const err5 = {
           instancePath: instancePath + '/off',
-          schemaPath: 'common.schema.json#/$defs/color/type',
+          schemaPath: '#/properties/off/type',
           keyword: 'type',
           params: { type: 'string' },
           message: 'must be string',
@@ -4204,7 +4407,7 @@ validate41.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema59 = {
+const schema57 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/log.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: log',
@@ -4213,8 +4416,16 @@ const schema59 = {
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
   properties: {
     k: { const: 'log' },
-    lvl: { enum: ['debug', 'info', 'warn', 'err'] },
-    src: { type: 'array', items: { type: 'string', maxLength: 16 } },
+    lvl: {
+      enum: ['debug', 'info', 'warn', 'err'],
+      description: 'Minimum severity shown — events below this level are hidden from this widget.',
+    },
+    src: {
+      type: 'array',
+      description:
+        'Limits the log to events whose `src` matches one of these names. Shows events from every source if omitted.',
+      items: { type: 'string', maxLength: 16 },
+    },
     max: { type: 'integer', exclusiveMinimum: 0, description: 'Max rows kept. Default 500.' },
   },
   required: ['k'],
@@ -4902,7 +5113,7 @@ function validate46(
           instancePath: instancePath + '/lvl',
           schemaPath: '#/properties/lvl/enum',
           keyword: 'enum',
-          params: { allowedValues: schema59.properties.lvl.enum },
+          params: { allowedValues: schema57.properties.lvl.enum },
           message: 'must be equal to one of the allowed values',
         };
         if (vErrors === null) {
@@ -5042,7 +5253,7 @@ validate46.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema63 = {
+const schema61 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/xy.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: xy',
@@ -5050,14 +5261,33 @@ const schema63 = {
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
   properties: {
     k: { const: 'xy' },
-    xmin: { type: 'number' },
-    xmax: { type: 'number' },
-    ymin: { type: 'number' },
-    ymax: { type: 'number' },
-    trail: { type: 'integer', exclusiveMinimum: 0, description: 'Points kept. Default 500.' },
-    mode: { enum: ['points', 'lines'] },
-    xlabel: { type: 'string' },
-    ylabel: { type: 'string' },
+    xmin: {
+      type: 'number',
+      description: 'Fixed X-axis minimum. Omit (along with `xmax`) to auto-scale to the data.',
+    },
+    xmax: {
+      type: 'number',
+      description: 'Fixed X-axis maximum. Omit (along with `xmin`) to auto-scale to the data.',
+    },
+    ymin: {
+      type: 'number',
+      description: 'Fixed Y-axis minimum. Omit (along with `ymax`) to auto-scale to the data.',
+    },
+    ymax: {
+      type: 'number',
+      description: 'Fixed Y-axis maximum. Omit (along with `ymin`) to auto-scale to the data.',
+    },
+    trail: {
+      type: 'integer',
+      exclusiveMinimum: 0,
+      description: 'Number of most recent points kept on screen. Default 500.',
+    },
+    mode: {
+      enum: ['points', 'lines'],
+      description: '`points` plots each sample as a dot; `lines` connects them. Default `points`.',
+    },
+    xlabel: { type: 'string', description: 'Label shown below the X axis.' },
+    ylabel: { type: 'string', description: 'Label shown beside the Y axis.' },
   },
   required: ['k'],
 };
@@ -5851,7 +6081,7 @@ function validate51(
           instancePath: instancePath + '/mode',
           schemaPath: '#/properties/mode/enum',
           keyword: 'enum',
-          params: { allowedValues: schema63.properties.mode.enum },
+          params: { allowedValues: schema61.properties.mode.enum },
           message: 'must be equal to one of the allowed values',
         };
         if (vErrors === null) {
@@ -5941,7 +6171,7 @@ validate51.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema67 = {
+const schema65 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/bar.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: bar',
@@ -5949,10 +6179,21 @@ const schema67 = {
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
   properties: {
     k: { const: 'bar' },
-    min: { type: 'number' },
-    max: { type: 'number' },
-    horiz: { type: 'boolean' },
-    xlabels: { type: 'array', items: { type: 'string' } },
+    min: {
+      type: 'number',
+      description: 'Fixed value-axis minimum. Omit (along with `max`) to auto-scale to the data.',
+    },
+    max: {
+      type: 'number',
+      description: 'Fixed value-axis maximum. Omit (along with `min`) to auto-scale to the data.',
+    },
+    horiz: { type: 'boolean', description: 'Draws horizontal bars instead of vertical ones.' },
+    xlabels: {
+      type: 'array',
+      description:
+        'Labels for each bar, used when the channel sends an array of numbers (one label per element) instead of a label→value object.',
+      items: { type: 'string' },
+    },
   },
   required: ['k'],
 };
@@ -6763,13 +7004,23 @@ validate56.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema71 = {
+const schema69 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/pie.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: pie',
   type: 'object',
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
-  properties: { k: { const: 'pie' }, donut: { type: 'boolean' }, pct: { type: 'boolean' } },
+  properties: {
+    k: { const: 'pie' },
+    donut: {
+      type: 'boolean',
+      description: 'Draws the chart as a donut (hollow center) instead of a solid pie.',
+    },
+    pct: {
+      type: 'boolean',
+      description: "Shows each slice's percentage of the total alongside its label.",
+    },
+  },
   required: ['k'],
 };
 function validate62(
@@ -7521,7 +7772,7 @@ validate61.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema75 = {
+const schema73 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/level.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: level',
@@ -7529,10 +7780,14 @@ const schema75 = {
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
   properties: {
     k: { const: 'level' },
-    min: { type: 'number' },
-    max: { type: 'number' },
-    vert: { type: 'boolean' },
-    zones: { type: 'array', items: { $ref: 'common.schema.json#/$defs/zone' } },
+    min: { type: 'number', description: 'Value that maps to an empty bar.' },
+    max: { type: 'number', description: 'Value that maps to a completely full bar.' },
+    vert: { type: 'boolean', description: 'Draws a vertical bar instead of horizontal.' },
+    zones: {
+      type: 'array',
+      description: 'Color bands drawn behind the fill, each `[from, to, color]`.',
+      items: { $ref: 'common.schema.json#/$defs/zone' },
+    },
   },
   required: ['k'],
 };
@@ -8490,13 +8745,21 @@ validate66.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema81 = {
+const schema79 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/table.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: table',
   type: 'object',
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
-  properties: { k: { const: 'table' }, cols: { type: 'array', items: { type: 'string' } } },
+  properties: {
+    k: { const: 'table' },
+    cols: {
+      type: 'array',
+      description:
+        'Column headers, used when the channel sends an array of values per row instead of a label→value object.',
+      items: { type: 'string' },
+    },
+  },
   required: ['k'],
 };
 function validate74(
@@ -9250,7 +9513,7 @@ validate73.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema85 = {
+const schema83 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/heat.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: heat',
@@ -9258,12 +9521,27 @@ const schema85 = {
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
   properties: {
     k: { const: 'heat' },
-    rows: { type: 'integer', exclusiveMinimum: 0 },
-    cols: { type: 'integer', exclusiveMinimum: 0 },
-    min: { type: 'number' },
-    max: { type: 'number' },
-    palette: { enum: ['thermal', 'viridis', 'gray'] },
-    interp: { type: 'boolean' },
+    rows: { type: 'integer', exclusiveMinimum: 0, description: 'Number of rows in the matrix.' },
+    cols: { type: 'integer', exclusiveMinimum: 0, description: 'Number of columns in the matrix.' },
+    min: {
+      type: 'number',
+      description:
+        'Value mapped to the start of the color palette. Omit (along with `max`) to auto-scale to the data.',
+    },
+    max: {
+      type: 'number',
+      description:
+        'Value mapped to the end of the color palette. Omit (along with `min`) to auto-scale to the data.',
+    },
+    palette: {
+      enum: ['thermal', 'viridis', 'gray'],
+      description: 'Named color gradient used to map values to colors.',
+    },
+    interp: {
+      type: 'boolean',
+      description:
+        'Smooths the color transition between adjacent cells instead of showing hard cell boundaries.',
+    },
   },
   required: ['k', 'rows', 'cols'],
 };
@@ -10086,7 +10364,7 @@ function validate78(
           instancePath: instancePath + '/palette',
           schemaPath: '#/properties/palette/enum',
           keyword: 'enum',
-          params: { allowedValues: schema85.properties.palette.enum },
+          params: { allowedValues: schema83.properties.palette.enum },
           message: 'must be equal to one of the allowed values',
         };
         if (vErrors === null) {
@@ -10157,7 +10435,7 @@ validate78.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema89 = {
+const schema87 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/hist.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: hist',
@@ -10165,10 +10443,24 @@ const schema89 = {
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
   properties: {
     k: { const: 'hist' },
-    bins: { type: 'integer', exclusiveMinimum: 0, description: 'Default 20.' },
-    min: { type: 'number' },
-    max: { type: 'number' },
-    n: { type: 'integer', exclusiveMinimum: 0, description: 'Samples considered. Default 1000.' },
+    bins: {
+      type: 'integer',
+      exclusiveMinimum: 0,
+      description: 'Number of histogram bins. Default 20.',
+    },
+    min: {
+      type: 'number',
+      description: 'Fixed value range start. Omit (along with `max`) to auto-scale to the data.',
+    },
+    max: {
+      type: 'number',
+      description: 'Fixed value range end. Omit (along with `min`) to auto-scale to the data.',
+    },
+    n: {
+      type: 'integer',
+      exclusiveMinimum: 0,
+      description: 'Number of most recent samples considered. Default 1000.',
+    },
   },
   required: ['k'],
 };
@@ -10995,7 +11287,7 @@ validate83.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema93 = {
+const schema91 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/polar.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: polar',
@@ -11003,10 +11295,17 @@ const schema93 = {
   allOf: [{ $ref: 'common.schema.json#/$defs/widgetBase' }],
   properties: {
     k: { const: 'polar' },
-    rmax: { type: 'number' },
+    rmax: {
+      type: 'number',
+      description: "Maximum radius value — samples at or beyond it are drawn at the plot's edge.",
+    },
     amin: { type: 'number', description: 'Sector start in degrees. Default 0.' },
     amax: { type: 'number', description: 'Sector end in degrees. Default 360.' },
-    sweep: { type: 'boolean' },
+    sweep: {
+      type: 'boolean',
+      description:
+        'Clears previously plotted points as the sweep passes over them, like a radar display, instead of accumulating a trail.',
+    },
   },
   required: ['k'],
 };
@@ -11798,7 +12097,7 @@ validate88.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema97 = {
+const schema95 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/compass.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: compass',
@@ -12566,7 +12865,7 @@ validate93.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema101 = {
+const schema99 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/attitude.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: attitude',
@@ -13291,7 +13590,7 @@ validate98.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema105 = {
+const schema103 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/button.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: button (control)',
@@ -13303,22 +13602,38 @@ const schema105 = {
   properties: {
     k: { const: 'button' },
     hold: { type: 'boolean', description: 'Send true on press and false on release.' },
-    label: { type: 'string' },
-    color: { $ref: 'common.schema.json#/$defs/color' },
+    label: {
+      type: 'string',
+      description: "Button text. Falls back to the widget's title, or its id, if omitted.",
+    },
+    color: {
+      type: 'string',
+      pattern: '^#[0-9A-Fa-f]{6}$',
+      description: 'Button background color (#RRGGBB).',
+    },
   },
   required: ['k'],
 };
-const schema109 = {
+const schema107 = {
   description:
-    'Properties added to controls on top of widgetBase (§4.3). `id` doubles as the state channel id (PRT-13), so `ch` is not used.',
+    "Properties added to controls (button, switch, slider, number, select, text, color) on top of widgetBase. A control's `id` doubles as its state channel id, so controls don't use `ch`.",
   type: 'object',
   properties: {
     val: {
-      description: 'Optional initial/confirmed value; type depends on the control (§3.6.1).',
+      description:
+        'Initial/confirmed value, shown until the first `d` or control response arrives for this id. Type depends on the control: boolean for switch, number for slider/number, string for text/select/color.',
       type: ['number', 'boolean', 'string'],
     },
-    dis: { type: 'boolean' },
-    confirm: { type: 'string' },
+    dis: {
+      type: 'boolean',
+      description:
+        "Shows the control as disabled — the user can't interact with it until this is cleared.",
+    },
+    confirm: {
+      type: 'string',
+      description:
+        'Confirmation prompt text. If set, the app asks the user to confirm with this message before sending the command.',
+    },
   },
 };
 function validate104(
@@ -13976,7 +14291,7 @@ function validate103(
           instancePath: instancePath + '/val',
           schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: schema109.properties.val.type },
+          params: { type: schema107.properties.val.type },
           message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
@@ -14109,7 +14424,7 @@ function validate103(
         if (!pattern7.test(data6)) {
           const err8 = {
             instancePath: instancePath + '/color',
-            schemaPath: 'common.schema.json#/$defs/color/pattern',
+            schemaPath: '#/properties/color/pattern',
             keyword: 'pattern',
             params: { pattern: '^#[0-9A-Fa-f]{6}$' },
             message: 'must match pattern "' + '^#[0-9A-Fa-f]{6}$' + '"',
@@ -14124,7 +14439,7 @@ function validate103(
       } else {
         const err9 = {
           instancePath: instancePath + '/color',
-          schemaPath: 'common.schema.json#/$defs/color/type',
+          schemaPath: '#/properties/color/type',
           keyword: 'type',
           params: { type: 'string' },
           message: 'must be string',
@@ -14180,18 +14495,22 @@ validate103.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema111 = {
+const schema108 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/switch.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: switch (control)',
   type: 'object',
   description:
-    'Library builder method is `toggle()` because `switch` is a reserved C++ keyword (LIB-TX-01); the wire `k` stays "switch".',
+    'The Arduino library\'s builder method for this kind is `toggle()`, since `switch` is a reserved C++ keyword — the wire `k` stays "switch" regardless.',
   allOf: [
     { $ref: 'common.schema.json#/$defs/widgetBase' },
     { $ref: 'common.schema.json#/$defs/controlExtras' },
   ],
-  properties: { k: { const: 'switch' }, on: { type: 'string' }, off: { type: 'string' } },
+  properties: {
+    k: { const: 'switch' },
+    on: { type: 'string', description: 'Label shown when the switch is on.' },
+    off: { type: 'string', description: 'Label shown when the switch is off.' },
+  },
   required: ['k'],
 };
 function validate109(
@@ -14849,7 +15168,7 @@ function validate108(
           instancePath: instancePath + '/val',
           schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: schema109.properties.val.type },
+          params: { type: schema107.properties.val.type },
           message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
@@ -15018,7 +15337,7 @@ validate108.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema116 = {
+const schema113 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/slider.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: slider (control)',
@@ -15029,10 +15348,14 @@ const schema116 = {
   ],
   properties: {
     k: { const: 'slider' },
-    min: { type: 'number' },
-    max: { type: 'number' },
-    step: { type: 'number', exclusiveMinimum: 0, description: 'Default 1.' },
-    vert: { type: 'boolean' },
+    min: { type: 'number', description: 'Minimum value the slider can be dragged to.' },
+    max: { type: 'number', description: 'Maximum value the slider can be dragged to.' },
+    step: {
+      type: 'number',
+      exclusiveMinimum: 0,
+      description: 'Increment the slider snaps to while dragging. Default 1.',
+    },
+    vert: { type: 'boolean', description: 'Draws a vertical slider instead of horizontal.' },
   },
   required: ['k', 'min', 'max'],
 };
@@ -15691,7 +16014,7 @@ function validate113(
           instancePath: instancePath + '/val',
           schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: schema109.properties.val.type },
+          params: { type: schema107.properties.val.type },
           message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
@@ -15945,7 +16268,7 @@ validate113.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema121 = {
+const schema118 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/number.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: number (control)',
@@ -15956,9 +16279,13 @@ const schema121 = {
   ],
   properties: {
     k: { const: 'number' },
-    min: { type: 'number' },
-    max: { type: 'number' },
-    step: { type: 'number', exclusiveMinimum: 0 },
+    min: { type: 'number', description: 'Minimum value the input accepts.' },
+    max: { type: 'number', description: 'Maximum value the input accepts.' },
+    step: {
+      type: 'number',
+      exclusiveMinimum: 0,
+      description: "Increment applied by the input's up/down arrows. Default 1.",
+    },
   },
   required: ['k'],
 };
@@ -16617,7 +16944,7 @@ function validate118(
           instancePath: instancePath + '/val',
           schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: schema109.properties.val.type },
+          params: { type: schema107.properties.val.type },
           message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
@@ -16823,7 +17150,7 @@ validate118.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema126 = {
+const schema123 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/select.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: select (control)',
@@ -16836,6 +17163,8 @@ const schema126 = {
     k: { const: 'select' },
     opts: {
       type: 'array',
+      description:
+        'The list of choices. Each entry is either a bare string (used as both the value sent on the wire and the displayed label) or a `[value, label]` pair for a label that differs from the value.',
       items: {
         oneOf: [
           { type: 'string' },
@@ -17507,7 +17836,7 @@ function validate123(
           instancePath: instancePath + '/val',
           schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: schema109.properties.val.type },
+          params: { type: schema107.properties.val.type },
           message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
@@ -17820,7 +18149,7 @@ validate123.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema131 = {
+const schema128 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/text.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: text (control)',
@@ -17834,9 +18163,10 @@ const schema131 = {
     max: {
       type: 'integer',
       exclusiveMinimum: 0,
-      description: 'Max length, also bounded by rx (PRT-08).',
+      description:
+        'Maximum input length, in characters. Also implicitly bounded by how much buffer space the device has for an incoming line.',
     },
-    ph: { type: 'string' },
+    ph: { type: 'string', description: 'Placeholder text shown in the empty input.' },
   },
   required: ['k'],
 };
@@ -18495,7 +18825,7 @@ function validate128(
           instancePath: instancePath + '/val',
           schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: schema109.properties.val.type },
+          params: { type: schema107.properties.val.type },
           message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
@@ -18682,7 +19012,7 @@ validate128.evaluated = {
   dynamicProps: false,
   dynamicItems: false,
 };
-const schema136 = {
+const schema133 = {
   $id: 'https://schema.serialdash.dev/v1/widgets/color.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'Widget: color (control)',
@@ -18693,7 +19023,11 @@ const schema136 = {
   ],
   properties: {
     k: { const: 'color' },
-    swatches: { type: 'array', items: { $ref: 'common.schema.json#/$defs/color' } },
+    swatches: {
+      type: 'array',
+      description: 'Quick-pick color swatches shown above the color picker.',
+      items: { $ref: 'common.schema.json#/$defs/color' },
+    },
   },
   required: ['k'],
 };
@@ -19352,7 +19686,7 @@ function validate133(
           instancePath: instancePath + '/val',
           schemaPath: 'common.schema.json#/$defs/controlExtras/properties/val/type',
           keyword: 'type',
-          params: { type: schema109.properties.val.type },
+          params: { type: schema107.properties.val.type },
           message: 'must be number,boolean,string',
         };
         if (vErrors === null) {
@@ -20541,9 +20875,9 @@ function validate21(
   return errors === 0;
 }
 validate21.evaluated = { dynamicProps: true, dynamicItems: false };
-const schema142 = {
+const schema139 = {
   description:
-    'Partial update: shallow-merges the given fields into the existing widget. `id` and `k` are not modifiable.',
+    "Updates an existing widget's properties in place, without redeclaring it — only the given fields change, everything else about the widget stays as it was. `id` and `k` can't be changed this way; to change a widget's kind, remove it (`x`) and declare it again.",
   type: 'object',
   properties: { t: { const: 'u' }, id: { $ref: 'widgets/common.schema.json#/$defs/identifier' } },
   not: { properties: { k: {} }, required: ['k'] },
@@ -20702,7 +21036,9 @@ function validate139(
   return errors === 0;
 }
 validate139.evaluated = { props: { t: true, id: true }, dynamicProps: false, dynamicItems: false };
-const schema144 = {
+const schema141 = {
+  description:
+    'Removes a widget from the dashboard, or every widget this device has declared if `id` is omitted.',
   type: 'object',
   properties: { t: { const: 'x' }, id: { $ref: 'widgets/common.schema.json#/$defs/identifier' } },
   required: ['t'],
@@ -20806,18 +21142,30 @@ function validate141(
   return errors === 0;
 }
 validate141.evaluated = { props: { t: true, id: true }, dynamicProps: false, dynamicItems: false };
-const schema146 = {
+const schema143 = {
+  description:
+    "Carries one or more channels' current values. The most frequent message type on the wire — sent every time the device has new sensor/state data to report.",
   type: 'object',
   properties: {
     t: { const: 'd' },
-    d: { type: 'object', additionalProperties: { $ref: '#/$defs/channelValue' } },
-    ts: { type: 'integer', minimum: 0 },
+    d: {
+      type: 'object',
+      description:
+        "Map of channel id to its new value. A channel doesn't need its own widget — an undeclared channel can still auto-create one, depending on the app's settings.",
+      additionalProperties: { $ref: '#/$defs/channelValue' },
+    },
+    ts: {
+      type: 'integer',
+      minimum: 0,
+      description:
+        'Device-side timestamp (typically `millis()`), in milliseconds. Lets the app align samples from a device that buffers or batches data instead of always using arrival time. Omit if the device has no clock worth reporting — the app then just timestamps the data on arrival.',
+    },
   },
   required: ['t', 'd'],
 };
-const schema147 = {
+const schema144 = {
   description:
-    "Forms a channel value may take (§3.3 `d`). anyOf, not oneOf: e.g. a 2-number array is a valid 'xy pair' and a valid 'array of numbers' at once — which one it means depends on the consuming widget, not on the JSON shape.",
+    "The shapes a channel's value can take in a `d` message. This uses `anyOf` rather than `oneOf` on purpose: e.g. a 2-number array is simultaneously a valid [x, y] pair and a valid array of numbers — which one it means depends on which widget is consuming it, not on the JSON shape itself.",
   anyOf: [
     { type: 'number' },
     { type: 'boolean' },
@@ -21781,7 +22129,7 @@ function validate20(
                   instancePath: instancePath + '/lvl',
                   schemaPath: '#/$defs/e/properties/lvl/enum',
                   keyword: 'enum',
-                  params: { allowedValues: schema148.properties.lvl.enum },
+                  params: { allowedValues: schema145.properties.lvl.enum },
                   message: 'must be equal to one of the allowed values',
                 };
                 if (vErrors === null) {
@@ -22245,32 +22593,46 @@ function validate20(
 }
 validate20.evaluated = { dynamicProps: true, dynamicItems: false };
 export const validateAppToDevice = validate145;
-const schema151 = {
+const schema148 = {
   $id: 'https://schema.serialdash.dev/v1/app-to-device.schema.json',
   $schema: 'https://json-schema.org/draft/2020-12/schema',
   title: 'SerialDash protocol v1 — app to device',
   description:
-    'Validates the JSON payload of an app→device protocol line (SPEC.md §3.4). Messages MUST be flat objects (no nested object/array values) so a microcontroller can use a minimal streaming parser. PRT-40 additionally requires field order t, r, id, v on the wire; JSON Schema validates structure, not key order, so that rule is enforced by the encoder (app/src/protocol), not by this schema.',
+    "Validates the JSON payload of an app→device protocol line — everything a connected app can send to the device. Every message here MUST be a flat object (no nested object/array values), so a microcontroller can parse it with a minimal streaming parser instead of a full JSON library. Fields are also always written on the wire in a fixed order (`t`, `r`, `id`, `v`); that ordering isn't something JSON Schema can express, so it's enforced by the app's own message encoder rather than by this schema.",
   $defs: {
     flatExtra: {
       description:
-        'Unknown fields in a known message MUST be ignored (PRT-06), so they remain allowed here — but every app→device message MUST be a flat object (§3.4), so an unknown field may not itself be an object or array.',
+        "Unknown fields in an otherwise-recognized message must be tolerated, not rejected — a device running an older protocol version should ignore fields it doesn't understand rather than fail. They just can't themselves be an object or array, since every app→device message has to stay flat.",
       not: { type: ['object', 'array'] },
     },
     hi: {
+      description:
+        'Asks the device to (re)identify itself and (re)declare its widgets — sent once when the app first connects, and again any time the user asks the app to rediscover the device.',
       type: 'object',
-      properties: { t: { const: 'hi' }, v: { type: 'integer', const: 1 } },
+      properties: {
+        t: { const: 'hi' },
+        v: { type: 'integer', const: 1, description: 'Protocol version the app speaks.' },
+      },
       required: ['t', 'v'],
       additionalProperties: { $ref: '#/$defs/flatExtra' },
     },
     c: {
+      description:
+        'Sends a command to one control (button, switch, slider, number, select, text, or color) — e.g. the user dragged a slider or clicked a button. The device answers with a matching `ack`.',
       type: 'object',
       properties: {
         t: { const: 'c' },
-        r: { type: 'integer', minimum: 1, maximum: 65535 },
+        r: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 65535,
+          description:
+            'Request id, chosen by the app. The device echoes it back in the `ack` so the app can match the response to this specific command.',
+        },
         id: { $ref: 'widgets/common.schema.json#/$defs/identifier' },
         v: {
-          description: 'Type depends on the control (§4.3): number, boolean or string.',
+          description:
+            'The requested value. Its type depends on the target control: boolean for switch, number for slider/number, string for text/select/color.',
           oneOf: [{ type: 'number' }, { type: 'boolean' }, { type: 'string' }],
         },
       },
@@ -22278,23 +22640,38 @@ const schema151 = {
       additionalProperties: { $ref: '#/$defs/flatExtra' },
     },
     ping: {
+      description:
+        "A keep-alive the app sends periodically. The device answers with a matching `pong`, which the app uses to show connection latency and to detect a device that's stopped responding.",
       type: 'object',
-      properties: { t: { const: 'ping' }, r: { type: 'integer', minimum: 1, maximum: 65535 } },
+      properties: {
+        t: { const: 'ping' },
+        r: {
+          type: 'integer',
+          minimum: 1,
+          maximum: 65535,
+          description: 'Request id, chosen by the app. The device echoes it back in the `pong`.',
+        },
+      },
       required: ['t', 'r'],
       additionalProperties: { $ref: '#/$defs/flatExtra' },
     },
   },
   oneOf: [{ $ref: '#/$defs/hi' }, { $ref: '#/$defs/c' }, { $ref: '#/$defs/ping' }],
 };
-const schema152 = {
+const schema149 = {
+  description:
+    'Asks the device to (re)identify itself and (re)declare its widgets — sent once when the app first connects, and again any time the user asks the app to rediscover the device.',
   type: 'object',
-  properties: { t: { const: 'hi' }, v: { type: 'integer', const: 1 } },
+  properties: {
+    t: { const: 'hi' },
+    v: { type: 'integer', const: 1, description: 'Protocol version the app speaks.' },
+  },
   required: ['t', 'v'],
   additionalProperties: { $ref: '#/$defs/flatExtra' },
 };
-const schema153 = {
+const schema150 = {
   description:
-    'Unknown fields in a known message MUST be ignored (PRT-06), so they remain allowed here — but every app→device message MUST be a flat object (§3.4), so an unknown field may not itself be an object or array.',
+    "Unknown fields in an otherwise-recognized message must be tolerated, not rejected — a device running an older protocol version should ignore fields it doesn't understand rather than fail. They just can't themselves be an object or array, since every app→device message has to stay flat.",
   not: { type: ['object', 'array'] },
 };
 function validate146(
@@ -22451,14 +22828,23 @@ function validate146(
   return errors === 0;
 }
 validate146.evaluated = { props: true, dynamicProps: false, dynamicItems: false };
-const schema154 = {
+const schema151 = {
+  description:
+    'Sends a command to one control (button, switch, slider, number, select, text, or color) — e.g. the user dragged a slider or clicked a button. The device answers with a matching `ack`.',
   type: 'object',
   properties: {
     t: { const: 'c' },
-    r: { type: 'integer', minimum: 1, maximum: 65535 },
+    r: {
+      type: 'integer',
+      minimum: 1,
+      maximum: 65535,
+      description:
+        'Request id, chosen by the app. The device echoes it back in the `ack` so the app can match the response to this specific command.',
+    },
     id: { $ref: 'widgets/common.schema.json#/$defs/identifier' },
     v: {
-      description: 'Type depends on the control (§4.3): number, boolean or string.',
+      description:
+        'The requested value. Its type depends on the target control: boolean for switch, number for slider/number, string for text/select/color.',
       oneOf: [{ type: 'number' }, { type: 'boolean' }, { type: 'string' }],
     },
   },
@@ -22803,9 +23189,19 @@ function validate148(
   return errors === 0;
 }
 validate148.evaluated = { props: true, dynamicProps: false, dynamicItems: false };
-const schema157 = {
+const schema154 = {
+  description:
+    "A keep-alive the app sends periodically. The device answers with a matching `pong`, which the app uses to show connection latency and to detect a device that's stopped responding.",
   type: 'object',
-  properties: { t: { const: 'ping' }, r: { type: 'integer', minimum: 1, maximum: 65535 } },
+  properties: {
+    t: { const: 'ping' },
+    r: {
+      type: 'integer',
+      minimum: 1,
+      maximum: 65535,
+      description: 'Request id, chosen by the app. The device echoes it back in the `pong`.',
+    },
+  },
   required: ['t', 'r'],
   additionalProperties: { $ref: '#/$defs/flatExtra' },
 };

@@ -2,7 +2,7 @@ import { useEffect, useRef, useState, type JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChannelSeries } from '../../data/useChannelSeries';
 import type { ChannelValue } from '../../data/ChannelStore';
-import { WidgetCard, useStale, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, useStale, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { TableWidget as TableWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -62,7 +62,13 @@ export function TableWidgetComponent({
 
   return (
     <WidgetCard title={widgetTitle(declaration)} stale={stale} staleLabel={t('widgets.stale')}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85em' }}>
+      {/* marginTop clears the widget's absolutely-positioned toolbar (settings/fullscreen/export,
+          top-right corner) — without it, the right-aligned header cell renders directly underneath
+          those buttons, since the table (unlike other widgets' content) starts flush with the top
+          of the content area. */}
+      <table
+        style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85em', marginTop: 10 }}
+      >
         <thead>
           <tr>
             <th style={{ textAlign: 'left' }}>{keyHeader}</th>
@@ -94,14 +100,13 @@ export function TableWidgetConfigPanel({
 }: WidgetConfigPanelProps<TableWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="table">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

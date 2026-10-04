@@ -18,10 +18,11 @@
     "max": {
       "type": "integer",
       "exclusiveMinimum": 0,
-      "description": "Max length, also bounded by rx (PRT-08)."
+      "description": "Maximum input length, in characters. Also implicitly bounded by how much buffer space the device has for an incoming line."
     },
     "ph": {
-      "type": "string"
+      "type": "string",
+      "description": "Placeholder text shown in the empty input."
     }
   },
   "required": ["k"]

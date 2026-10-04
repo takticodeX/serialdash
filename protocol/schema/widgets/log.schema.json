@@ -14,10 +14,12 @@
       "const": "log"
     },
     "lvl": {
-      "enum": ["debug", "info", "warn", "err"]
+      "enum": ["debug", "info", "warn", "err"],
+      "description": "Minimum severity shown — events below this level are hidden from this widget."
     },
     "src": {
       "type": "array",
+      "description": "Limits the log to events whose `src` matches one of these names. Shows events from every source if omitted.",
       "items": {
         "type": "string",
         "maxLength": 16

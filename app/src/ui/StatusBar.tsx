@@ -54,9 +54,11 @@ interface Props {
    * visible after a disconnect, SPEC.md §3.5 rule 6) to pick a different device. */
   onChangeDevice: (() => void) | undefined;
   onOpenSettings: () => void;
+  /** DOC-32: replays the first-run tour from its first step. */
+  onOpenHelp: () => void;
 }
 
-export function StatusBar({ onChangeDevice, onOpenSettings }: Props): JSX.Element {
+export function StatusBar({ onChangeDevice, onOpenSettings, onOpenHelp }: Props): JSX.Element {
   const { t } = useTranslation();
   const state = useConnectionStore((s) => s.state);
   const info = useConnectionStore((s) => s.info);
@@ -162,6 +164,15 @@ export function StatusBar({ onChangeDevice, onOpenSettings }: Props): JSX.Elemen
           {t('connect.disconnectToFlash')}
         </button>
       )}
+      <button
+        type="button"
+        onClick={onOpenHelp}
+        aria-label={t('tour.openHelp')}
+        title={t('tour.openHelp')}
+        data-tour="open-help"
+      >
+        ?
+      </button>
       <button type="button" onClick={onOpenSettings} aria-label={t('settings.title')}>
         ⚙
       </button>

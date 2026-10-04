@@ -13,21 +13,25 @@
       "const": "line"
     },
     "min": {
-      "type": "number"
+      "type": "number",
+      "description": "Fixed Y-axis minimum. Omit (along with `max`) to auto-scale to the data."
     },
     "max": {
-      "type": "number"
+      "type": "number",
+      "description": "Fixed Y-axis maximum. Omit (along with `min`) to auto-scale to the data."
     },
     "win": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "Time window in seconds. Default 30."
+      "description": "Time window shown, in seconds. Default 30."
     },
     "step": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Draws steps between points instead of straight connecting lines."
     },
     "fill": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Fills the area under the curve."
     }
   },
   "required": ["k"]

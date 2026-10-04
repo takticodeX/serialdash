@@ -21,4 +21,4 @@ The library allocates nothing at runtime (`malloc`/`new`/`String` are never used
 
 ## AVR vs. everything else
 
-The lower AVR defaults specifically target the Arduino Uno/Nano/Mega's limited RAM (LIB-GEN-07's budget is measured against an Uno). Boards with more RAM (ESP32, ESP8266, RP2040, SAMD) get roomier defaults automatically — no need to raise them yourself unless you're doing something unusual (many channels, many controls, or long control values).
+The lower AVR defaults specifically target the Arduino Uno/Nano/Mega's limited RAM — the library's own memory budget (see [memory](./memory)) is measured against an Uno. Boards with more RAM (ESP32, ESP8266, RP2040, SAMD) get roomier defaults automatically — no need to raise them yourself unless you're doing something unusual (many channels, many controls, or long control values).

@@ -4,6 +4,7 @@ import { useConnectionStore } from '../serial/useConnectionStore';
 import { describePort, BAUD_RATE_PRESETS } from '../serial/webSerialTransport';
 import type { SimulatorScenario } from '../transport/simulatorTransport';
 import logo from '../assets/serialdash-logo.png';
+import { docsUrl } from '../docsUrl';
 
 // APP-SIM-02. Values are `connect.scenario_*` i18n keys (APP-GEN-04: no literal UI strings).
 const SIMULATOR_SCENARIOS: [SimulatorScenario, string][] = [
@@ -36,16 +37,44 @@ export function ConnectScreen(): JSX.Element {
 
   const connecting = state === 'connecting';
 
+  const headingStyle = { fontSize: '2em', fontWeight: 700, margin: '0.2em 0' };
+
   return (
-    <div style={{ maxWidth: 560, margin: '48px auto', padding: '0 16px' }}>
+    <div style={{ maxWidth: 560, margin: '24px auto', padding: '0 16px' }}>
       <img
         src={logo}
         alt=""
-        width={96}
-        height={96}
-        style={{ display: 'block', margin: '0 auto 16px' }}
+        width={64}
+        height={64}
+        style={{ display: 'block', margin: '0 auto 8px' }}
       />
-      <h1 style={{ textAlign: 'center' }}>{t('connect.title')}</h1>
+      <p style={{ ...headingStyle, textAlign: 'center' }}>{t('common.appName')}</p>
+      <h1 style={{ ...headingStyle, textAlign: 'center', marginBottom: 16 }}>
+        {t('connect.title')}{' '}
+        <a
+          href={docsUrl('guide/connecting')}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label={t('connect.howToConnect')}
+          title={t('connect.howToConnect')}
+          style={{
+            fontSize: '0.5em',
+            fontWeight: 400,
+            verticalAlign: 'middle',
+            color: 'var(--color-text-muted)',
+            textDecoration: 'none',
+            border: '1px solid var(--color-border)',
+            borderRadius: '50%',
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            width: '1.6em',
+            height: '1.6em',
+          }}
+        >
+          ?
+        </a>
+      </h1>
 
       {error === 'portBusy' && (
         <p role="alert" style={{ color: 'var(--color-danger)' }}>
@@ -58,12 +87,12 @@ export function ConnectScreen(): JSX.Element {
         </p>
       )}
 
-      <section style={{ marginBottom: 24 }}>
-        <h2>{t('connect.knownPorts')}</h2>
+      <section className="panel" style={{ padding: 12, marginBottom: 12 }}>
+        <h2 style={{ margin: '0 0 8px', fontSize: '1em' }}>{t('connect.knownPorts')}</h2>
         {knownPorts.length === 0 ? (
-          <p style={{ color: 'var(--color-text-muted)' }}>{t('connect.noKnownPorts')}</p>
+          <p style={{ color: 'var(--color-text-muted)', margin: 0 }}>{t('connect.noKnownPorts')}</p>
         ) : (
-          <ul style={{ listStyle: 'none', padding: 0 }}>
+          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
             {knownPorts.map((port, i) => (
               <li key={i} style={{ marginBottom: 8 }}>
                 <button
@@ -80,106 +109,118 @@ export function ConnectScreen(): JSX.Element {
         )}
       </section>
 
-      <fieldset style={{ marginBottom: 16 }}>
-        <legend>{t('connect.baudRate')}</legend>
-        {customBaud ? (
+      <section
+        className="panel"
+        style={{
+          padding: 12,
+          marginBottom: 12,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 12,
+          textAlign: 'center',
+        }}
+      >
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {t('connect.baudRate')}
+          {customBaud ? (
+            <input
+              type="number"
+              value={options.baudRate}
+              min={1}
+              onChange={(e) => setOptions({ baudRate: Number(e.target.value) })}
+            />
+          ) : (
+            <select
+              value={options.baudRate}
+              onChange={(e) => {
+                if (e.target.value === 'custom') {
+                  setCustomBaud(true);
+                } else {
+                  setOptions({ baudRate: Number(e.target.value) });
+                }
+              }}
+            >
+              {BAUD_RATE_PRESETS.map((rate) => (
+                <option key={rate} value={rate}>
+                  {rate}
+                </option>
+              ))}
+              <option value="custom">{t('connect.baudRateCustom')}</option>
+            </select>
+          )}
+        </label>
+
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
           <input
-            type="number"
-            value={options.baudRate}
-            min={1}
-            onChange={(e) => setOptions({ baudRate: Number(e.target.value) })}
+            type="checkbox"
+            checked={options.resetOnConnect}
+            onChange={(e) => setOptions({ resetOnConnect: e.target.checked })}
           />
-        ) : (
-          <select
-            value={options.baudRate}
-            onChange={(e) => {
-              if (e.target.value === 'custom') {
-                setCustomBaud(true);
-              } else {
-                setOptions({ baudRate: Number(e.target.value) });
-              }
-            }}
-          >
-            {BAUD_RATE_PRESETS.map((rate) => (
-              <option key={rate} value={rate}>
-                {rate}
-              </option>
-            ))}
-            <option value="custom">{t('connect.baudRateCustom')}</option>
-          </select>
+          {t('connect.resetOnConnect')}
+        </label>
+
+        <button
+          type="button"
+          onClick={() => setAdvancedOpen((v) => !v)}
+          aria-expanded={advancedOpen}
+        >
+          {t('connect.advanced')}
+        </button>
+        {advancedOpen && (
+          <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', justifyContent: 'center' }}>
+            <label>
+              {t('connect.dataBits')}{' '}
+              <select
+                value={options.dataBits}
+                onChange={(e) => setOptions({ dataBits: Number(e.target.value) as 7 | 8 })}
+              >
+                <option value={8}>8</option>
+                <option value={7}>7</option>
+              </select>
+            </label>
+            <label>
+              {t('connect.parity')}{' '}
+              <select
+                value={options.parity}
+                onChange={(e) => setOptions({ parity: e.target.value as 'none' | 'even' | 'odd' })}
+              >
+                <option value="none">{t('connect.parity_none')}</option>
+                <option value="even">{t('connect.parity_even')}</option>
+                <option value="odd">{t('connect.parity_odd')}</option>
+              </select>
+            </label>
+            <label>
+              {t('connect.stopBits')}{' '}
+              <select
+                value={options.stopBits}
+                onChange={(e) => setOptions({ stopBits: Number(e.target.value) as 1 | 2 })}
+              >
+                <option value={1}>1</option>
+                <option value={2}>2</option>
+              </select>
+            </label>
+            <label>
+              {t('connect.flowControl')}{' '}
+              <select
+                value={options.flowControl}
+                onChange={(e) => setOptions({ flowControl: e.target.value as 'none' | 'hardware' })}
+              >
+                <option value="none">{t('connect.flowControl_none')}</option>
+                <option value="hardware">{t('connect.flowControl_hardware')}</option>
+              </select>
+            </label>
+          </div>
         )}
-      </fieldset>
+      </section>
 
-      <label style={{ display: 'block', marginBottom: 16 }}>
-        <input
-          type="checkbox"
-          checked={options.resetOnConnect}
-          onChange={(e) => setOptions({ resetOnConnect: e.target.checked })}
-        />{' '}
-        {t('connect.resetOnConnect')}
-        <div style={{ fontSize: '0.85em', color: 'var(--color-text-muted)' }}>
-          {t('connect.resetOnConnectHint')}
-        </div>
-      </label>
-
-      <button type="button" onClick={() => setAdvancedOpen((v) => !v)} aria-expanded={advancedOpen}>
-        {t('connect.advanced')}
-      </button>
-      {advancedOpen && (
-        <div style={{ display: 'flex', gap: 16, marginTop: 12, flexWrap: 'wrap' }}>
-          <label>
-            {t('connect.dataBits')}{' '}
-            <select
-              value={options.dataBits}
-              onChange={(e) => setOptions({ dataBits: Number(e.target.value) as 7 | 8 })}
-            >
-              <option value={8}>8</option>
-              <option value={7}>7</option>
-            </select>
-          </label>
-          <label>
-            {t('connect.parity')}{' '}
-            <select
-              value={options.parity}
-              onChange={(e) => setOptions({ parity: e.target.value as 'none' | 'even' | 'odd' })}
-            >
-              <option value="none">{t('connect.parity_none')}</option>
-              <option value="even">{t('connect.parity_even')}</option>
-              <option value="odd">{t('connect.parity_odd')}</option>
-            </select>
-          </label>
-          <label>
-            {t('connect.stopBits')}{' '}
-            <select
-              value={options.stopBits}
-              onChange={(e) => setOptions({ stopBits: Number(e.target.value) as 1 | 2 })}
-            >
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-            </select>
-          </label>
-          <label>
-            {t('connect.flowControl')}{' '}
-            <select
-              value={options.flowControl}
-              onChange={(e) => setOptions({ flowControl: e.target.value as 'none' | 'hardware' })}
-            >
-              <option value="none">{t('connect.flowControl_none')}</option>
-              <option value="hardware">{t('connect.flowControl_hardware')}</option>
-            </select>
-          </label>
-        </div>
-      )}
-
-      <div style={{ marginTop: 32 }}>
+      <div style={{ textAlign: 'center', marginBottom: 12 }}>
         <button
           type="button"
           disabled={connecting}
           onClick={() => void connectToNewPort()}
           style={{
-            width: '100%',
-            padding: '12px 16px',
-            fontSize: '1.05em',
+            padding: '8px 24px',
             background: 'var(--color-accent)',
             color: 'var(--color-accent-contrast)',
             border: 'none',
@@ -191,9 +232,19 @@ export function ConnectScreen(): JSX.Element {
         </button>
       </div>
 
-      <div style={{ marginTop: 12, textAlign: 'center' }}>
-        <label>
-          {t('connect.scenario')}{' '}
+      <section
+        className="panel"
+        style={{
+          padding: 12,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          gap: 12,
+          textAlign: 'center',
+        }}
+      >
+        <label style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          {t('connect.scenario')}
           <select
             value={scenario}
             onChange={(e) => setScenario(e.target.value as SimulatorScenario)}
@@ -205,16 +256,15 @@ export function ConnectScreen(): JSX.Element {
             ))}
           </select>
         </label>
-        <div style={{ marginTop: 8 }}>
-          <button
-            type="button"
-            disabled={connecting}
-            onClick={() => void connectToSimulator(scenario)}
-          >
-            {t('connect.tryDemo')}
-          </button>
-        </div>
-      </div>
+        <button
+          type="button"
+          disabled={connecting}
+          onClick={() => void connectToSimulator(scenario)}
+          data-tour="connect-simulator"
+        >
+          {t('connect.tryDemo')}
+        </button>
+      </section>
     </div>
   );
 }

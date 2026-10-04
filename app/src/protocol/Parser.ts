@@ -10,6 +10,8 @@ interface ParsedLineBase {
   text: string;
 }
 
+/** The outcome of {@link parseLine} for one device→app line — plain text, a validated protocol
+ * message, or a protocol error, discriminated by `kind`. */
 export type ParsedLine =
   | (ParsedLineBase & { kind: 'text' })
   | (ParsedLineBase & { kind: 'message'; message: DeviceToAppMessage })

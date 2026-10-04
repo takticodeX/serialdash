@@ -62,8 +62,8 @@ const md = `# Memory footprint
 
 ::: info
 Numbers below are measured in CI by compiling \`02_FirstChart\` for
-\`arduino:avr:uno\` with and without SerialDash and diffing the sizes
-(SPEC.md §9.3, DOC-14). Regenerated on every run — do not edit by hand.
+\`arduino:avr:uno\` with and without SerialDash and diffing the sizes.
+Regenerated on every run — do not edit by hand.
 :::
 
 Last measured: ${today}.
@@ -73,14 +73,14 @@ Last measured: ${today}.
 | Without SerialDash | ${withoutLib.flash} B | ${withoutLib.ram} B |
 | With SerialDash | ${withLib.flash} B | ${withLib.ram} B |
 | **Overhead (total)** | **${flashOverhead} B** | **${ramOverheadTotal} B** |
-| Receive buffer (\`SERIALDASH_RX_BUFFER\`, excluded by LIB-GEN-07) | — | ${AVR_DEFAULT_RX_BUFFER_BYTES} B |
+| Receive buffer (\`SERIALDASH_RX_BUFFER\`, excluded from the RAM budget below) | — | ${AVR_DEFAULT_RX_BUFFER_BYTES} B |
 | **RAM overhead beyond the receive buffer** | | **${ramOverheadBeyondRxBuffer} B** |
 
-LIB-GEN-07 budget: overhead must stay within ${FLASH_BUDGET_BYTES} B (6 KB) of
+Budget: overhead must stay within ${FLASH_BUDGET_BYTES} B (6 KB) of
 flash and ${RAM_BUDGET_BYTES} B of RAM beyond the receive buffer — the buffer
-itself is explicitly excluded ("oltre al buffer di ricezione"), so its
+itself is excluded from the RAM figure, so its
 ${AVR_DEFAULT_RX_BUFFER_BYTES} B (the AVR default) is subtracted from the
-measured total above before comparing to the 150 B allowance.
+measured total above before comparing to the ${RAM_BUDGET_BYTES} B allowance.
 
 Result: flash ${flashOk ? '✅ within budget' : '❌ OVER BUDGET'}, RAM ${
   ramOk ? '✅ within budget' : '❌ OVER BUDGET'

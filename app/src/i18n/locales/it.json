@@ -1,12 +1,13 @@
 {
   "common": {
-    "appName": "SerialDash",
+    "appName": "Serial Dash",
     "cancel": "Annulla",
     "confirm": "Conferma",
     "close": "Chiudi"
   },
   "connect": {
     "title": "Connetti un dispositivo",
+    "howToConnect": "Come collegare una scheda",
     "connectButton": "Connetti",
     "newPort": "Seleziona una nuova porta…",
     "knownPorts": "Porte usate in precedenza",
@@ -24,7 +25,6 @@
     "flowControl_none": "Nessuno",
     "flowControl_hardware": "Hardware",
     "resetOnConnect": "Reset della scheda alla connessione",
-    "resetOnConnectHint": "Stesso comportamento dell'Arduino IDE. Disattiva se la scheda si resetta in un modo che ti fa perdere le prime righe importanti.",
     "connecting": "Connessione in corso…",
     "portBusy": "La porta è usata da un altro programma. Chiudi il Monitor Seriale dell'Arduino IDE (o qualsiasi altro programma che la usa) e riprova.",
     "connectionFailed": "Connessione fallita: {{message}}",
@@ -95,7 +95,10 @@
     "clearLocalDataConfirm": "Questo rimuove tutte le impostazioni, i permessi porta memorizzati e la cronologia salvati in questo browser. L'operazione non è reversibile. Continuare?",
     "about": "Informazioni",
     "aboutAppVersion": "Versione app",
-    "aboutProtocolVersion": "Versione protocollo"
+    "aboutProtocolVersion": "Versione protocollo",
+    "aboutDocs": "Documentazione",
+    "aboutChangelog": "Changelog",
+    "aboutReportIssue": "Segnala un problema"
   },
   "unsupported": {
     "title": "Questo browser non può parlare con una porta seriale",
@@ -109,6 +112,9 @@
   },
   "dashboard": {
     "empty": "Ancora nessun widget in questo gruppo.",
+    "emptyTrySimulator": "Non sai cosa aspettarti? Prova il simulatore.",
+    "emptyNoHandshake": "Ancora nessun widget, e questo dispositivo non ha ancora inviato un handshake. Stai usando la libreria SerialDash?",
+    "emptyNoHandshakeLink": "Ecco come iniziare.",
     "unsupportedWidget": "Tipo di widget non supportato \"{{kind}}\"",
     "addWidget": "Aggiungi widget",
     "exportProfile": "Esporta profilo",
@@ -142,6 +148,7 @@
   },
   "widgets": {
     "stale": "Nessun dato recente",
+    "configFieldHelp": "Documentazione per \"{{label}}\"",
     "line": {
       "name": "Grafico a linea",
       "description": "Grafico a linea in tempo reale per uno o più canali numerici."
@@ -200,5 +207,21 @@
     "text": { "name": "Campo di testo", "description": "Un controllo di inserimento testo." },
     "color": { "name": "Selettore colore", "description": "Un controllo colore #RRGGBB." },
     "noResponse": "Nessuna risposta dal dispositivo"
+  },
+  "tour": {
+    "title": "Tour guidato",
+    "openHelp": "Rivedi il tour guidato",
+    "skip": "Salta",
+    "back": "Indietro",
+    "next": "Avanti",
+    "finish": "Fine",
+    "step1Title": "Benvenuto su SerialDash",
+    "step1Body": "Una rapida panoramica delle funzioni di base — puoi saltarla in qualsiasi momento, o riaprirla dopo con il pulsante \"?\".",
+    "step2Title": "Non hai una scheda a portata di mano?",
+    "step2Body": "Prova il simulatore per esplorare la dashboard completa con dati simulati, senza hardware.",
+    "step3Title": "Costruisci la tua dashboard",
+    "step3Body": "Il dispositivo dichiara automaticamente i propri widget, ma puoi aggiungerne altri in qualsiasi momento con questo pulsante.",
+    "step4Title": "Impostazioni e aiuto",
+    "step4Body": "Lingua, tema e altre preferenze si trovano vicino a questo pulsante. Riapri questo tour in qualsiasi momento da qui."
   }
 }

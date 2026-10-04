@@ -2,7 +2,8 @@ import type { JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSettingsStore } from './useSettingsStore';
 import { SUPPORTED_LANGUAGES } from '../i18n';
-import { APP_VERSION, PROTOCOL_VERSION } from '../version';
+import { APP_VERSION, PROTOCOL_VERSION, REPO_URL } from '../version';
+import { docsUrl } from '../docsUrl';
 
 interface Props {
   onClose: () => void;
@@ -147,6 +148,27 @@ export function SettingsPanel({ onClose }: Props): JSX.Element {
         <br />
         {t('settings.aboutProtocolVersion')}: {PROTOCOL_VERSION}
       </p>
+      <ul style={{ margin: '8px 0 0', paddingLeft: 20 }}>
+        <li>
+          <a href={docsUrl('')} target="_blank" rel="noopener noreferrer">
+            {t('settings.aboutDocs')}
+          </a>
+        </li>
+        <li>
+          <a
+            href={`${REPO_URL}/blob/main/app/CHANGELOG.md`}
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            {t('settings.aboutChangelog')}
+          </a>
+        </li>
+        <li>
+          <a href={`${REPO_URL}/issues/new`} target="_blank" rel="noopener noreferrer">
+            {t('settings.aboutReportIssue')}
+          </a>
+        </li>
+      </ul>
     </div>
   );
 }

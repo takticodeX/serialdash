@@ -32,18 +32,18 @@ La specifica completa è in `SPEC.md`: **leggila prima di qualsiasi attività** 
 
 ## Comandi (da creare in M0 e mantenere aggiornati qui)
 
-| Comando                                | Effetto                                                             |
-| -------------------------------------- | ------------------------------------------------------------------- |
-| `npm install`                          | Installa le dipendenze del monorepo                                 |
-| `npm run gen`                          | Genera tipi TS e documentazione dallo schema                        |
-| `npm run dev`                          | Avvia la webapp in sviluppo                                         |
-| `npm run lint`                         | Lint di app, tools e docs                                           |
-| `npm test`                             | Unit test dell'app                                                  |
-| `npm run e2e`                          | Test end-to-end con il simulatore                                   |
-| `npm run docs:dev`                     | Sito di documentazione in locale                                    |
-| `npm run docs:screenshots`             | Rigenera screenshot e GIF (DOC-20)                                  |
-| `pio test -e native -d lib/SerialDash` | Test nativi della libreria                                          |
-| `npm run lib:compile`                  | Compila tutti gli esempi per tutte le schede (richiede arduino-cli) |
+| Comando                                | Effetto                                                                                |
+| -------------------------------------- | -------------------------------------------------------------------------------------- |
+| `npm install`                          | Installa le dipendenze del monorepo                                                    |
+| `npm run gen`                          | Genera tipi TS e documentazione dallo schema                                           |
+| `npm run dev`                          | Avvia la webapp in sviluppo                                                            |
+| `npm run lint`                         | Lint di app, tools e docs                                                              |
+| `npm test`                             | Unit test dell'app                                                                     |
+| `npm run test:coverage -w app`         | Unit test con soglia all'85% di copertura righe su `protocol`/`session`/`data` (QA-02) |
+| `npm run e2e`                          | Test end-to-end con il simulatore                                                      |
+| `npm run docs:dev`                     | Sito di documentazione in locale (porta 5174, proxata da `/docs/` nella webapp)        |
+| `pio test -e native -d lib/SerialDash` | Test nativi della libreria                                                             |
+| `npm run lib:compile`                  | Compila tutti gli esempi per tutte le schede (richiede arduino-cli)                    |
 
 ## Testare senza hardware
 

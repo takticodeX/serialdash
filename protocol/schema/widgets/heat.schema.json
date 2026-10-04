@@ -14,23 +14,29 @@
     },
     "rows": {
       "type": "integer",
-      "exclusiveMinimum": 0
+      "exclusiveMinimum": 0,
+      "description": "Number of rows in the matrix."
     },
     "cols": {
       "type": "integer",
-      "exclusiveMinimum": 0
+      "exclusiveMinimum": 0,
+      "description": "Number of columns in the matrix."
     },
     "min": {
-      "type": "number"
+      "type": "number",
+      "description": "Value mapped to the start of the color palette. Omit (along with `max`) to auto-scale to the data."
     },
     "max": {
-      "type": "number"
+      "type": "number",
+      "description": "Value mapped to the end of the color palette. Omit (along with `min`) to auto-scale to the data."
     },
     "palette": {
-      "enum": ["thermal", "viridis", "gray"]
+      "enum": ["thermal", "viridis", "gray"],
+      "description": "Named color gradient used to map values to colors."
     },
     "interp": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Smooths the color transition between adjacent cells instead of showing hard cell boundaries."
     }
   },
   "required": ["k", "rows", "cols"]

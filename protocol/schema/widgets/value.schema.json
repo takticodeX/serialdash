@@ -13,13 +13,16 @@
       "const": "value"
     },
     "trend": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Shows an up/down/flat trend arrow based on the recent value history."
     },
     "minmax": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Shows the session's minimum and maximum observed values alongside the current one."
     },
     "warn": {
       "type": "array",
+      "description": "`[low, high]` range. Values outside it are highlighted as a warning.",
       "prefixItems": [
         {
           "type": "number"
@@ -34,6 +37,7 @@
     },
     "alarm": {
       "type": "array",
+      "description": "`[low, high]` range. Values outside it are highlighted as an alarm (more severe than `warn`).",
       "prefixItems": [
         {
           "type": "number"

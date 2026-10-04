@@ -30,4 +30,4 @@
 
 ## Not yet implemented
 
-`hist`, `polar`, `compass`, `attitude` (SPEC.md §4, P2) have a JSON Schema at `/protocol/schema/widgets/<kind>.schema.json` and worked examples in `/protocol/test-vectors/widgets.jsonl`, but no app-side widget yet (M8+). See [adding a widget](../contributing/adding-a-widget) for how they get built.
+`hist`, `polar`, `compass`, `attitude` are defined in the protocol schema (`/protocol/schema/widgets/<kind>.schema.json`), with worked examples in `/protocol/test-vectors/widgets.jsonl`, but have no app-side widget yet — a device can declare them, but the dashboard won't render them. See [adding a widget](../contributing/adding-a-widget) for how they get built.

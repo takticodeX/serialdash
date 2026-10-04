@@ -17,6 +17,7 @@
     },
     "opts": {
       "type": "array",
+      "description": "The list of choices. Each entry is either a bare string (used as both the value sent on the wire and the displayed label) or a `[value, label]` pair for a label that differs from the value.",
       "items": {
         "oneOf": [
           {

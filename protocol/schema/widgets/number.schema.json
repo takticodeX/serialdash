@@ -16,14 +16,17 @@
       "const": "number"
     },
     "min": {
-      "type": "number"
+      "type": "number",
+      "description": "Minimum value the input accepts."
     },
     "max": {
-      "type": "number"
+      "type": "number",
+      "description": "Maximum value the input accepts."
     },
     "step": {
       "type": "number",
-      "exclusiveMinimum": 0
+      "exclusiveMinimum": 0,
+      "description": "Increment applied by the input's up/down arrows. Default 1."
     }
   },
   "required": ["k"]

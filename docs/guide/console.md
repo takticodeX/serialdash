@@ -2,13 +2,10 @@
 
 The console shows every line your device sends, in the order it arrives — a drop-in replacement for the Arduino IDE's Serial Monitor, plus a few things it doesn't have.
 
-::: info Scope note
-This page covers what M1 ships. Recognizing SerialDash protocol lines (`@{...}`) — dimming them, showing protocol errors in red, or filtering to errors only — arrives with the protocol parser in **M2**; until then every line is shown as plain text.
-:::
-
 ## Reading
 
 - Lines render in a monospace font, virtualized so the view stays smooth even with tens of thousands of lines. The line limit (default 20000) is configurable in Settings — older lines are dropped once you're over it.
+- **Protocol lines**: SerialDash protocol lines (`@{...}`) are shown dimmed by default, since they're meant for the dashboard rather than for reading — toggle **Show protocol lines** in the toolbar to hide them entirely, or to show them at full brightness. A line that starts with `@{` but fails to parse or fails schema validation is never hidden regardless of this setting — it's shown as a protocol error instead, and **Errors only** filters the view down to just those.
 - **Timestamps**: toggle a per-line receive time in the toolbar.
 - **Wrap**: long lines wrap instead of scrolling horizontally.
 - **Hex view**: shows the raw bytes of each line instead of decoded text — useful when you suspect a baud-rate mismatch or a binary payload.
@@ -31,4 +28,4 @@ Type in the field at the bottom and press Enter, or click Send. Choose the line 
 
 ## Panel
 
-The console panel can be resized (drag the handle above it) and collapsed to just its toolbar — both persist. Once the dashboard exists (M2), you'll also be able to choose whether the console sits beside or below it.
+The console panel sits below the dashboard, and can be resized (drag the handle above it) or collapsed to just its toolbar — both persist.

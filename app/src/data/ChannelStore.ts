@@ -5,12 +5,15 @@ import type { DataMessage } from '../protocol/generated/index.js';
  * gap (PRT-09: the device sends `null` for NaN/Infinity, since JSON has neither). */
 export type ChannelValue = DataMessage['d'][string];
 
+/** One sample on a channel's timeline. */
 export interface ChannelPoint {
   /** Local ms epoch, resolved per PRT-30/31 — never the raw device `ts`. */
   t: number;
   v: ChannelValue;
 }
 
+/** Default ring-buffer capacity per channel (APP-DAT-01), used when {@link ChannelStore} is
+ * constructed with no explicit `capacity`. */
 export const DEFAULT_CHANNEL_CAPACITY = 20_000;
 
 type Listener = () => void;

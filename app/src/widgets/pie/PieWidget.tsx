@@ -4,7 +4,7 @@ import * as echarts from 'echarts/core';
 import { PieChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { useChannelSeries } from '../../data/useChannelSeries';
-import { WidgetCard, primaryChannel, useStale, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, primaryChannel, useStale, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps } from '../registry';
 import type { PieWidget as PieWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -72,14 +72,13 @@ export function PieWidgetConfigPanel({
 }: WidgetConfigPanelProps<PieWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="pie">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

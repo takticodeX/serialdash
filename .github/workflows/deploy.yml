@@ -1,0 +1,75 @@
+name: Deploy
+
+# Publishes the app and the documentation site together on GitHub Pages, on every push to main.
+# D5 (SPEC.md §10): no custom domain yet, so this repo's own GitHub Pages URL is the real address
+# — https://takticodeX.github.io/serialdash/ — and GitHub supplies that `/serialdash/` path prefix
+# automatically based on the repo name; this workflow's job is just to put the right files at the
+# artifact's own root (app/vite.config.ts's `base` already matches that same prefix, so every
+# asset reference inside the built HTML/JS resolves correctly once actually served there).
+#
+# One-time manual step this workflow depends on: repo Settings → Pages → Source → "GitHub
+# Actions" (not "Deploy from a branch") — otherwise there's nothing listening for what this
+# workflow uploads.
+#
+# Deliberately doesn't re-run lint/tests/typecheck here — ci.yml already does that on every push
+# and PR; this workflow's own build step is what actually gates a broken build from deploying
+# (it simply fails here too, same as it would there).
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Only one deploy at a time; a newer push supersedes one still in flight rather than queuing
+# behind it.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Generate protocol types/docs from schema (keeps the build in sync, same as CI)
+        run: npm run gen
+
+      - name: Build the app
+        run: npm run build -w app
+
+      - name: Build the documentation site
+        run: npm run docs:build
+
+      - name: Merge app + docs into one deploy root (app at the root, docs nested under docs/)
+        run: |
+          mkdir -p site
+          cp -r app/dist/. site/
+          mkdir -p site/docs
+          cp -r docs/.vitepress/dist/. site/docs/
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

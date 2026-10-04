@@ -5,7 +5,7 @@ import { HeatmapChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { GridComponent, VisualMapComponent } from 'echarts/components';
 import { useChannelSeries } from '../../data/useChannelSeries';
-import { WidgetCard, primaryChannel, useStale, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, primaryChannel, useStale, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps } from '../registry';
 import type { HeatWidget as HeatWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -93,14 +93,13 @@ export function HeatWidgetConfigPanel({
 }: WidgetConfigPanelProps<HeatWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="heat">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

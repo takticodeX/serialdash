@@ -13,16 +13,20 @@
       "const": "bar"
     },
     "min": {
-      "type": "number"
+      "type": "number",
+      "description": "Fixed value-axis minimum. Omit (along with `max`) to auto-scale to the data."
     },
     "max": {
-      "type": "number"
+      "type": "number",
+      "description": "Fixed value-axis maximum. Omit (along with `min`) to auto-scale to the data."
     },
     "horiz": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Draws horizontal bars instead of vertical ones."
     },
     "xlabels": {
       "type": "array",
+      "description": "Labels for each bar, used when the channel sends an array of numbers (one label per element) instead of a label→value object.",
       "items": {
         "type": "string"
       }

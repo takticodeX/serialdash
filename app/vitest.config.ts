@@ -14,5 +14,27 @@ export default defineConfig({
     // e2e/*.spec.ts are Playwright tests (`npm run e2e`), not Vitest's — Vitest's default include
     // glob matches *.spec.ts too, and the two test() globals conflict if both try to claim them.
     exclude: [...configDefaults.exclude, 'e2e/**'],
+    coverage: {
+      // QA-02: minimum 85% line coverage on protocol, session, data — not the whole app. `all:
+      // true` forces every matching file into the report (not just ones a test happened to
+      // import), so an entirely-untested file drags the percentage down instead of silently not
+      // counting.
+      provider: 'v8',
+      all: true,
+      include: [
+        'src/protocol/**/*.{ts,tsx}',
+        'src/session/**/*.{ts,tsx}',
+        'src/data/**/*.{ts,tsx}',
+      ],
+      exclude: [
+        // Schema-generated (PRO-02) — never hand-edited, and already covered by its own
+        // generator/validate-vectors path rather than this hand-written-code requirement.
+        'src/protocol/generated/**',
+        '**/*.test.{ts,tsx}',
+      ],
+      thresholds: {
+        lines: 85,
+      },
+    },
   },
 });

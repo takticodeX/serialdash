@@ -13,10 +13,12 @@
       "const": "pie"
     },
     "donut": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Draws the chart as a donut (hollow center) instead of a solid pie."
     },
     "pct": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Shows each slice's percentage of the total alongside its label."
     }
   },
   "required": ["k"]

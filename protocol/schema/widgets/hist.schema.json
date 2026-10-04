@@ -15,18 +15,20 @@
     "bins": {
       "type": "integer",
       "exclusiveMinimum": 0,
-      "description": "Default 20."
+      "description": "Number of histogram bins. Default 20."
     },
     "min": {
-      "type": "number"
+      "type": "number",
+      "description": "Fixed value range start. Omit (along with `max`) to auto-scale to the data."
     },
     "max": {
-      "type": "number"
+      "type": "number",
+      "description": "Fixed value range end. Omit (along with `min`) to auto-scale to the data."
     },
     "n": {
       "type": "integer",
       "exclusiveMinimum": 0,
-      "description": "Samples considered. Default 1000."
+      "description": "Number of most recent samples considered. Default 1000."
     }
   },
   "required": ["k"]

@@ -8,13 +8,13 @@ A scrolling log of device events.
 
 ## Properties
 
-Common properties every widget has (`id`, `title`, `ch`, `grp`, `ord`, `size`, `unit`, `dec`, `labels`, `colors`, `stale`) are documented once in [the message reference](../protocol/messages) — only `log`-specific properties are listed below.
+Every widget also has a set of [common properties](../protocol/messages#common-widget-properties) (`id`, `title`, `ch`, `grp`, `ord`, `size`, `unit`, `dec`, `labels`, `colors`, `stale`), documented once on the message reference page — only `log`-specific properties are listed below.
 
-| Property | Type                                         | Required | Description                 |
-| -------- | -------------------------------------------- | -------- | --------------------------- |
-| `lvl`    | `"debug"` \| `"info"` \| `"warn"` \| `"err"` | no       |                             |
-| `max`    | integer                                      | no       | Max rows kept. Default 500. |
-| `src`    | string[]                                     | no       |                             |
+| Property                   | Type                                         | Required | Description                                                                                                 |
+| -------------------------- | -------------------------------------------- | -------- | ----------------------------------------------------------------------------------------------------------- |
+| <a id="prop-lvl"></a>`lvl` | `"debug"` \| `"info"` \| `"warn"` \| `"err"` | no       | Minimum severity shown — events below this level are hidden from this widget.                               |
+| <a id="prop-max"></a>`max` | integer                                      | no       | Max rows kept. Default 500.                                                                                 |
+| <a id="prop-src"></a>`src` | string[]                                     | no       | Limits the log to events whose `src` matches one of these names. Shows events from every source if omitted. |
 
 ## Example
 

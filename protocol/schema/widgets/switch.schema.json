@@ -3,7 +3,7 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "Widget: switch (control)",
   "type": "object",
-  "description": "Library builder method is `toggle()` because `switch` is a reserved C++ keyword (LIB-TX-01); the wire `k` stays \"switch\".",
+  "description": "The Arduino library's builder method for this kind is `toggle()`, since `switch` is a reserved C++ keyword — the wire `k` stays \"switch\" regardless.",
   "allOf": [
     {
       "$ref": "common.schema.json#/$defs/widgetBase"
@@ -17,10 +17,12 @@
       "const": "switch"
     },
     "on": {
-      "type": "string"
+      "type": "string",
+      "description": "Label shown when the switch is on."
     },
     "off": {
-      "type": "string"
+      "type": "string",
+      "description": "Label shown when the switch is off."
     }
   },
   "required": ["k"]

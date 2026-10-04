@@ -2,7 +2,7 @@ import type { JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChannelSeries } from '../../data/useChannelSeries';
 import type { ChannelValue } from '../../data/ChannelStore';
-import { WidgetCard, primaryChannel, useStale, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, primaryChannel, useStale, widgetTitle } from '../common';
 import { useWidgetStatsStore } from '../../dashboard/useWidgetStatsStore';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { ValueWidget as ValueWidgetDeclaration } from '../../protocol/generated/index.js';
@@ -90,22 +90,20 @@ export function ValueWidgetConfigPanel({
 }: WidgetConfigPanelProps<ValueWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="value">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
-      <label>
-        Unit
+      </ConfigField>
+      <ConfigField label="Unit" kind="value">
         <input
           type="text"
           value={declaration.unit ?? ''}
           onChange={(e) => onChange({ unit: e.target.value })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

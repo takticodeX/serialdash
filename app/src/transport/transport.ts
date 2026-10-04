@@ -1,5 +1,7 @@
+/** Lifecycle state common to every {@link Transport} implementation. */
 export type ConnectionState = 'disconnected' | 'connecting' | 'connected' | 'disconnecting';
 
+/** Static, non-changing metadata about a transport, shown in the UI. */
 export interface TransportInfo {
   /** Friendly label shown in the UI, e.g. a USB product name or "Simulator". */
   label: string;

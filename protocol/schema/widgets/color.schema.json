@@ -17,6 +17,7 @@
     },
     "swatches": {
       "type": "array",
+      "description": "Quick-pick color swatches shown above the color picker.",
       "items": {
         "$ref": "common.schema.json#/$defs/color"
       }

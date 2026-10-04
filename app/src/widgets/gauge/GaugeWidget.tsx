@@ -4,7 +4,7 @@ import * as echarts from 'echarts/core';
 import { GaugeChart } from 'echarts/charts';
 import { CanvasRenderer } from 'echarts/renderers';
 import { useChannelSeries } from '../../data/useChannelSeries';
-import { WidgetCard, primaryChannel, useStale, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, primaryChannel, useStale, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps } from '../registry';
 import type { GaugeWidget as GaugeWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -95,30 +95,27 @@ export function GaugeWidgetConfigPanel({
 }: WidgetConfigPanelProps<GaugeWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="gauge">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
-      <label>
-        Min
+      </ConfigField>
+      <ConfigField label="Min" kind="gauge" prop="min">
         <input
           type="number"
           value={declaration.min}
           onChange={(e) => onChange({ min: Number(e.target.value) })}
         />
-      </label>
-      <label>
-        Max
+      </ConfigField>
+      <ConfigField label="Max" kind="gauge" prop="max">
         <input
           type="number"
           value={declaration.max}
           onChange={(e) => onChange({ max: Number(e.target.value) })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

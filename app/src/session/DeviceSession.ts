@@ -19,6 +19,9 @@ import type { ChannelValue } from '../data/ChannelStore';
 import { ChannelStore } from '../data/ChannelStore';
 import { useSettingsStore } from '../settings/useSettingsStore';
 
+/** SPEC.md §3.5's handshake states: `searching` while retrying `hi`, `handshaked` once a device
+ * `hi` has been seen, `textMode` after retries are exhausted with no response (no protocol device
+ * detected — lines are still shown as plain text). */
 export type HandshakeStatus = 'searching' | 'handshaked' | 'textMode';
 
 /** SPEC.md §3.6 states shown by a control widget. `pending`/`error` carry what the widget should
@@ -38,6 +41,7 @@ interface PendingControl {
   queued: { value: ControlValue; maxValueBytes: number | undefined } | undefined;
 }
 
+/** Ping/pong-derived connection health, returned by `DeviceSession.getLiveness()`. */
 export interface LivenessInfo {
   /** Round-trip time of the most recent `ping`/`pong`, or undefined before the first one lands. */
   latencyMs: number | undefined;
@@ -49,6 +53,7 @@ const PING_INTERVAL_MS = 2000; // SPEC.md §3.5 rule 5
 const PONG_MISS_LIMIT = 3;
 const CONTROL_ERROR_DISPLAY_MS = 3000; // SPEC.md §3.6 rule 4
 
+/** The most recent device `hi` fields (SPEC.md §3.3), kept for display (status bar, About). */
 export interface DeviceInfo {
   name: string;
   fw: string | undefined;
@@ -57,6 +62,7 @@ export interface DeviceInfo {
   protocolVersion: number;
 }
 
+/** One tracked widget declaration plus its PRT-22 orphan state. */
 export interface WidgetEntry {
   declaration: WidgetDeclaration;
   /** PRT-22: true once 2s have passed after a `hi` without this widget being re-declared. */
@@ -69,6 +75,10 @@ const ORPHAN_TIMEOUT_MS = 2000; // PRT-22
 
 const AUTO_DISCOVERY_GROUP = 'Auto';
 const MAX_EVENTS = 500; // matches the `log` widget's own default (SPEC.md §4.1)
+
+/** APP-DAT-07: fixed id for the auto-synthesized widget that surfaces malformed extended-text
+ * lines (APP-DAT-06) — reserved so at most one is ever created per session. */
+const PLOTTER_ERRORS_WIDGET_ID = 'plotterErrors';
 
 type Listener = () => void;
 
@@ -109,6 +119,9 @@ export class DeviceSession {
   private readonly widgets = new Map<string, WidgetEntry>();
   private readonly pendingReconstruction = new Set<string>();
   private readonly events: EventMessage[] = [];
+  private lastEventKey: string | undefined;
+  private lastEventBaseMsg: string | undefined;
+  private lastEventRepeatCount = 1;
   private readonly resetMarkers: number[] = [];
 
   private handshakeTimers: ReturnType<typeof setTimeout>[] = [];
@@ -216,8 +229,7 @@ export class DeviceSession {
         this.notify();
         break;
       case 'e':
-        this.events.push(message);
-        if (this.events.length > MAX_EVENTS) this.events.shift();
+        this.pushEvent(message);
         this.notify();
         break;
       case 'ack':
@@ -390,6 +402,53 @@ export class DeviceSession {
       grp: AUTO_DISCOVERY_GROUP,
     } as WidgetDeclaration;
     this.widgets.set(channelId, { declaration, orphan: false });
+  }
+
+  /** Appends an event, unless it's an exact repeat (same `lvl`/`msg`/`src`) of the immediately
+   * preceding one — a device that logs the same line every `loop()` iteration would otherwise
+   * flood the event log with identical rows. A repeat replaces the last row with a new object
+   * carrying a trailing `(×N)` counter — never mutating the existing stored event (or the one just
+   * passed in) in place, since a caller is free to pass the same object reference on a later call
+   * (as a device-driven `EventMessage` constructed once and reused would) and must not see its own
+   * object silently rewritten out from under it. A genuinely different event (even if it matches
+   * something further back in the log, just not the last row) resets the counter. */
+  private pushEvent(message: EventMessage): void {
+    const key = `${message.lvl ?? ''}|${message.msg}|${message.src ?? ''}`;
+    const last = this.events[this.events.length - 1];
+    if (last && key === this.lastEventKey) {
+      this.lastEventRepeatCount++;
+      this.events[this.events.length - 1] = {
+        ...last,
+        msg: `${this.lastEventBaseMsg} (×${this.lastEventRepeatCount})`,
+      };
+      return;
+    }
+    this.events.push(message);
+    if (this.events.length > MAX_EVENTS) this.events.shift();
+    this.lastEventKey = key;
+    this.lastEventBaseMsg = message.msg;
+    this.lastEventRepeatCount = 1;
+  }
+
+  /** APP-DAT-07: records a line rejected by the extended text grammar (APP-DAT-06) as a warning
+   * event, and — the first time this happens in the session — synthesizes a `log` widget filtered
+   * to just these, so they're visible on the dashboard rather than only in the console. */
+  reportPlotterTextError(reason: string): void {
+    this.pushEvent({ t: 'e', lvl: 'warn', msg: reason, src: 'plotter' });
+
+    if (!this.widgets.has(PLOTTER_ERRORS_WIDGET_ID)) {
+      const declaration = {
+        t: 'w',
+        id: PLOTTER_ERRORS_WIDGET_ID,
+        k: 'log',
+        title: 'Plotter text errors',
+        src: ['plotter'],
+        grp: AUTO_DISCOVERY_GROUP,
+      } as WidgetDeclaration;
+      this.widgets.set(PLOTTER_ERRORS_WIDGET_ID, { declaration, orphan: false });
+    }
+
+    this.notify();
   }
 
   getStatus(): HandshakeStatus {

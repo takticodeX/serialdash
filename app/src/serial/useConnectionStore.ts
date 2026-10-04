@@ -86,13 +86,17 @@ function wireTransport(
       } else if (parsed.kind === 'protocolError') {
         protocolErrorCount++;
       } else if (parsed.kind === 'text' && useSettingsStore.getState().plotterCompat) {
-        // APP-DAT-04: a line that isn't a SerialDash protocol line at all might still be Arduino
-        // Serial Plotter–style data (`temp:23.4 hum:58`, `23.4,58`) — fed into the exact same `d`
-        // path a real `{"t":"d",...}` line would take (ingest + auto-discovery), so it shows up
-        // as a normal channel. The line itself stays visible in the console either way; this only
-        // adds a second destination for it, never removes the first.
-        const reading = parsePlotterLine(parsed.text);
-        if (reading) session.feed({ t: 'd', d: reading });
+        // APP-DAT-04/06: a line that isn't a SerialDash protocol line at all might still be
+        // Arduino Serial Plotter–style data (`temp:23.4 hum:58`, `23.4,58`) or one of this app's
+        // own typed extensions (`led:false`, `pos:[1,2]`) — fed into the exact same `d` path a
+        // real `{"t":"d",...}` line would take (ingest + auto-discovery), so it shows up as a
+        // normal channel. The line itself stays visible in the console either way; this only adds
+        // a second destination for it, never removes the first. A line that clearly attempted a
+        // typed value but got it wrong (APP-DAT-07) is reported rather than silently dropped;
+        // anything else that doesn't fit the grammar at all is just left as plain text.
+        const result = parsePlotterLine(parsed.text);
+        if (result.kind === 'data') session.feed({ t: 'd', d: result.reading });
+        else if (result.kind === 'malformed') session.reportPlotterTextError(result.reason);
       }
     }
   });

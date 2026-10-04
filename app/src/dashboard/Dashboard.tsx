@@ -12,6 +12,7 @@ import {
 } from './profileExportImport';
 import { downloadTextFile } from '../ui/downloadTextFile';
 import type { DeviceSession } from '../session/DeviceSession';
+import { docsUrl } from '../docsUrl';
 
 const DEFAULT_GROUP = 'Principale'; // SPEC.md §4: `grp` default
 
@@ -90,7 +91,7 @@ export function Dashboard({ session, port }: Props): JSX.Element {
           borderBottom: '1px solid var(--color-border)',
         }}
       >
-        <button type="button" onClick={() => setAddWidgetOpen(true)}>
+        <button type="button" onClick={() => setAddWidgetOpen(true)} data-tour="add-widget">
           + {t('dashboard.addWidget')}
         </button>
         <button type="button" onClick={handleExportProfile}>
@@ -146,7 +147,28 @@ export function Dashboard({ session, port }: Props): JSX.Element {
       )}
       <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: 8 }}>
         {activeWidgets.length === 0 ? (
-          <p style={{ color: 'var(--color-text-muted)' }}>{t('dashboard.empty')}</p>
+          // DOC-31: a device that's never sent `hi` (still retrying, or gave up into text mode)
+          // gets pointed at the library docs instead of the generic "no widgets" text — the most
+          // common reason for an empty dashboard is a sketch that isn't using SerialDash at all.
+          session.getStatus() === 'handshaked' ? (
+            <p style={{ color: 'var(--color-text-muted)' }}>
+              {t('dashboard.empty')}{' '}
+              <a href={docsUrl('guide/simulator')} target="_blank" rel="noopener noreferrer">
+                {t('dashboard.emptyTrySimulator')}
+              </a>
+            </p>
+          ) : (
+            <p style={{ color: 'var(--color-text-muted)' }}>
+              {t('dashboard.emptyNoHandshake')}{' '}
+              <a
+                href={docsUrl('library/getting-started')}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                {t('dashboard.emptyNoHandshakeLink')}
+              </a>
+            </p>
+          )
         ) : (
           <Grid
             deviceKey={deviceKey}

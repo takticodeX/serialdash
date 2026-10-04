@@ -22,14 +22,16 @@ Node ≥ 20 is required (see `engines` in `package.json`). The Arduino library (
 | `npm run lint`                         | Lints app, tools, and docs (ESLint + Prettier)                                         |
 | `npm run format`                       | Applies Prettier formatting                                                            |
 | `npm test`                             | Validates `/protocol/test-vectors` against the schema, and runs the app's unit tests   |
+| `npm run test:coverage -w app`         | Same unit tests, gated at 85% line coverage on `protocol`/`session`/`data` (QA-02)     |
 | `npm run e2e`                          | End-to-end tests against the simulator (from M2)                                       |
 | `npm run docs:dev`                     | Documentation site in dev mode                                                         |
 | `npm run docs:build`                   | Builds the documentation site                                                          |
-| `npm run docs:screenshots`             | Regenerates docs screenshots/GIFs (from M7)                                            |
 | `pio test -e native -d lib/SerialDash` | Native tests for the Arduino library (from M3)                                         |
 | `npm run lib:compile`                  | Compiles every library example for every supported board (from M3)                     |
 
 This table is kept in sync with the one in `CLAUDE.md`.
+
+The widget config panel's "?" links (DOC-30) and the About panel's docs link (DOC-33) point at `/docs/...` — that only resolves locally if both dev servers are running: `npm run dev` (the app, port 5173) **and** `npm run docs:dev` (VitePress, pinned to port 5174) in a separate terminal. `app/vite.config.ts` proxies `/docs/*` from the app's dev server to the docs one; without `docs:dev` running, those links 404 through to the app's own catch-all.
 
 ## Workflow
 

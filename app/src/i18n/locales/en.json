@@ -1,12 +1,13 @@
 {
   "common": {
-    "appName": "SerialDash",
+    "appName": "Serial Dash",
     "cancel": "Cancel",
     "confirm": "Confirm",
     "close": "Close"
   },
   "connect": {
     "title": "Connect to a device",
+    "howToConnect": "How to connect a board",
     "connectButton": "Connect",
     "newPort": "Select a new port…",
     "knownPorts": "Previously used ports",
@@ -24,7 +25,6 @@
     "flowControl_none": "None",
     "flowControl_hardware": "Hardware",
     "resetOnConnect": "Reset the board on connect",
-    "resetOnConnectHint": "Same behavior as the Arduino IDE. Turn off if your board resets in a way that loses the first lines you care about.",
     "connecting": "Connecting…",
     "portBusy": "The port is in use by another program. Close the Arduino IDE Serial Monitor (or any other program using it) and try again.",
     "connectionFailed": "Couldn't connect: {{message}}",
@@ -95,7 +95,10 @@
     "clearLocalDataConfirm": "This removes all locally stored settings, port permissions memory, and history from this browser. This cannot be undone. Continue?",
     "about": "About",
     "aboutAppVersion": "App version",
-    "aboutProtocolVersion": "Protocol version"
+    "aboutProtocolVersion": "Protocol version",
+    "aboutDocs": "Documentation",
+    "aboutChangelog": "Changelog",
+    "aboutReportIssue": "Report an issue"
   },
   "unsupported": {
     "title": "This browser can't talk to a serial port",
@@ -109,6 +112,9 @@
   },
   "dashboard": {
     "empty": "No widgets in this group yet.",
+    "emptyTrySimulator": "Not sure what to expect? Try the simulator.",
+    "emptyNoHandshake": "No widgets yet, and this device hasn't sent a handshake. Are you using the SerialDash library?",
+    "emptyNoHandshakeLink": "Here's how to get started.",
     "unsupportedWidget": "Unsupported widget type \"{{kind}}\"",
     "addWidget": "Add widget",
     "exportProfile": "Export profile",
@@ -142,6 +148,7 @@
   },
   "widgets": {
     "stale": "No recent data",
+    "configFieldHelp": "Documentation for \"{{label}}\"",
     "line": {
       "name": "Line chart",
       "description": "Real-time line chart for one or more numeric channels."
@@ -176,5 +183,21 @@
     "text": { "name": "Text field", "description": "A text input control." },
     "color": { "name": "Color picker", "description": "A #RRGGBB color control." },
     "noResponse": "No response from the device"
+  },
+  "tour": {
+    "title": "Guided tour",
+    "openHelp": "Replay the guided tour",
+    "skip": "Skip",
+    "back": "Back",
+    "next": "Next",
+    "finish": "Done",
+    "step1Title": "Welcome to SerialDash",
+    "step1Body": "A quick look at the basics — skip anytime, or reopen this later from the \"?\" button.",
+    "step2Title": "No board handy?",
+    "step2Body": "Try the simulator to explore the full dashboard with simulated data, no hardware required.",
+    "step3Title": "Build your dashboard",
+    "step3Body": "The device declares its own widgets automatically, but you can add your own anytime with this button.",
+    "step4Title": "Settings & help",
+    "step4Body": "Language, theme, and other preferences live next to this button. Reopen this tour anytime from here."
   }
 }

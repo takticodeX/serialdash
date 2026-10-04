@@ -2,29 +2,42 @@
   "$id": "https://schema.serialdash.dev/v1/app-to-device.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "SerialDash protocol v1 — app to device",
-  "description": "Validates the JSON payload of an app→device protocol line (SPEC.md §3.4). Messages MUST be flat objects (no nested object/array values) so a microcontroller can use a minimal streaming parser. PRT-40 additionally requires field order t, r, id, v on the wire; JSON Schema validates structure, not key order, so that rule is enforced by the encoder (app/src/protocol), not by this schema.",
+  "description": "Validates the JSON payload of an app→device protocol line — everything a connected app can send to the device. Every message here MUST be a flat object (no nested object/array values), so a microcontroller can parse it with a minimal streaming parser instead of a full JSON library. Fields are also always written on the wire in a fixed order (`t`, `r`, `id`, `v`); that ordering isn't something JSON Schema can express, so it's enforced by the app's own message encoder rather than by this schema.",
   "$defs": {
     "flatExtra": {
-      "description": "Unknown fields in a known message MUST be ignored (PRT-06), so they remain allowed here — but every app→device message MUST be a flat object (§3.4), so an unknown field may not itself be an object or array.",
+      "description": "Unknown fields in an otherwise-recognized message must be tolerated, not rejected — a device running an older protocol version should ignore fields it doesn't understand rather than fail. They just can't themselves be an object or array, since every app→device message has to stay flat.",
       "not": { "type": ["object", "array"] }
     },
     "hi": {
+      "description": "Asks the device to (re)identify itself and (re)declare its widgets — sent once when the app first connects, and again any time the user asks the app to rediscover the device.",
       "type": "object",
       "properties": {
         "t": { "const": "hi" },
-        "v": { "type": "integer", "const": 1 }
+        "v": {
+          "type": "integer",
+          "const": 1,
+          "description": "Protocol version the app speaks."
+        }
       },
       "required": ["t", "v"],
       "additionalProperties": { "$ref": "#/$defs/flatExtra" }
     },
     "c": {
+      "description": "Sends a command to one control (button, switch, slider, number, select, text, or color) — e.g. the user dragged a slider or clicked a button. The device answers with a matching `ack`.",
       "type": "object",
       "properties": {
         "t": { "const": "c" },
-        "r": { "type": "integer", "minimum": 1, "maximum": 65535 },
-        "id": { "$ref": "widgets/common.schema.json#/$defs/identifier" },
+        "r": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Request id, chosen by the app. The device echoes it back in the `ack` so the app can match the response to this specific command."
+        },
+        "id": {
+          "$ref": "widgets/common.schema.json#/$defs/identifier"
+        },
         "v": {
-          "description": "Type depends on the control (§4.3): number, boolean or string.",
+          "description": "The requested value. Its type depends on the target control: boolean for switch, number for slider/number, string for text/select/color.",
           "oneOf": [{ "type": "number" }, { "type": "boolean" }, { "type": "string" }]
         }
       },
@@ -32,10 +45,16 @@
       "additionalProperties": { "$ref": "#/$defs/flatExtra" }
     },
     "ping": {
+      "description": "A keep-alive the app sends periodically. The device answers with a matching `pong`, which the app uses to show connection latency and to detect a device that's stopped responding.",
       "type": "object",
       "properties": {
         "t": { "const": "ping" },
-        "r": { "type": "integer", "minimum": 1, "maximum": 65535 }
+        "r": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Request id, chosen by the app. The device echoes it back in the `pong`."
+        }
       },
       "required": ["t", "r"],
       "additionalProperties": { "$ref": "#/$defs/flatExtra" }

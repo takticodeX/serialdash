@@ -41,6 +41,77 @@ A widget dims after 5 seconds (or its own `stale` setting) without new data. Aft
 
 A channel with no widget pointing at it gets one automatically, based on the shape of its values: a line chart for numbers, an indicator for booleans, a value card for text, an XY plot for `[x, y]` pairs, a bar chart for other arrays, and a table for objects. Turn this off in Settings if you'd rather only see widgets the device explicitly declares.
 
+**Every shape below is reachable with plain `Serial.print`/`println` and no library** — see [Arduino Plotter compatibility](./plotter-compat) for the full text grammar. Only the plain numeric form (`label:23.4`) is understood by the real Arduino IDE's own Serial Plotter tool too; the typed forms (booleans, quoted strings, arrays, objects) are a SerialDash-only extension. Each section below shows both the plain-text line and the equivalent library call — pick whichever fits your sketch; neither one declares a widget, so the shape of what you send is what decides the widget kind.
+
+### Numbers → line chart
+
+```cpp
+Serial.println("temp:23.4");
+```
+
+<img src="/screenshots/auto-line.png" alt="Auto-discovered line chart from a temp:23.4 Plotter-format line" width="320">
+
+### Booleans → indicator
+
+```cpp
+Serial.println("pump:true");
+// or, with the library:
+dash.send("pump", true);
+```
+
+Wire equivalent: `@{"t":"d","d":{"pump":true}}`
+
+<img src="/screenshots/auto-led.png" alt="Auto-discovered indicator from a boolean channel value" width="320">
+
+### Text → value card
+
+```cpp
+Serial.println("status:\"Ready\"");
+// or, with the library:
+dash.send("status", "Ready");
+```
+
+Wire equivalent: `@{"t":"d","d":{"status":"Ready"}}`
+
+<img src="/screenshots/auto-value.png" alt="Auto-discovered value card from a string channel value" width="320">
+
+### [x, y] pairs → XY plot
+
+```cpp
+Serial.println("pos:[3.0,4.0]");
+// or, with the library:
+dash.sendXY("pos", 3.0, 4.0);
+```
+
+Wire equivalent: `@{"t":"d","d":{"pos":[3,4]}}` — an array of **exactly 2** numbers. More or fewer, and it's a bar chart instead (next).
+
+<img src="/screenshots/auto-xy.png" alt="Auto-discovered XY plot from a few [x, y] samples" width="320">
+
+### Other arrays → bar chart
+
+```cpp
+Serial.println("spectrum:[10,45,23,67]");
+// or, with the library:
+float values[] = {10, 45, 23, 67};
+dash.sendArray("spectrum", values, 4);
+```
+
+Wire equivalent: `@{"t":"d","d":{"spectrum":[10,45,23,67]}}`
+
+<img src="/screenshots/auto-bar.png" alt="Auto-discovered bar chart from a 4-element array" width="320">
+
+### Objects → table
+
+```cpp
+Serial.println("stats:{\"min\":18.2,\"max\":24.7}");
+// or, with the library:
+dash.data().map("stats").kv("min", 18.2).kv("max", 24.7);
+```
+
+Wire equivalent: `@{"t":"d","d":{"stats":{"min":18.2,"max":24.7}}}`
+
+<img src="/screenshots/auto-table.png" alt="Auto-discovered table from a label-value object" width="320">
+
 ::: info Scope note
-PNG export of a widget (or the whole dashboard) is described in SPEC.md §5.5 (APP-DSH-07) but is not implemented as of **M5** — deferred by explicit choice, since none of the app's DOM/SVG/canvas widgets have any existing screenshot capability and adding one means a new rendering dependency. CSV export covers the same "get my data out" need in the meantime.
+PNG export of a widget (or the whole dashboard) isn't implemented — deferred by explicit choice, since none of the app's DOM/SVG/canvas widgets have any existing screenshot capability and adding one means a new rendering dependency. CSV export covers the same "get my data out" need in the meantime.
 :::

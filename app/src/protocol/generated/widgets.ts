@@ -9,31 +9,56 @@
 export type AttitudeWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
@@ -45,39 +70,76 @@ export type AttitudeWidget = {
 export type BarWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'bar';
+  /**
+   * Fixed value-axis minimum. Omit (along with `max`) to auto-scale to the data.
+   */
   min?: number;
+  /**
+   * Fixed value-axis maximum. Omit (along with `min`) to auto-scale to the data.
+   */
   max?: number;
+  /**
+   * Draws horizontal bars instead of vertical ones.
+   */
   horiz?: boolean;
+  /**
+   * Labels for each bar, used when the channel sends an array of numbers (one label per element) instead of a label→value object.
+   */
   xlabels?: string[];
   [k: string]: unknown;
 };
@@ -85,40 +147,71 @@ export type BarWidget = {
 export type ButtonWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   /**
-   * Optional initial/confirmed value; type depends on the control (§3.6.1).
+   * Initial/confirmed value, shown until the first `d` or control response arrives for this id. Type depends on the control: boolean for switch, number for slider/number, string for text/select/color.
    */
   val?: number | boolean | string;
+  /**
+   * Shows the control as disabled — the user can't interact with it until this is cleared.
+   */
   dis?: boolean;
+  /**
+   * Confirmation prompt text. If set, the app asks the user to confirm with this message before sending the command.
+   */
   confirm?: string;
   [k: string]: unknown;
 } & {
@@ -127,9 +220,12 @@ export type ButtonWidget = {
    * Send true on press and false on release.
    */
   hold?: boolean;
+  /**
+   * Button text. Falls back to the widget's title, or its id, if omitted.
+   */
   label?: string;
   /**
-   * Color as #RRGGBB.
+   * Button background color (#RRGGBB).
    */
   color?: string;
   [k: string]: unknown;
@@ -138,45 +234,78 @@ export type ButtonWidget = {
 export type ColorWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   /**
-   * Optional initial/confirmed value; type depends on the control (§3.6.1).
+   * Initial/confirmed value, shown until the first `d` or control response arrives for this id. Type depends on the control: boolean for switch, number for slider/number, string for text/select/color.
    */
   val?: number | boolean | string;
+  /**
+   * Shows the control as disabled — the user can't interact with it until this is cleared.
+   */
   dis?: boolean;
+  /**
+   * Confirmation prompt text. If set, the app asks the user to confirm with this message before sending the command.
+   */
   confirm?: string;
   [k: string]: unknown;
 } & {
   k: 'color';
   /**
+   * Quick-pick color swatches shown above the color picker.
+   *
    * Items: Color as #RRGGBB.
    */
   swatches?: string[];
@@ -186,31 +315,56 @@ export type ColorWidget = {
 export type CompassWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
@@ -226,38 +380,72 @@ export type CompassWidget = {
 export type GaugeWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'gauge';
+  /**
+   * Value at the start of the needle's sweep.
+   */
   min: number;
+  /**
+   * Value at the end of the needle's sweep.
+   */
   max: number;
+  /**
+   * Color bands drawn behind the needle, each `[from, to, color]`.
+   */
   zones?: [number, number, string][];
   [k: string]: unknown;
 };
@@ -265,41 +453,84 @@ export type GaugeWidget = {
 export type HeatWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'heat';
+  /**
+   * Number of rows in the matrix.
+   */
   rows: number;
+  /**
+   * Number of columns in the matrix.
+   */
   cols: number;
+  /**
+   * Value mapped to the start of the color palette. Omit (along with `max`) to auto-scale to the data.
+   */
   min?: number;
+  /**
+   * Value mapped to the end of the color palette. Omit (along with `min`) to auto-scale to the data.
+   */
   max?: number;
+  /**
+   * Named color gradient used to map values to colors.
+   */
   palette?: 'thermal' | 'viridis' | 'gray';
+  /**
+   * Smooths the color transition between adjacent cells instead of showing hard cell boundaries.
+   */
   interp?: boolean;
   [k: string]: unknown;
 };
@@ -307,44 +538,75 @@ export type HeatWidget = {
 export type HistWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'hist';
   /**
-   * Default 20.
+   * Number of histogram bins. Default 20.
    */
   bins?: number;
+  /**
+   * Fixed value range start. Omit (along with `max`) to auto-scale to the data.
+   */
   min?: number;
+  /**
+   * Fixed value range end. Omit (along with `min`) to auto-scale to the data.
+   */
   max?: number;
   /**
-   * Samples considered. Default 1000.
+   * Number of most recent samples considered. Default 1000.
    */
   n?: number;
   [k: string]: unknown;
@@ -356,44 +618,72 @@ export type HistWidget = {
 export type LedWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'led';
   /**
-   * Color as #RRGGBB.
+   * Color (#RRGGBB) shown when the channel's value is truthy (nonzero number, `true`, or a string other than empty/"false"/"0").
    */
   on?: string;
   /**
-   * Color as #RRGGBB.
+   * Color (#RRGGBB) shown when the channel's value is falsy.
    */
   off?: string;
+  /**
+   * Maps a specific raw value to its own `[label, color]` — for more than two states (e.g. a 3-way mode channel). An entry here takes precedence over `on`/`off` when the current value matches it.
+   */
   states?: {
     /**
      * @minItems 2
@@ -407,39 +697,76 @@ export type LedWidget = {
 export type LevelWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'level';
+  /**
+   * Value that maps to an empty bar.
+   */
   min?: number;
+  /**
+   * Value that maps to a completely full bar.
+   */
   max?: number;
+  /**
+   * Draws a vertical bar instead of horizontal.
+   */
   vert?: boolean;
+  /**
+   * Color bands drawn behind the fill, each `[from, to, color]`.
+   */
   zones?: [number, number, string][];
   [k: string]: unknown;
 };
@@ -447,43 +774,80 @@ export type LevelWidget = {
 export type LineWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'line';
+  /**
+   * Fixed Y-axis minimum. Omit (along with `max`) to auto-scale to the data.
+   */
   min?: number;
+  /**
+   * Fixed Y-axis maximum. Omit (along with `min`) to auto-scale to the data.
+   */
   max?: number;
   /**
-   * Time window in seconds. Default 30.
+   * Time window shown, in seconds. Default 30.
    */
   win?: number;
+  /**
+   * Draws steps between points instead of straight connecting lines.
+   */
   step?: boolean;
+  /**
+   * Fills the area under the curve.
+   */
   fill?: boolean;
   [k: string]: unknown;
 };
@@ -494,37 +858,68 @@ export type LineWidget = {
 export type LogWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'log';
+  /**
+   * Minimum severity shown — events below this level are hidden from this widget.
+   */
   lvl?: 'debug' | 'info' | 'warn' | 'err';
+  /**
+   * Limits the log to events whose `src` matches one of these names. Shows events from every source if omitted.
+   */
   src?: string[];
   /**
    * Max rows kept. Default 500.
@@ -536,46 +931,86 @@ export type LogWidget = {
 export type NumberWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   /**
-   * Optional initial/confirmed value; type depends on the control (§3.6.1).
+   * Initial/confirmed value, shown until the first `d` or control response arrives for this id. Type depends on the control: boolean for switch, number for slider/number, string for text/select/color.
    */
   val?: number | boolean | string;
+  /**
+   * Shows the control as disabled — the user can't interact with it until this is cleared.
+   */
   dis?: boolean;
+  /**
+   * Confirmation prompt text. If set, the app asks the user to confirm with this message before sending the command.
+   */
   confirm?: string;
   [k: string]: unknown;
 } & {
   k: 'number';
+  /**
+   * Minimum value the input accepts.
+   */
   min?: number;
+  /**
+   * Maximum value the input accepts.
+   */
   max?: number;
+  /**
+   * Increment applied by the input's up/down arrows. Default 1.
+   */
   step?: number;
   [k: string]: unknown;
 };
@@ -583,37 +1018,68 @@ export type NumberWidget = {
 export type PieWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'pie';
+  /**
+   * Draws the chart as a donut (hollow center) instead of a solid pie.
+   */
   donut?: boolean;
+  /**
+   * Shows each slice's percentage of the total alongside its label.
+   */
   pct?: boolean;
   [k: string]: unknown;
 };
@@ -621,36 +1087,64 @@ export type PieWidget = {
 export type PolarWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'polar';
+  /**
+   * Maximum radius value — samples at or beyond it are drawn at the plot's edge.
+   */
   rmax?: number;
   /**
    * Sector start in degrees. Default 0.
@@ -660,6 +1154,9 @@ export type PolarWidget = {
    * Sector end in degrees. Default 360.
    */
   amax?: number;
+  /**
+   * Clears previously plotted points as the sweep passes over them, like a radar display, instead of accumulating a trail.
+   */
   sweep?: boolean;
   [k: string]: unknown;
 };
@@ -667,44 +1164,78 @@ export type PolarWidget = {
 export type SelectWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   /**
-   * Optional initial/confirmed value; type depends on the control (§3.6.1).
+   * Initial/confirmed value, shown until the first `d` or control response arrives for this id. Type depends on the control: boolean for switch, number for slider/number, string for text/select/color.
    */
   val?: number | boolean | string;
+  /**
+   * Shows the control as disabled — the user can't interact with it until this is cleared.
+   */
   dis?: boolean;
+  /**
+   * Confirmation prompt text. If set, the app asks the user to confirm with this message before sending the command.
+   */
   confirm?: string;
   [k: string]: unknown;
 } & {
   k: 'select';
+  /**
+   * The list of choices. Each entry is either a bare string (used as both the value sent on the wire and the displayed label) or a `[value, label]` pair for a label that differs from the value.
+   */
   opts?: (string | [string, string])[];
   [k: string]: unknown;
 };
@@ -712,99 +1243,176 @@ export type SelectWidget = {
 export type SliderWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   /**
-   * Optional initial/confirmed value; type depends on the control (§3.6.1).
+   * Initial/confirmed value, shown until the first `d` or control response arrives for this id. Type depends on the control: boolean for switch, number for slider/number, string for text/select/color.
    */
   val?: number | boolean | string;
+  /**
+   * Shows the control as disabled — the user can't interact with it until this is cleared.
+   */
   dis?: boolean;
+  /**
+   * Confirmation prompt text. If set, the app asks the user to confirm with this message before sending the command.
+   */
   confirm?: string;
   [k: string]: unknown;
 } & {
   k: 'slider';
+  /**
+   * Minimum value the slider can be dragged to.
+   */
   min: number;
+  /**
+   * Maximum value the slider can be dragged to.
+   */
   max: number;
   /**
-   * Default 1.
+   * Increment the slider snaps to while dragging. Default 1.
    */
   step?: number;
+  /**
+   * Draws a vertical slider instead of horizontal.
+   */
   vert?: boolean;
   [k: string]: unknown;
 };
 
 /**
- * Library builder method is `toggle()` because `switch` is a reserved C++ keyword (LIB-TX-01); the wire `k` stays "switch".
+ * The Arduino library's builder method for this kind is `toggle()`, since `switch` is a reserved C++ keyword — the wire `k` stays "switch" regardless.
  */
 export type SwitchWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   /**
-   * Optional initial/confirmed value; type depends on the control (§3.6.1).
+   * Initial/confirmed value, shown until the first `d` or control response arrives for this id. Type depends on the control: boolean for switch, number for slider/number, string for text/select/color.
    */
   val?: number | boolean | string;
+  /**
+   * Shows the control as disabled — the user can't interact with it until this is cleared.
+   */
   dis?: boolean;
+  /**
+   * Confirmation prompt text. If set, the app asks the user to confirm with this message before sending the command.
+   */
   confirm?: string;
   [k: string]: unknown;
 } & {
   k: 'switch';
+  /**
+   * Label shown when the switch is on.
+   */
   on?: string;
+  /**
+   * Label shown when the switch is off.
+   */
   off?: string;
   [k: string]: unknown;
 };
@@ -812,36 +1420,64 @@ export type SwitchWidget = {
 export type TableWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'table';
+  /**
+   * Column headers, used when the channel sends an array of values per row instead of a label→value object.
+   */
   cols?: string[];
   [k: string]: unknown;
 };
@@ -849,48 +1485,82 @@ export type TableWidget = {
 export type TextWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   /**
-   * Optional initial/confirmed value; type depends on the control (§3.6.1).
+   * Initial/confirmed value, shown until the first `d` or control response arrives for this id. Type depends on the control: boolean for switch, number for slider/number, string for text/select/color.
    */
   val?: number | boolean | string;
+  /**
+   * Shows the control as disabled — the user can't interact with it until this is cleared.
+   */
   dis?: boolean;
+  /**
+   * Confirmation prompt text. If set, the app asks the user to confirm with this message before sending the command.
+   */
   confirm?: string;
   [k: string]: unknown;
 } & {
   k: 'text';
   /**
-   * Max length, also bounded by rx (PRT-08).
+   * Maximum input length, in characters. Also implicitly bounded by how much buffer space the device has for an incoming line.
    */
   max?: number;
+  /**
+   * Placeholder text shown in the empty input.
+   */
   ph?: string;
   [k: string]: unknown;
 };
@@ -898,44 +1568,79 @@ export type TextWidget = {
 export type ValueWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'value';
+  /**
+   * Shows an up/down/flat trend arrow based on the recent value history.
+   */
   trend?: boolean;
+  /**
+   * Shows the session's minimum and maximum observed values alongside the current one.
+   */
   minmax?: boolean;
   /**
+   * `[low, high]` range. Values outside it are highlighted as a warning.
+   *
    * @minItems 2
    * @maxItems 2
    */
   warn?: [number, number];
   /**
+   * `[low, high]` range. Values outside it are highlighted as an alarm (more severe than `warn`).
+   *
    * @minItems 2
    * @maxItems 2
    */
@@ -946,46 +1651,92 @@ export type ValueWidget = {
 export type XyWidget = {
   t: 'w';
   /**
-   * Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12).
+   * Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id.
    */
   id: string;
+  /**
+   * Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it.
+   */
   k: string;
+  /**
+   * Display title shown on the widget's card. Falls back to the widget's `id` if omitted.
+   */
   title?: string;
   /**
    * Channels displayed by the widget (`ch`). A single id, or an array of ids for multi-channel widgets.
    */
   ch?: string | [string, ...string[]];
+  /**
+   * Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab.
+   */
   grp?: string;
+  /**
+   * Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order.
+   */
   ord?: number;
   /**
+   * Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.
+   *
    * @minItems 2
    * @maxItems 2
    */
   size?: [number, number];
+  /**
+   * Unit suffix shown next to the value, e.g. `"C"` or `"rpm"`.
+   */
   unit?: string;
+  /**
+   * Decimal places to display.
+   */
   dec?: number;
+  /**
+   * Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on).
+   */
   labels?: string[];
   /**
+   * Colors for each channel in `ch`, matched up positionally, as #RRGGBB.
+   *
    * Items: Color as #RRGGBB.
    */
   colors?: string[];
   /**
-   * Seconds before the widget is shown as stale (default 5, §4.1).
+   * Seconds of no new data before the widget dims and shows as stale. Default 5.
    */
   stale?: number;
   [k: string]: unknown;
 } & {
   k: 'xy';
+  /**
+   * Fixed X-axis minimum. Omit (along with `xmax`) to auto-scale to the data.
+   */
   xmin?: number;
+  /**
+   * Fixed X-axis maximum. Omit (along with `xmin`) to auto-scale to the data.
+   */
   xmax?: number;
+  /**
+   * Fixed Y-axis minimum. Omit (along with `ymax`) to auto-scale to the data.
+   */
   ymin?: number;
+  /**
+   * Fixed Y-axis maximum. Omit (along with `ymin`) to auto-scale to the data.
+   */
   ymax?: number;
   /**
-   * Points kept. Default 500.
+   * Number of most recent points kept on screen. Default 500.
    */
   trail?: number;
+  /**
+   * `points` plots each sample as a dot; `lines` connects them. Default `points`.
+   */
   mode?: 'points' | 'lines';
+  /**
+   * Label shown below the X axis.
+   */
   xlabel?: string;
+  /**
+   * Label shown beside the Y axis.
+   */
   ylabel?: string;
   [k: string]: unknown;
 };

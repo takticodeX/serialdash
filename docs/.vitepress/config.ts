@@ -1,9 +1,12 @@
 import { defineConfig } from 'vitepress';
 
-// Site is published at /docs/ (the app itself is served from /), see SPEC.md §2.2, §9.4.
+// Published on GitHub Pages under the project's own subpath (no custom domain yet): the app lives
+// at /serialdash/, this site at /serialdash/docs/ — both nested under the same prefix rather than
+// the app sitting at the domain root, since this isn't a user/org root-pages repo or a custom
+// domain pointed at one. Matches the BASE constant in app/vite.config.ts.
 export default defineConfig({
-  base: '/docs/',
-  title: 'SerialDash',
+  base: '/serialdash/docs/',
+  title: 'Serial Dash',
   description:
     'A serial monitor and live dashboard for Arduino/ESP32, running entirely in the browser.',
   lastUpdated: true,
@@ -37,11 +40,34 @@ export default defineConfig({
           text: 'Widget catalog',
           items: [
             { text: 'Overview', link: '/widgets/' },
-            { text: 'Line chart', link: '/widgets/line' },
-            { text: 'Value', link: '/widgets/value' },
-            { text: 'Gauge', link: '/widgets/gauge' },
-            { text: 'Indicator (led)', link: '/widgets/led' },
-            { text: 'Event log', link: '/widgets/log' },
+            {
+              text: 'Display',
+              items: [
+                { text: 'Line chart', link: '/widgets/line' },
+                { text: 'Value', link: '/widgets/value' },
+                { text: 'Gauge', link: '/widgets/gauge' },
+                { text: 'Indicator (led)', link: '/widgets/led' },
+                { text: 'Event log', link: '/widgets/log' },
+                { text: 'XY plot', link: '/widgets/xy' },
+                { text: 'Bar chart', link: '/widgets/bar' },
+                { text: 'Pie chart', link: '/widgets/pie' },
+                { text: 'Level bar', link: '/widgets/level' },
+                { text: 'Table', link: '/widgets/table' },
+                { text: 'Heatmap', link: '/widgets/heat' },
+              ],
+            },
+            {
+              text: 'Controls',
+              items: [
+                { text: 'Button', link: '/widgets/button' },
+                { text: 'Switch', link: '/widgets/switch' },
+                { text: 'Slider', link: '/widgets/slider' },
+                { text: 'Number field', link: '/widgets/number' },
+                { text: 'Select', link: '/widgets/select' },
+                { text: 'Text field', link: '/widgets/text' },
+                { text: 'Color picker', link: '/widgets/color' },
+              ],
+            },
           ],
         },
       ],
@@ -104,7 +130,7 @@ export default defineConfig({
       ],
     },
 
-    socialLinks: [{ icon: 'github', link: 'https://github.com/serialdash/serialdash' }],
+    socialLinks: [{ icon: 'github', link: 'https://github.com/takticodeX/serialdash' }],
 
     search: { provider: 'local' },
   },

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState, type JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import uPlot from 'uplot';
 import 'uplot/dist/uPlot.min.css';
-import { WidgetCard, useStale, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, useStale, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { LineWidget as LineWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -149,24 +149,21 @@ export function LineWidgetConfigPanel({
 }: WidgetConfigPanelProps<LineWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="line">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
-      <label>
-        Window (s)
+      </ConfigField>
+      <ConfigField label="Window (s)" kind="line" prop="win">
         <input
           type="number"
           value={declaration.win ?? DEFAULT_WINDOW_SECONDS}
           onChange={(e) => onChange({ win: Number(e.target.value) })}
         />
-      </label>
-      <label>
-        Min
+      </ConfigField>
+      <ConfigField label="Min" kind="line" prop="min">
         <input
           type="number"
           value={declaration.min ?? ''}
@@ -180,9 +177,8 @@ export function LineWidgetConfigPanel({
             } as Partial<LineWidgetDeclaration>)
           }
         />
-      </label>
-      <label>
-        Max
+      </ConfigField>
+      <ConfigField label="Max" kind="line" prop="max">
         <input
           type="number"
           value={declaration.max ?? ''}
@@ -193,7 +189,7 @@ export function LineWidgetConfigPanel({
             } as Partial<LineWidgetDeclaration>)
           }
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

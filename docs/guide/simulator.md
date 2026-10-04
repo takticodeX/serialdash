@@ -6,19 +6,19 @@ The simulator is a virtual device speaking protocol v1 exactly like a real one �
 
 ## All widgets
 
-Declares every implemented widget kind and feeds each one from its own demo data generator — display widgets included, plus all 7 control widgets, which actually respond to what you do with them: a switch toggles for real, a slider clamps anything past its declared range and echoes what was really applied (SPEC.md §3.6 rule 4), and the button is rejected whenever the switch is on (mirroring the library's own `onControl` reject example, §6.5). It's driven by the same descriptor every widget ships with (SPEC.md §4, DOC-01), so it stays in sync automatically as new widgets are added. This is also what the app's own e2e suite connects to by default.
+Declares every implemented widget kind and feeds each one from its own demo data generator — display widgets included, plus all 7 control widgets, which actually respond to what you do with them: a switch toggles for real, a slider clamps anything past its declared range and echoes what was really applied, and the button is rejected whenever the switch is on (mirroring the library's own `onControl` reject example in the [library reference](../library/api)). It's driven by the same demo data every widget ships with, so it stays in sync automatically as new widgets are added. This is also what the app's own end-to-end test suite connects to by default.
 
 ## Weather station
 
-Just the P0 display widgets — line chart, value, gauge, indicator, event log — with the same demo data "All widgets" uses for them, minus everything else. A quieter dashboard for a first look, or for screenshots that don't need every widget kind crowded in.
+Just the core display widgets — line chart, value, gauge, indicator, event log — with the same demo data "All widgets" uses for them, minus everything else. A quieter dashboard for a first look, or for screenshots that don't need every widget kind crowded in.
 
 ## Motor control
 
-Just the 3 P0 controls — button, switch, slider — the same ones and the same reject/clamp behavior as "All widgets," isolated so the bidirectional flow is the only thing on screen.
+Just the core controls — button, switch, slider — the same ones and the same reject/clamp behavior as "All widgets," isolated so the bidirectional flow is the only thing on screen.
 
 ## Protocol errors
 
-Mostly ordinary weather-station-shaped data, with roughly one line in three replaced by something deliberately broken instead: invalid JSON, valid JSON missing a required field, an invalid widget id, or plain garbled text. Use this to see how the console and the status bar's protocol-error counter behave when a device (or a flaky connection) sends something the parser can't accept — SerialDash keeps going rather than getting stuck on a bad line (PRT-04).
+Mostly ordinary weather-station-shaped data, with roughly one line in three replaced by something deliberately broken instead: invalid JSON, valid JSON missing a required field, an invalid widget id, or plain garbled text. Use this to see how the console and the status bar's protocol-error counter behave when a device (or a flaky connection) sends something the parser can't accept — SerialDash keeps going rather than getting stuck on a bad line.
 
 ## Stress test
 
@@ -26,4 +26,4 @@ No widgets are declared at all — a small pool of channels gets flooded with da
 
 ## Disconnecting
 
-The simulator disconnects like any other session — the dashboard stays visible afterward (SPEC.md §3.5 rule 6), and you can reconnect to it again from "change device."
+The simulator disconnects like any other session — the dashboard stays visible afterward, and you can reconnect to it again from "change device."

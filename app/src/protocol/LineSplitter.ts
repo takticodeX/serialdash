@@ -3,9 +3,13 @@
 // since a runaway line would hurt UI performance either way.
 const MAX_LINE_BYTES = 16 * 1024;
 
+/** One complete line handed off by {@link LineSplitter}. */
 export interface SplitLine {
+  /** Decoded text, decoder-error-tolerant (invalid UTF-8 becomes U+FFFD, never throws). */
   text: string;
+  /** The line's raw bytes, `\n`/trailing `\r` excluded — what the console's hex view renders. */
   raw: Uint8Array;
+  /** `true` if the line exceeded `MAX_LINE_BYTES` and was cut short (PRT-07). */
   truncated: boolean;
 }
 

@@ -20,10 +20,13 @@
       "description": "Send true on press and false on release."
     },
     "label": {
-      "type": "string"
+      "type": "string",
+      "description": "Button text. Falls back to the widget's title, or its id, if omitted."
     },
     "color": {
-      "$ref": "common.schema.json#/$defs/color"
+      "type": "string",
+      "pattern": "^#[0-9A-Fa-f]{6}$",
+      "description": "Button background color (#RRGGBB)."
     }
   },
   "required": ["k"]

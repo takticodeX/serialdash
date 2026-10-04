@@ -223,6 +223,80 @@ describe('event log', () => {
     expect(session.getEvents()[0]?.msg).toBe('event 10');
     expect(session.getEvents()[499]?.msg).toBe('event 509');
   });
+
+  it('collapses an immediate repeat of the same event into one row with a (×N) counter', () => {
+    // A sketch that logs the same broken line every loop() iteration shouldn't flood the log.
+    const session = new DeviceSession(() => {});
+    const event = { t: 'e', lvl: 'warn', msg: 'sensor read failed', src: 'app' } as EventMessage;
+    session.feed(event);
+    session.feed(event);
+    session.feed(event);
+    expect(session.getEvents()).toHaveLength(1);
+    expect(session.getEvents()[0]?.msg).toBe('sensor read failed (×3)');
+  });
+
+  it('starts a new row once a different event interrupts the repeat', () => {
+    const session = new DeviceSession(() => {});
+    const a = { t: 'e', lvl: 'warn', msg: 'A', src: 'app' } as EventMessage;
+    const b = { t: 'e', lvl: 'warn', msg: 'B', src: 'app' } as EventMessage;
+    session.feed(a);
+    session.feed(a);
+    session.feed(b);
+    session.feed(a); // same text as the very first event, but not consecutive — a new row, not (×2)
+    const msgs = session.getEvents().map((e) => e.msg);
+    expect(msgs).toEqual(['A (×2)', 'B', 'A']);
+  });
+
+  it('treats a different lvl or src as a different event, even with the same msg', () => {
+    const session = new DeviceSession(() => {});
+    session.feed({ t: 'e', lvl: 'warn', msg: 'X', src: 'app' } as EventMessage);
+    session.feed({ t: 'e', lvl: 'err', msg: 'X', src: 'app' } as EventMessage);
+    session.feed({ t: 'e', lvl: 'err', msg: 'X', src: 'other' } as EventMessage);
+    expect(session.getEvents()).toHaveLength(3);
+  });
+});
+
+describe('APP-DAT-07 reportPlotterTextError', () => {
+  it('records a warn event with src "plotter" and the given reason', () => {
+    const session = new DeviceSession(() => {});
+    session.reportPlotterTextError('`sensor`: unterminated object');
+    expect(session.getEvents()).toEqual([
+      { t: 'e', lvl: 'warn', msg: '`sensor`: unterminated object', src: 'plotter' },
+    ]);
+  });
+
+  it('synthesizes a log widget filtered to src "plotter" on the first call', () => {
+    const session = new DeviceSession(() => {});
+    session.reportPlotterTextError('bad line');
+    const entry = session.getWidgets().get('plotterErrors');
+    expect(entry?.declaration).toMatchObject({ k: 'log', src: ['plotter'], grp: 'Auto' });
+  });
+
+  it('reuses the same widget on later calls rather than creating another one', () => {
+    const session = new DeviceSession(() => {});
+    session.reportPlotterTextError('first');
+    session.reportPlotterTextError('second');
+    expect(session.getWidgets().size).toBe(1);
+    expect(session.getEvents()).toHaveLength(2);
+  });
+
+  it('collapses the same malformed line repeated every loop() into one row with a counter', () => {
+    const session = new DeviceSession(() => {});
+    for (let i = 0; i < 5; i++) session.reportPlotterTextError('`sensor`: unterminated object');
+    expect(session.getEvents()).toHaveLength(1);
+    expect(session.getEvents()[0]?.msg).toBe('`sensor`: unterminated object (×5)');
+    expect(session.getWidgets().size).toBe(1); // still just the one auto-created widget
+  });
+
+  it("doesn't touch the widget if the user already declared their own 'plotterErrors' widget", () => {
+    const session = new DeviceSession(() => {});
+    session.feed({ t: 'w', id: 'plotterErrors', k: 'value', title: 'Mine' } as LineWidget);
+    session.reportPlotterTextError('bad line');
+    expect(session.getWidgets().get('plotterErrors')?.declaration).toMatchObject({
+      k: 'value',
+      title: 'Mine',
+    });
+  });
 });
 
 describe('subscribe', () => {

@@ -18,6 +18,47 @@ function requireDef(defs: Record<string, JSONSchema>, key: string): JSONSchema {
   return def;
 }
 
+// Loose shape for walking a dereferenced schema when building the docs tables below — the
+// `JSONSchema` type from json-schema-to-typescript is tuned for TS codegen, not for reading
+// `description`/`enum`/`items` back out, so this is a permissive view of the same object.
+interface DocSchemaNode {
+  type?: string | string[];
+  enum?: unknown[];
+  const?: unknown;
+  items?: DocSchemaNode;
+  description?: string;
+  properties?: Record<string, DocSchemaNode>;
+  required?: string[];
+  [key: string]: unknown;
+}
+
+function describeType(schema: DocSchemaNode): string {
+  if (schema.const !== undefined) return `\`${JSON.stringify(schema.const)}\``;
+  if (schema.enum) return schema.enum.map((v) => `\`${JSON.stringify(v)}\``).join(' \\| ');
+  if (Array.isArray(schema.type)) return schema.type.join(' \\| ');
+  if (Array.isArray(schema.prefixItems)) {
+    return `[${(schema.prefixItems as DocSchemaNode[]).map(describeType).join(', ')}]`;
+  }
+  if (schema.type === 'array') return `${describeType(schema.items ?? {})}[]`;
+  const union = (schema.oneOf ?? schema.anyOf) as DocSchemaNode[] | undefined;
+  if (union) return union.map(describeType).join(' \\| ');
+  return (schema.type as string | undefined) ?? 'any';
+}
+
+/** A `| Field | Type | Required | Description |` table for one message/object schema, skipping
+ * `t` (already shown in the section heading) and any field named in `skip`. */
+function fieldTable(def: DocSchemaNode, skip: string[] = []): string {
+  const required = new Set(def.required ?? []);
+  const rows = Object.entries(def.properties ?? {})
+    .filter(([name]) => name !== 't' && !skip.includes(name))
+    .map(([name, schema]) => {
+      const req = required.has(name) ? '**yes**' : 'no';
+      const desc = schema.description ?? '';
+      return `| \`${name}\` | ${describeType(schema)} | ${req} | ${desc} |`;
+    });
+  return ['| Field | Type | Required | Description |', '|---|---|---|---|', ...rows].join('\n');
+}
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '../../..');
 const SCHEMA_DIR = path.join(REPO_ROOT, 'protocol', 'schema');
@@ -271,28 +312,50 @@ function genValidatorsTypes(): string {
   ].join('\n');
 }
 
-/** Regenerates the DOC-02 generated block of docs/protocol/messages.md from the schema. */
+// Short heading titles per message type — the schema's own per-field descriptions carry the real
+// explanation; these just label the section so the table of contents / page skim reads cleanly.
+const D2A_TITLES: Record<string, string> = {
+  hi: 'Device presentation',
+  u: 'Partial update',
+  x: 'Remove widget',
+  d: 'Data',
+  e: 'Event',
+  ack: 'Control acknowledgement',
+  pong: 'Keep-alive reply',
+};
+const A2D_TITLES: Record<string, string> = {
+  hi: 'Handshake request',
+  c: 'Control command',
+  ping: 'Keep-alive',
+};
+
+/** One `#### \`key\` — title` section: the def's own description, then its field table. */
+function messageSection(
+  key: string,
+  titles: Record<string, string>,
+  def: DocSchemaNode,
+  skip: string[] = [],
+): string {
+  return [
+    `#### \`${key}\` — ${titles[key] ?? key}`,
+    '',
+    def.description ?? '',
+    '',
+    fieldTable(def, skip),
+  ].join('\n');
+}
+
+/** Regenerates the generated block of docs/protocol/messages.md from the schema. */
 async function genMessagesDoc(): Promise<void> {
   const d2a = (await $RefParser.dereference(
     path.join(SCHEMA_DIR, 'device-to-app.schema.json'),
-  )) as SchemaWithDefs;
+  )) as SchemaWithDefs as unknown as { $defs: Record<string, DocSchemaNode> };
   const a2d = (await $RefParser.dereference(
     path.join(SCHEMA_DIR, 'app-to-device.schema.json'),
-  )) as SchemaWithDefs;
-
-  const rows = (defs: Record<string, JSONSchema>, order: string[]): string =>
-    order
-      .map((key) => {
-        const def = defs[key] as JSONSchema & {
-          properties?: Record<string, unknown>;
-          required?: string[];
-        };
-        const props = Object.keys(def.properties ?? {}).filter((p) => p !== 't');
-        const required = new Set(def.required ?? []);
-        const fmt = (p: string): string => (required.has(p) ? `**${p}**` : p);
-        return `| \`${key}\` | ${props.map(fmt).join(', ') || '—'} |`;
-      })
-      .join('\n');
+  )) as SchemaWithDefs as unknown as { $defs: Record<string, DocSchemaNode> };
+  const common = (await $RefParser.dereference(
+    path.join(WIDGETS_DIR, 'common.schema.json'),
+  )) as unknown as { $defs: Record<string, DocSchemaNode> };
 
   const kinds = await widgetKinds();
 
@@ -301,16 +364,27 @@ async function genMessagesDoc(): Promise<void> {
     '',
     '### Device → app',
     '',
-    '| `t` | Fields (**bold** = required) |',
-    '|---|---|',
-    rows(d2a.$defs, ['hi', 'u', 'x', 'd', 'e', 'ack', 'pong']),
-    '| `w` | see widget catalog below — one schema per `k` |',
+    'Every line the device sends is one of these, identified by its `t` field.',
+    '',
+    ...['hi', 'u', 'x', 'd', 'e', 'ack', 'pong'].map((key) =>
+      messageSection(key, D2A_TITLES, d2a.$defs[key]!),
+    ),
+    '',
+    '#### `w` — Widget declaration',
+    '',
+    `${d2a.$defs.w!.description ?? ''} See the widget catalog below for the full per-kind property list, and [common widget properties](#common-widget-properties) for the fields every kind shares.`,
     '',
     '### App → device',
     '',
-    '| `t` | Fields (**bold** = required) |',
-    '|---|---|',
-    rows(a2d.$defs, ['hi', 'c', 'ping']),
+    'Every line the app sends is one of these.',
+    '',
+    ...['hi', 'c', 'ping'].map((key) => messageSection(key, A2D_TITLES, a2d.$defs[key]!)),
+    '',
+    '### Common widget properties',
+    '',
+    'Every widget declared with `w` accepts these, regardless of kind (`t` and `k` aren\'t listed — `t` is always `"w"`, and `k` is the kind selector itself, covered in the widget catalog below).',
+    '',
+    fieldTable(common.$defs.widgetBase!, ['t', 'k']),
     '',
     '### Widget catalog',
     '',

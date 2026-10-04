@@ -15,6 +15,8 @@ import { useDashboardLayoutStore } from './dashboard/useDashboardLayoutStore';
 import { useWidgetOverridesStore } from './dashboard/useWidgetOverridesStore';
 import { isWebSerialSupported } from './serial/webSerialTransport';
 import { registerBuiltinWidgets } from './widgets/index';
+import { TourOverlay } from './tour/TourOverlay';
+import { useTourStore } from './tour/useTourStore';
 
 registerBuiltinWidgets();
 
@@ -26,6 +28,8 @@ export function App(): JSX.Element {
   const hydrateConsoleLayout = usePanelLayoutStore((s) => s.hydrate);
   const hydrateDashboardLayout = useDashboardLayoutStore((s) => s.hydrate);
   const hydrateWidgetOverrides = useWidgetOverridesStore((s) => s.hydrate);
+  const hydrateTour = useTourStore((s) => s.hydrate);
+  const startTour = useTourStore((s) => s.start);
   const connectionState = useConnectionStore((s) => s.state);
   const session = useConnectionStore((s) => s.session);
   const port = useConnectionStore((s) => s.port);
@@ -44,12 +48,14 @@ export function App(): JSX.Element {
     void hydrateConsoleLayout();
     void hydrateDashboardLayout();
     void hydrateWidgetOverrides();
+    void hydrateTour();
   }, [
     hydrateSettings,
     loadSendHistory,
     hydrateConsoleLayout,
     hydrateDashboardLayout,
     hydrateWidgetOverrides,
+    hydrateTour,
   ]);
 
   useEffect(() => {
@@ -73,8 +79,10 @@ export function App(): JSX.Element {
       <StatusBar
         onChangeDevice={session ? () => setShowConnectScreen(true) : undefined}
         onOpenSettings={() => setSettingsOpen(true)}
+        onOpenHelp={startTour}
       />
       {settingsOpen && <SettingsPanel onClose={() => setSettingsOpen(false)} />}
+      <TourOverlay />
 
       {displayConnectScreen ? (
         supported ? (

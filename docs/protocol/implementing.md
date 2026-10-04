@@ -4,13 +4,13 @@ You don't need the Arduino library to speak SerialDash — the wire format is pl
 
 ## What you need
 
-1. **Framing**: emit `@` immediately followed by a JSON object, one per line, `\n`-terminated. See [overview](./overview) and SPEC.md §3.1.
-2. **The schema**: `/protocol/schema/device-to-app.schema.json`, `/protocol/schema/app-to-device.schema.json`, and `/protocol/schema/widgets/*.schema.json` (JSON Schema, draft 2020-12) define every message and widget shape exactly. They are the normative source — SPEC.md §3 documents them in prose, but the schema wins if the two ever disagree (SPEC.md §3 header note).
+1. **Framing**: emit `@` immediately followed by a JSON object, one per line, `\n`-terminated. See [overview](./overview).
+2. **The schema**: `/protocol/schema/device-to-app.schema.json`, `/protocol/schema/app-to-device.schema.json`, and `/protocol/schema/widgets/*.schema.json` define every message and widget shape exactly. They're the normative source — the prose on this site (including the [message reference](./messages)) is generated from them, but the schema files themselves are authoritative if you need to double-check an edge case.
 3. **Test vectors**: `/protocol/test-vectors/*.jsonl` gives worked examples of valid and invalid lines in both directions, including edge cases (Unicode, escaping, extreme numbers, malformed JSON, truncated lines, invalid ids). Each line is `{"name", "dir": "d2a"|"a2d", "line": "@{...}", "valid": bool, "expect": ...}` — validate your own parser/encoder against these the same way `tools/validate-vectors` does for the reference implementation.
 
 ## Minimal device→app sequence
 
-A device that only wants to appear in the console needs to send nothing at all — free text just works (principle P2). To get a dashboard, the minimum is:
+A device that only wants to appear in the console needs to send nothing at all — free text just works. To get a dashboard, the minimum is:
 
 ```
 @{"t":"hi","v":1,"name":"MyDevice"}
@@ -20,10 +20,10 @@ A device that only wants to appear in the console needs to send nothing at all �
 
 ## Constraints worth knowing before you start
 
-- **App→device messages must be flat objects** — no nested objects or arrays in `c`/`hi`/`ping` (SPEC.md §3.4), so a microcontroller can use a trivial streaming parser.
-- Widget and channel ids match `^[A-Za-z_][A-Za-z0-9_.-]{0,15}$` (PRT-11) and live in separate namespaces (PRT-12).
-- Unknown message types and unknown fields on known messages must be **ignored**, not rejected (PRT-05, PRT-06) — this is what lets old and new implementations interoperate.
-- `NaN`/`Infinity` don't exist in JSON: send `null` for a missing value (PRT-09).
+- **App→device messages must be flat objects** — no nested objects or arrays in `c`/`hi`/`ping` — so a microcontroller can use a trivial streaming parser.
+- Widget and channel ids match `^[A-Za-z_][A-Za-z0-9_.-]{0,15}$` and live in separate namespaces (a widget and a channel can share the same id without colliding).
+- Unknown message types, and unknown fields on known messages, must be **ignored**, not rejected — this is what lets old and new implementations interoperate.
+- `NaN`/`Infinity` don't exist in JSON: send `null` for a missing value.
 
 ## Validating against the schema in Node
 

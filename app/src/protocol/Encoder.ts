@@ -13,6 +13,7 @@ export interface RequestIdSequence {
   next: () => number;
 }
 
+/** Creates a fresh {@link RequestIdSequence} starting at 1. */
 export function createRequestIdSequence(): RequestIdSequence {
   let current = 0;
   return {
@@ -23,10 +24,14 @@ export function createRequestIdSequence(): RequestIdSequence {
   };
 }
 
+/** An app→device `hi` line (SPEC.md §3.3), asking the device to (re)send its handshake and widget
+ * declarations. */
 export function encodeHiRequest(): string {
   return '@{"t":"hi","v":1}';
 }
 
+/** A `ping` line carrying request id `r`, answered by the device with a matching `pong`
+ * (SPEC.md §3.5 rule 5). */
 export function encodePing(r: number): string {
   return `@{"t":"ping","r":${r}}`;
 }
@@ -43,8 +48,13 @@ function truncateToUtf8Bytes(text: string, maxBytes: number): string {
   return text.slice(0, end);
 }
 
+/** A control's value as sent over the wire — the same three JSON scalar types SPEC.md §3.3's `c`
+ * message accepts for `v`. */
 export type ControlValue = number | boolean | string;
 
+/** A `c` control command (SPEC.md §3.3): request id `r`, the target control's `id`, and the
+ * requested `v`. A string `v` longer than `maxValueBytes` (UTF-8) is truncated first, mirroring
+ * PRT-43's bound on what the device is expected to accept. */
 export function encodeControl(
   r: number,
   id: string,

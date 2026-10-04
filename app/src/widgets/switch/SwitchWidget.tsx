@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import type { JSX } from 'react';
 import { useChannelSeries } from '../../data/useChannelSeries';
-import { WidgetCard, useConnected, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, useConnected, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { SwitchWidget as SwitchWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -94,14 +94,13 @@ export function SwitchWidgetConfigPanel({
 }: WidgetConfigPanelProps<SwitchWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="switch">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

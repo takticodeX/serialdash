@@ -27,7 +27,7 @@ void loop() {
 ```
 
 - **`dash.begin(name, version)`** — once, in `setup()`. Nothing is sent yet; it just records what to answer the app's handshake with.
-- **`dash.onDeclare(callback)`** — registers a function to be called **every time the app (re)connects**, not just once. This matters: the app builds its dashboard from whatever your `onDeclare` sends, so if the device is the only source of truth for what widgets exist (SPEC.md's own guiding principle), a fresh connection has to see the same declarations again. Put every `dash.line(...)`/`dash.button(...)`/etc. call in here, not in `setup()`.
+- **`dash.onDeclare(callback)`** — registers a function to be called **every time the app (re)connects**, not just once. This matters: the app builds its dashboard entirely from whatever your `onDeclare` sends — the device is the only source of truth for what widgets exist — so a fresh connection has to see the same declarations again. Put every `dash.line(...)`/`dash.button(...)`/etc. call in here, not in `setup()`.
 - **`dash.loop()`** — call this on every pass through `loop()`, unconditionally. It's what reads incoming bytes and answers `hi`/`ping`, and dispatches `c` (control) messages to your `onControl` callbacks. Skipping it (or calling it rarely, behind a slow `delay()`) is why a device stops responding to pings or controls.
 - **`dash.send(channel, value)`** (or the `dash.data()...` builder for several channels in one message) — sends the actual data a declared widget displays.
 

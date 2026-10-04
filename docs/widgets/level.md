@@ -8,14 +8,14 @@ A horizontal or vertical fill/progress bar.
 
 ## Properties
 
-Common properties every widget has (`id`, `title`, `ch`, `grp`, `ord`, `size`, `unit`, `dec`, `labels`, `colors`, `stale`) are documented once in [the message reference](../protocol/messages) — only `level`-specific properties are listed below.
+Every widget also has a set of [common properties](../protocol/messages#common-widget-properties) (`id`, `title`, `ch`, `grp`, `ord`, `size`, `unit`, `dec`, `labels`, `colors`, `stale`), documented once on the message reference page — only `level`-specific properties are listed below.
 
-| Property | Type    | Required | Description |
-| -------- | ------- | -------- | ----------- |
-| `max`    | number  | no       |             |
-| `min`    | number  | no       |             |
-| `vert`   | boolean | no       |             |
-| `zones`  | any[][] | no       |             |
+| Property                       | Type                       | Required | Description                                                  |
+| ------------------------------ | -------------------------- | -------- | ------------------------------------------------------------ |
+| <a id="prop-max"></a>`max`     | number                     | no       | Value that maps to a completely full bar.                    |
+| <a id="prop-min"></a>`min`     | number                     | no       | Value that maps to an empty bar.                             |
+| <a id="prop-vert"></a>`vert`   | boolean                    | no       | Draws a vertical bar instead of horizontal.                  |
+| <a id="prop-zones"></a>`zones` | [number, number, string][] | no       | Color bands drawn behind the fill, each `[from, to, color]`. |
 
 ## Example
 
@@ -29,6 +29,6 @@ Common properties every widget has (`id`, `title`, `ch`, `grp`, `ord`, `size`, `
 
 ## Compatible templates for switching type
 
-From the widget's settings panel (APP-DSH-05), this widget can be switched to: `line`, `value`, `gauge` — same value shape, no firmware change needed.
+From the widget's settings panel, this widget can be switched to: `line`, `value`, `gauge` — same value shape, no firmware change needed.
 
 <!-- generated:end -->

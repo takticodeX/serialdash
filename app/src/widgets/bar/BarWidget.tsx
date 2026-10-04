@@ -2,7 +2,7 @@ import type { JSX } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChannelSeries } from '../../data/useChannelSeries';
 import type { ChannelValue } from '../../data/ChannelStore';
-import { WidgetCard, useStale, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, useStale, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { BarWidget as BarWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -80,7 +80,11 @@ export function BarWidgetComponent({
         style={{
           display: 'flex',
           flexDirection: declaration.horiz ? 'column' : 'row',
-          alignItems: declaration.horiz ? 'stretch' : 'flex-end',
+          // Always 'stretch': each bar's wrapper needs a definite height (for non-horiz bars) or
+          // width (for horiz bars) to measure its own percentage sizing against — 'flex-end' here
+          // would let the wrapper shrink to its content's natural size instead, which leaves a
+          // percentage height with nothing real to resolve against (computes to 0, invisible bar).
+          alignItems: 'stretch',
           gap: 4,
           height: '100%',
         }}
@@ -95,17 +99,22 @@ export function BarWidgetComponent({
                 display: 'flex',
                 flexDirection: declaration.horiz ? 'row' : 'column',
                 alignItems: 'center',
+                // Anchors the bar+label pair to the baseline (bottom for vertical bars, left for
+                // horizontal ones) they grow from, regardless of how tall/wide a given bar is.
+                justifyContent: declaration.horiz ? 'flex-start' : 'flex-end',
                 flex: 1,
                 gap: 2,
               }}
             >
               <div
                 style={{
-                  flex: declaration.horiz ? '0 0 auto' : 1,
+                  // flex-grow must stay off: a `flex: 1` here would make this div's flex-basis
+                  // (0%) win over the explicit height/width below and fill all remaining space
+                  // regardless of `pct` — exactly the bug that made every vertical bar invisible.
+                  flex: '0 0 auto',
                   width: declaration.horiz ? `${pct}%` : '100%',
                   height: declaration.horiz ? 16 : `${pct}%`,
                   background: 'var(--color-accent)',
-                  alignSelf: declaration.horiz ? 'auto' : 'flex-end',
                 }}
               />
               <span style={{ fontSize: '0.7em', color: 'var(--color-text-muted)' }}>
@@ -125,14 +134,13 @@ export function BarWidgetConfigPanel({
 }: WidgetConfigPanelProps<BarWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="bar">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

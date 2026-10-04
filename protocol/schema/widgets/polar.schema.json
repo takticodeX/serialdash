@@ -13,7 +13,8 @@
       "const": "polar"
     },
     "rmax": {
-      "type": "number"
+      "type": "number",
+      "description": "Maximum radius value — samples at or beyond it are drawn at the plot's edge."
     },
     "amin": {
       "type": "number",
@@ -24,7 +25,8 @@
       "description": "Sector end in degrees. Default 360."
     },
     "sweep": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Clears previously plotted points as the sweep passes over them, like a radar display, instead of accumulating a trail."
     }
   },
   "required": ["k"]

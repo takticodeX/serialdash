@@ -8,7 +8,8 @@ on:
 jobs:
   # M0-M4 scope (SPEC.md §11, §9.4): lint, schema/type generation alignment, protocol test
   # vectors, app unit tests + build, docs site build, and the e2e suite against the simulator
-  # (QA-03). The load test (QA-04) is wired in once M6's stress-test scenario lands.
+  # (QA-03). No automated load test (QA-04 was permanently dropped from scope during M6, SPEC.md
+  # §9.1) — the simulator's "Stress test" scenario (APP-SIM-02) stays manual-only.
   base:
     runs-on: ubuntu-latest
     steps:
@@ -37,6 +38,9 @@ jobs:
 
       - name: Unit tests (protocol test vectors + app)
         run: npm test
+
+      - name: Coverage gate — protocol/session/data >= 85% lines (QA-02)
+        run: npm run test:coverage -w app
 
       - name: Generated types/docs stay aligned with the schema (PRO-02, DOC-03)
         run: npm run gen:check

@@ -13,13 +13,16 @@
       "const": "gauge"
     },
     "min": {
-      "type": "number"
+      "type": "number",
+      "description": "Value at the start of the needle's sweep."
     },
     "max": {
-      "type": "number"
+      "type": "number",
+      "description": "Value at the end of the needle's sweep."
     },
     "zones": {
       "type": "array",
+      "description": "Color bands drawn behind the needle, each `[from, to, color]`.",
       "items": {
         "$ref": "common.schema.json#/$defs/zone"
       }

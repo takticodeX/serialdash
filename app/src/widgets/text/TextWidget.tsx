@@ -1,7 +1,7 @@
 import { useEffect, useState, type JSX, type KeyboardEvent } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useChannelSeries } from '../../data/useChannelSeries';
-import { WidgetCard, useConnected, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, useConnected, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { TextWidget as TextWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -71,14 +71,13 @@ export function TextWidgetConfigPanel({
 }: WidgetConfigPanelProps<TextWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="text">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

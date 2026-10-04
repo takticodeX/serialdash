@@ -13,30 +13,37 @@
       "const": "xy"
     },
     "xmin": {
-      "type": "number"
+      "type": "number",
+      "description": "Fixed X-axis minimum. Omit (along with `xmax`) to auto-scale to the data."
     },
     "xmax": {
-      "type": "number"
+      "type": "number",
+      "description": "Fixed X-axis maximum. Omit (along with `xmin`) to auto-scale to the data."
     },
     "ymin": {
-      "type": "number"
+      "type": "number",
+      "description": "Fixed Y-axis minimum. Omit (along with `ymax`) to auto-scale to the data."
     },
     "ymax": {
-      "type": "number"
+      "type": "number",
+      "description": "Fixed Y-axis maximum. Omit (along with `ymin`) to auto-scale to the data."
     },
     "trail": {
       "type": "integer",
       "exclusiveMinimum": 0,
-      "description": "Points kept. Default 500."
+      "description": "Number of most recent points kept on screen. Default 500."
     },
     "mode": {
-      "enum": ["points", "lines"]
+      "enum": ["points", "lines"],
+      "description": "`points` plots each sample as a dot; `lines` connects them. Default `points`."
     },
     "xlabel": {
-      "type": "string"
+      "type": "string",
+      "description": "Label shown below the X axis."
     },
     "ylabel": {
-      "type": "string"
+      "type": "string",
+      "description": "Label shown beside the Y axis."
     }
   },
   "required": ["k"]

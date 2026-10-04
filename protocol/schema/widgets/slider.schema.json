@@ -16,18 +16,21 @@
       "const": "slider"
     },
     "min": {
-      "type": "number"
+      "type": "number",
+      "description": "Minimum value the slider can be dragged to."
     },
     "max": {
-      "type": "number"
+      "type": "number",
+      "description": "Maximum value the slider can be dragged to."
     },
     "step": {
       "type": "number",
       "exclusiveMinimum": 0,
-      "description": "Default 1."
+      "description": "Increment the slider snaps to while dragging. Default 1."
     },
     "vert": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Draws a vertical slider instead of horizontal."
     }
   },
   "required": ["k", "min", "max"]

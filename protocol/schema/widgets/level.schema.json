@@ -13,16 +13,20 @@
       "const": "level"
     },
     "min": {
-      "type": "number"
+      "type": "number",
+      "description": "Value that maps to an empty bar."
     },
     "max": {
-      "type": "number"
+      "type": "number",
+      "description": "Value that maps to a completely full bar."
     },
     "vert": {
-      "type": "boolean"
+      "type": "boolean",
+      "description": "Draws a vertical bar instead of horizontal."
     },
     "zones": {
       "type": "array",
+      "description": "Color bands drawn behind the fill, each `[from, to, color]`.",
       "items": {
         "$ref": "common.schema.json#/$defs/zone"
       }

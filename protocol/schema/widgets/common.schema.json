@@ -2,12 +2,12 @@
   "$id": "https://schema.serialdash.dev/v1/widgets/common.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "SerialDash widget — shared definitions",
-  "description": "Shared definitions reused by every widget schema (SPEC.md §3.2, §4). Not a message on its own.",
+  "description": "Shared definitions reused by every widget schema. Not a message on its own.",
   "$defs": {
     "identifier": {
       "type": "string",
       "pattern": "^[A-Za-z_][A-Za-z0-9_.-]{0,15}$",
-      "description": "Widget or channel id (PRT-11). Widgets and channels have separate namespaces (PRT-12)."
+      "description": "Up to 16 characters, starting with a letter or underscore. Widget ids and channel ids are separate namespaces, so a widget and a channel are allowed to share the same id."
     },
     "color": {
       "type": "string",
@@ -30,18 +30,33 @@
       ]
     },
     "widgetBase": {
-      "description": "Properties common to every widget declared with a `w` message (SPEC.md §3.3).",
+      "description": "Properties common to every widget declared with a `w` message.",
       "type": "object",
       "properties": {
         "t": { "const": "w" },
         "id": { "$ref": "#/$defs/identifier" },
-        "k": { "type": "string" },
-        "title": { "type": "string", "maxLength": 48 },
+        "k": {
+          "type": "string",
+          "description": "Widget kind — selects which schema in this directory the rest of the message must match (e.g. `line`, `gauge`, `button`). Fixed once the widget is declared; a later `u` update cannot change it."
+        },
+        "title": {
+          "type": "string",
+          "maxLength": 48,
+          "description": "Display title shown on the widget's card. Falls back to the widget's `id` if omitted."
+        },
         "ch": { "$ref": "#/$defs/channels" },
-        "grp": { "type": "string", "maxLength": 24 },
-        "ord": { "type": "integer" },
+        "grp": {
+          "type": "string",
+          "maxLength": 24,
+          "description": "Group name. Widgets sharing a `grp` are shown together under one dashboard tab; widgets with no `grp` land in the default tab."
+        },
+        "ord": {
+          "type": "integer",
+          "description": "Placement order within the widget's group — lower values are placed first. Widgets with no `ord` are placed after the ones that have one, in declaration order."
+        },
         "size": {
           "type": "array",
+          "description": "Suggested size as `[width, height]` in dashboard grid cells (the grid is 12 columns wide). Only a starting point — the user can resize the widget afterward, and that override takes precedence from then on.",
           "prefixItems": [
             { "type": "integer", "minimum": 1, "maximum": 12 },
             { "type": "integer", "minimum": 1 }
@@ -50,28 +65,51 @@
           "minItems": 2,
           "maxItems": 2
         },
-        "unit": { "type": "string", "maxLength": 8 },
-        "dec": { "type": "integer", "minimum": 0, "maximum": 6 },
-        "labels": { "type": "array", "items": { "type": "string" } },
-        "colors": { "type": "array", "items": { "$ref": "#/$defs/color" } },
+        "unit": {
+          "type": "string",
+          "maxLength": 8,
+          "description": "Unit suffix shown next to the value, e.g. `\"C\"` or `\"rpm\"`."
+        },
+        "dec": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6,
+          "description": "Decimal places to display."
+        },
+        "labels": {
+          "type": "array",
+          "items": { "type": "string" },
+          "description": "Labels for each channel in `ch`, matched up positionally (first label for the first channel, and so on)."
+        },
+        "colors": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/color" },
+          "description": "Colors for each channel in `ch`, matched up positionally, as #RRGGBB."
+        },
         "stale": {
           "type": "number",
           "exclusiveMinimum": 0,
-          "description": "Seconds before the widget is shown as stale (default 5, §4.1)."
+          "description": "Seconds of no new data before the widget dims and shows as stale. Default 5."
         }
       },
       "required": ["t", "id", "k"]
     },
     "controlExtras": {
-      "description": "Properties added to controls on top of widgetBase (§4.3). `id` doubles as the state channel id (PRT-13), so `ch` is not used.",
+      "description": "Properties added to controls (button, switch, slider, number, select, text, color) on top of widgetBase. A control's `id` doubles as its state channel id, so controls don't use `ch`.",
       "type": "object",
       "properties": {
         "val": {
-          "description": "Optional initial/confirmed value; type depends on the control (§3.6.1).",
+          "description": "Initial/confirmed value, shown until the first `d` or control response arrives for this id. Type depends on the control: boolean for switch, number for slider/number, string for text/select/color.",
           "type": ["number", "boolean", "string"]
         },
-        "dis": { "type": "boolean" },
-        "confirm": { "type": "string" }
+        "dis": {
+          "type": "boolean",
+          "description": "Shows the control as disabled — the user can't interact with it until this is cleared."
+        },
+        "confirm": {
+          "type": "string",
+          "description": "Confirmation prompt text. If set, the app asks the user to confirm with this message before sending the command."
+        }
       }
     }
   }

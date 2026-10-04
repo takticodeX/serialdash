@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 import type { JSX } from 'react';
-import { WidgetCard, useConnected, widgetTitle } from '../common';
+import { ConfigField, WidgetCard, useConnected, widgetTitle } from '../common';
 import type { WidgetComponentProps, WidgetConfigPanelProps, WidgetDemo } from '../registry';
 import type { ButtonWidget as ButtonWidgetDeclaration } from '../../protocol/generated/index.js';
 
@@ -72,22 +72,20 @@ export function ButtonWidgetConfigPanel({
 }: WidgetConfigPanelProps<ButtonWidgetDeclaration>): JSX.Element {
   return (
     <div>
-      <label>
-        Title
+      <ConfigField label="Title" kind="button">
         <input
           type="text"
           value={declaration.title ?? ''}
           onChange={(e) => onChange({ title: e.target.value })}
         />
-      </label>
-      <label>
-        Label
+      </ConfigField>
+      <ConfigField label="Label" kind="button" prop="label">
         <input
           type="text"
           value={declaration.label ?? ''}
           onChange={(e) => onChange({ label: e.target.value })}
         />
-      </label>
+      </ConfigField>
     </div>
   );
 }

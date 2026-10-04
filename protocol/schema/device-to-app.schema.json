@@ -2,10 +2,10 @@
   "$id": "https://schema.serialdash.dev/v1/device-to-app.schema.json",
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "title": "SerialDash protocol v1 — device to app",
-  "description": "Validates the JSON payload of a device→app protocol line, i.e. everything after the leading `@` (SPEC.md §3.3). A line whose `t` is not one of these is a message type unknown to v1: PRT-05 requires the app to ignore it rather than reject it, so it is intentionally outside this schema's `oneOf`.",
+  "description": "Validates the JSON payload of a device→app protocol line, i.e. everything after the leading `@`. A line whose `t` is not one of these is a message type unknown to this protocol version: the app is required to ignore it rather than reject it, so it is intentionally outside this schema's `oneOf` (new message types can be introduced without breaking old apps).",
   "$defs": {
     "channelValue": {
-      "description": "Forms a channel value may take (§3.3 `d`). anyOf, not oneOf: e.g. a 2-number array is a valid 'xy pair' and a valid 'array of numbers' at once — which one it means depends on the consuming widget, not on the JSON shape.",
+      "description": "The shapes a channel's value can take in a `d` message. This uses `anyOf` rather than `oneOf` on purpose: e.g. a 2-number array is simultaneously a valid [x, y] pair and a valid array of numbers — which one it means depends on which widget is consuming it, not on the JSON shape itself.",
       "anyOf": [
         { "type": "number" },
         { "type": "boolean" },
@@ -32,19 +32,40 @@
       ]
     },
     "hi": {
+      "description": "Sent once by the device right after it starts (and again any time the app asks for one by sending its own `hi`). Identifies the device and its protocol version, and is normally followed immediately by the device's `w` widget declarations.",
       "type": "object",
       "properties": {
         "t": { "const": "hi" },
-        "v": { "type": "integer", "minimum": 1 },
-        "name": { "type": "string", "maxLength": 32 },
-        "fw": { "type": "string", "maxLength": 16 },
-        "board": { "type": "string", "maxLength": 16 },
-        "rx": { "type": "integer", "exclusiveMinimum": 0 }
+        "v": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Protocol version the device speaks. The app uses this to know which message shapes to expect."
+        },
+        "name": {
+          "type": "string",
+          "maxLength": 32,
+          "description": "Device name shown in the app's status bar and About panel."
+        },
+        "fw": {
+          "type": "string",
+          "maxLength": 16,
+          "description": "Firmware version string, shown alongside the device name. Entirely up to the sketch — not interpreted by the app."
+        },
+        "board": {
+          "type": "string",
+          "maxLength": 16,
+          "description": "Board name, e.g. \"ESP32\" or \"Uno\". Optional and purely informational."
+        },
+        "rx": {
+          "type": "integer",
+          "exclusiveMinimum": 0,
+          "description": "Size, in bytes, of the device's incoming line buffer. Tells the app how long an app→device line is safe to send before the device would have to truncate or drop it."
+        }
       },
       "required": ["t", "v", "name"]
     },
     "w": {
-      "description": "Widget declaration. The exact shape depends on `k` (SPEC.md §4); see /protocol/schema/widgets/*.schema.json.",
+      "description": "Declares one widget on the dashboard. The exact set of allowed properties depends on `k`, the widget kind.",
       "oneOf": [
         { "$ref": "widgets/line.schema.json" },
         { "$ref": "widgets/value.schema.json" },
@@ -71,60 +92,98 @@
       ]
     },
     "u": {
-      "description": "Partial update: shallow-merges the given fields into the existing widget. `id` and `k` are not modifiable.",
+      "description": "Updates an existing widget's properties in place, without redeclaring it — only the given fields change, everything else about the widget stays as it was. `id` and `k` can't be changed this way; to change a widget's kind, remove it (`x`) and declare it again.",
       "type": "object",
       "properties": {
         "t": { "const": "u" },
-        "id": { "$ref": "widgets/common.schema.json#/$defs/identifier" }
+        "id": {
+          "$ref": "widgets/common.schema.json#/$defs/identifier"
+        }
       },
       "not": { "properties": { "k": {} }, "required": ["k"] },
       "required": ["t", "id"]
     },
     "x": {
+      "description": "Removes a widget from the dashboard, or every widget this device has declared if `id` is omitted.",
       "type": "object",
       "properties": {
         "t": { "const": "x" },
-        "id": { "$ref": "widgets/common.schema.json#/$defs/identifier" }
+        "id": {
+          "$ref": "widgets/common.schema.json#/$defs/identifier"
+        }
       },
       "required": ["t"]
     },
     "d": {
+      "description": "Carries one or more channels' current values. The most frequent message type on the wire — sent every time the device has new sensor/state data to report.",
       "type": "object",
       "properties": {
         "t": { "const": "d" },
         "d": {
           "type": "object",
+          "description": "Map of channel id to its new value. A channel doesn't need its own widget — an undeclared channel can still auto-create one, depending on the app's settings.",
           "additionalProperties": { "$ref": "#/$defs/channelValue" }
         },
-        "ts": { "type": "integer", "minimum": 0 }
+        "ts": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Device-side timestamp (typically `millis()`), in milliseconds. Lets the app align samples from a device that buffers or batches data instead of always using arrival time. Omit if the device has no clock worth reporting — the app then just timestamps the data on arrival."
+        }
       },
       "required": ["t", "d"]
     },
     "e": {
+      "description": "A log event — shown in the app's console and in any `log` widgets. Used for status messages, warnings, and errors the device wants to surface, as distinct from regular channel data.",
       "type": "object",
       "properties": {
         "t": { "const": "e" },
-        "lvl": { "enum": ["debug", "info", "warn", "err"] },
-        "msg": { "type": "string" },
-        "src": { "type": "string", "maxLength": 16 }
+        "lvl": {
+          "enum": ["debug", "info", "warn", "err"],
+          "description": "Severity. Defaults to `info` if omitted."
+        },
+        "msg": { "type": "string", "description": "The event text." },
+        "src": {
+          "type": "string",
+          "maxLength": 16,
+          "description": "Optional origin label (e.g. a subsystem name), usable to filter a `log` widget to just this source."
+        }
       },
       "required": ["t", "msg"]
     },
     "ack": {
+      "description": "The device's response to an app→device `c` control command, matched back to it by `r`. Every `c` gets exactly one `ack` — the app's UI depends on it to know whether the command succeeded.",
       "type": "object",
       "properties": {
         "t": { "const": "ack" },
-        "r": { "type": "integer", "minimum": 1, "maximum": 65535 },
-        "ok": { "type": "boolean" },
-        "err": { "type": "string", "maxLength": 48 }
+        "r": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Echoes the `r` of the `c` message this acknowledges."
+        },
+        "ok": {
+          "type": "boolean",
+          "description": "Whether the command was accepted. When `true`, the device is expected to also send a `d` with the control's actual resulting state."
+        },
+        "err": {
+          "type": "string",
+          "maxLength": 48,
+          "description": "Human-readable reason the command was rejected. Only meaningful when `ok` is `false`; shown to the user in the app."
+        }
       },
       "required": ["t", "r", "ok"]
     },
     "pong": {
+      "description": "The device's response to an app→device `ping`, matched back to it by `r`. The app uses the round trip to show connection latency and to detect a device that's stopped responding.",
       "type": "object",
       "properties": {
         "t": { "const": "pong" },
-        "r": { "type": "integer", "minimum": 1, "maximum": 65535 }
+        "r": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 65535,
+          "description": "Echoes the `r` of the `ping` message this answers."
+        }
       },
       "required": ["t", "r"]
     }

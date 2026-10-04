@@ -5,13 +5,13 @@ line — no app-side code to write, no external dependencies, and it works on
 any core exposing `Stream` (Uno, Mega, ESP32, ESP32-S3/C3, ESP8266, RP2040,
 SAMD, ...).
 
-Pair it with the [SerialDash web app](https://serialdash.github.io/) (built
-on the Web Serial API, works offline as a PWA) to get line charts, gauges,
-LEDs, sliders and more from plain, `Serial.print`-style calls — no browser
-extension, no separate server.
+Pair it with the [Serial Dash web app](https://takticodex.github.io/serialdash/)
+(built on the Web Serial API, works offline as a PWA) to get line charts,
+gauges, LEDs, sliders and more from plain, `Serial.print`-style calls — no
+browser extension, no separate server.
 
 > Full documentation, the protocol reference, and every widget's property
-> table live at <https://serialdash.github.io/>.
+> table live at <https://takticodex.github.io/serialdash/docs/>.
 
 ## Installing
 
@@ -89,12 +89,11 @@ void loop() {
 
 ## Status
 
-Both halves of the protocol are implemented: declaring widgets/sending data
-(§6.4) and receiving commands back from the app (§6.3, §6.5) — round-trip,
-rejection, and `appConnected()` all work end to end. Still open: the app's
-own dashboard/controls UI polish (widget config panels, template switching)
-and the P1/P2 widget catalog beyond SPEC.md §4.1/§4.3's P0 set — see the
-[SPEC](https://github.com/serialdash/serialdash) for the full milestone plan.
+The full protocol is implemented: declaring widgets, sending data, and
+receiving two-way commands back from the app — round-trip, rejection, and
+`appConnected()` liveness detection all work end to end. Every widget kind
+the app currently renders has a matching factory method here, controls
+included.
 
 ## License
 

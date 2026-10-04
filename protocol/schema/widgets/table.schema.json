@@ -14,6 +14,7 @@
     },
     "cols": {
       "type": "array",
+      "description": "Column headers, used when the channel sends an array of values per row instead of a label→value object.",
       "items": {
         "type": "string"
       }
