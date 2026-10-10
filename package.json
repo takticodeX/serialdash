@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "description": "SerialDash monorepo: PWA serial monitor/dashboard, protocol, Arduino library, docs",
-  "license": "MIT",
+  "license": "SEE LICENSE IN LICENSE",
   "type": "module",
   "workspaces": [
     "tools/*",
