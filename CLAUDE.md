@@ -1,5 +1,5 @@
 # CLAUDE.md — Istruzioni operative per lo sviluppo di SerialDash
- 
+
 Questo file guida l'assistente AI (Claude Code) nel lavoro su questo repository.
 La specifica completa è in `SPEC.md`: **leggila prima di qualsiasi attività** e trattala come fonte di verità.
 
